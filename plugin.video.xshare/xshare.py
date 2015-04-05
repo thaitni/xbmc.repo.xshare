@@ -254,8 +254,8 @@ def open_category(query): #category.xml
 	items=re.findall(pattern,makerequest(data_path+'category.xml'))
 	if query in 'VPH-IFI-PFS' :
 		if not download_data():return
-		elif query=='PFS':updatePFS()
-		elif query=='VPH':vp_update_rss()
+	if query=='PFS':updatePFS()
+	elif query=='VPH':vp_update_rss()
 	for server,category,mode,colo,icon,name in items:
 		if (server!=query) or (("18" in category) and (phim18=="false")):continue
 		if query=='VPH' and mode!='10':q='vaphim-1.xml'
