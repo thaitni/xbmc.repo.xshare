@@ -327,6 +327,7 @@ def update_xml(items_new,items_old,filename): #update vaphim,ifiletv xml
 	return
 
 def vp_update():
+	if not download_data():return
 	items_old, id_old = read_items_old("vaphim-1.xml")
 	mess(u'Đang kiểm tra dữ liệu cập nhật của Vaphim...')
 
@@ -694,6 +695,7 @@ def ifile_tv_4share(url):
     return items
 
 def ifile_update():
+	if not download_data():return
 	items_old, id_old = read_items_old("ifiletv-1.xml")
 	mess(u'Đang kiểm tra dữ liệu cập nhật của ifile.tv...')
 	items_new = []#id_tip,id_htm,href,img,name
@@ -1140,22 +1142,4 @@ elif mode==99:myaddon.openSettings();end='ok'
 
 #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_DATE)
 if end == '':xbmcplugin.endOfDirectory(int(sys.argv[1]))
-'''
-https://urlfetch.readthedocs.org/en/v0.5.3/examples.html
-Thay toàn bộ code của xshare 2.22, không sử dụng thư viện BeautifulSoup mà thay băng thư viện Re. 
-Cho nên quá trình web Scraping sẽ nhanh hơn.
-Fix: 
-- Hỗ trợ Get link VIP Fshare ở chế độ "Không kích hoạt tải trực tiếp"
-- Mở Folder ID Fshare trong mục "Mở link theo ID"
-- Đọc folder Fshare không hạn chế số lượng files
-Bổ sung: 
-- Hỗ trợ play file Fshare có pass.
-- Thêm tính năng google search trên fshare,4share,tênlửa
-- Ghi lại lịch sử tìm kiếm, mở ID file
-- Thêm menu ngữ cảnh cho lịch sử tìm kiếm, mở ID file
-- Auto rss update Vaphim.com
-- Get phim từ các Server http://phimfshare.com, http://fptplay.net, https:\\tenlua.vn
-- Fix lật trang PhimFshare.com
-
-THZA19WGMT Pass: thanhcoti
-'''
+#https://urlfetch.readthedocs.org/en/v0.5.3/examples.html
