@@ -1,0 +1,22 @@
+﻿<settings>
+	<category label="Fshare">
+		<setting id="usernamef" type="text" label="User name fshare.vn"/>
+		<setting id="passwordf" type="text" option="hidden" label="Password fshare.vn"/>
+		<setting id="lastweekupdate" type="number" label="Lần cập nhật danh mục Vaphim gần nhất" default="1" visible="false"/>
+		<setting id="thumucrieng" type="text" label="Thư mục chia sẻ của tôi trên Fshare" default="RDA4FHXVE2UU"/>
+		<setting id="logoutf" type="bool" label="Tự động Logout khỏi Acc VIP Fshare(yes/no)" default="true"/>
+	</category>
+	<category label="4share - tenlua">
+		<setting id="username4" type="text" label="User name 4share.vn"/>
+		<setting id="password4" type="text" option="hidden" label="Password 4share.vn"/>
+		<setting id="usernamet" type="text" label="User name tenlua.vn"/>
+		<setting id="passwordt" type="text" option="hidden" label="Password tenlua.vn"/>
+	</category>
+	<category label="Các tùy chọn riêng">
+		<setting id="googlesearch" type="labelenum" label="Sử dụng phương thức Google search" values="API|Web" default="API"/>
+		<setting id="thumuccucbo" type="folder" label="Thư mục phim & list phim trên máy" default=""/>
+		<setting id="sodonghienthi" type="labelenum" label="Số dòng mỗi trang hiển thị" values="20|30|50" default="30"/>
+		<setting id="copyxml" type="bool" label="Cho phép Copy list phim xml về máy (y/n)" default="true"/>
+		<setting id="phim18" type="bool" label="Kích hoạt xem phim 18+ (y/n)" default="false"/>
+	</category>
+</settings>

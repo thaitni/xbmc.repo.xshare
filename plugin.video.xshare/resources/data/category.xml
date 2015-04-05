@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8">
+<a server="MMN" category="MSF" mode="10" color="gold" icon="fshare.png">Search Fshare - Vaphim.com</a>
+<a server="MMN" category="MS4" mode="10" color="blue" icon="4share.png">Search 4share - ifile.tv</a>
+<a server="MMN" category="MST" mode="10" color="fuchsia" icon="tenlua.png">Search TenLua.vn...</a>
+<a server="MMN" category="VPH" mode="10" color="gold" icon="vaphim.png">Kho phim trên http://vaphim.com-Fshare</a>
+<a server="MMN" category="IFI" mode="10" color="blue" icon="4share.png">Kho phim trên http://ifile.tv-4Share</a>
+<a server="MMN" category="PFS" mode="10" color="khaki" icon="phimfs.png">Kho phim trên http://phimfshare.com</a>
+<a server="MMN" category="http://fptplay.net" mode="07" color="orange" icon="fptplay.png">Kho phim trên http://fptplay.net</a>
+<a server="MMN" category="MainMenu" mode="16" color="" icon="icon.png">Mở max speed direct link (khi đã get được link)</a>
+<a server="MMN" category="MM0" mode="10" color="" icon="icon.png">Mở link [COLOR gold]Fshare[/COLOR], [COLOR blue]4share[/COLOR], [COLOR fuchsia]tenlua[/COLOR] [B]theo ID[/B]</a>
+<a server="MMN" category="MainMenu" mode="96" color="" icon="khophim.png">Kho phim & list phim trên máy của tôi</a>
+<a server="MMN" category="Myshare" mode="15" color="gold" icon="khophim.png">Thư mục chia sẻ của tôi trên Fshare</a>
+<a server="MMN" category="MainMenu" mode="99" color="" icon="setting.png">Add-on settings</a>
+
+<a server="MSF" category="Fshare" mode="02" color="lime" icon="google.png">Google Search [COLOR gold]Fshare.vn...[/COLOR]</a>
+<a server="MSF" category="Vaphim" mode="13" color="lime" icon="vaphim.png">Search [COLOR gold]Vaphim.com...[/COLOR]</a>
+<a server="MSF" category="vaphim-1.xml" mode="11" color="lime" icon="icon.png">Search [COLOR gold]link Fshare trên dữ liệu nội bộ...[/COLOR]</a>
+<a server="MS4" category="4share" mode="02" color="lime" icon="google.png">Google Search [COLOR blue]4share.vn...[/COLOR]</a>
+<a server="MS4" category="Ifile" mode="13" color="lime" icon="4share.png">Search [COLOR blue]Ifile.tv...[/COLOR]</a>
+<a server="MS4" category="ifiletv-1.xml" mode="11" color="lime" icon="icon.png">Search [COLOR blue]link 4share trên dữ liệu nội bộ...[/COLOR]</a>
+<a server="MST" category="TenLua" mode="02" color="lime" icon="google.png">Google Search [COLOR fuchsia]TenLua.vn...[/COLOR]</a>
+<a server="MST" category="TenLua" mode="13" color="lime" icon="tenlua.png">Search [COLOR fuchsia]TenLua.vn...[/COLOR]</a>
+
+<a server="MM0" category="Fshare" mode="15" color="gold" icon="fshare.png">Mở link Fshare theo ID</a>
+<a server="MM0" category="4share" mode="15" color="blue" icon="4share.png">Mở link 4share theo ID</a>
+<a server="MM0" category="TenLua" mode="15" color="fuchsia" icon="icon.png">Mở link Tenlua theo ID</a>
+
+<a server="VPH" category="MSF" mode="10" color="gold" icon="vaphim.png">Search...</a>
+<a server="VPH" category="capnhat" mode="20" color="gold" icon="vaphim.png">Cập nhật danh mục Vaphim</a>
+<a server="VPH" category="phimmoi" mode="04" color="gold" icon="vaphim.png">Phim mới nhất</a>
+<a server="VPH" category="xemnhieu" mode="05" color="gold" icon="vaphim.png">Phim được xem nhiều nhất</a>
+<a server="VPH" category="phim-le" mode="91" color="gold" icon="vaphim.png">Tất Cả Phim Lẻ</a>
+<a server="VPH" category="series" mode="91" color="gold" icon="vaphim.png">Tất Cả Phim Bộ</a>
+<a server="VPH" category="korean-series" mode="91" color="gold" icon="vaphim.png">Phim Bộ Hàn</a>
+<a server="VPH" category="hongkong-series" mode="91" color="gold" icon="vaphim.png">Phim Bộ Hồng Kông</a>
+<a server="VPH" category="us-tv-series" mode="91" color="gold" icon="vaphim.png">Phim Bộ Mỹ</a>
+<a server="VPH" category="documentary" mode="91" color="gold" icon="vaphim.png">Phim Tài Liệu</a>	
+<a server="VPH" category="18" mode="91" color="gold" icon="vaphim.png">Phim 18+</a>	
+<a server="VPH" category="animation" mode="91" color="gold" icon="vaphim.png">Hoạt Hình</a>
+<a server="VPH" category="mystery" mode="91" color="gold" icon="vaphim.png">Huyền Bí</a>
+<a server="VPH" category="sci-fi" mode="91" color="gold" icon="vaphim.png">Viễn Tưởng</a>
+<a server="VPH" category="3d" mode="91" color="gold" icon="vaphim.png">3D</a>
+<a server="VPH" category="western" mode="91" color="gold" icon="vaphim.png">Cao Bồi</a>
+<a server="VPH" category="war" mode="91" color="gold" icon="vaphim.png">Chiến Tranh</a>
+<a server="VPH" category="family" mode="91" color="gold" icon="vaphim.png">Thiếu Nhi</a>
+<a server="VPH" category="giang-sinh" mode="91" color="gold" icon="vaphim.png">Giáng Sinh</a>
+<a server="VPH" category="comedy" mode="91" color="gold" icon="vaphim.png">Hài Hước</a>
+<a server="VPH" category="action" mode="91" color="gold" icon="vaphim.png">Hành Động</a>
+<a server="VPH" category="crime" mode="91" color="gold" icon="vaphim.png">Hình Sự</a>
+<a server="VPH" category="thriller" mode="91" color="gold" icon="vaphim.png">Rùng Rợn</a>
+<a server="VPH" category="drama" mode="91" color="gold" icon="vaphim.png">Tâm Lý</a>
+<a server="VPH" category="tvb" mode="91" color="gold" icon="vaphim.png">TVB</a>
+<a server="VPH" category="horror" mode="91" color="gold" icon="vaphim.png">Kinh Dị</a>
+<a server="VPH" category="romance" mode="91" color="gold" icon="vaphim.png">Lãng Mạn</a>
+<a server="VPH" category="history" mode="91" color="gold" icon="vaphim.png">Lịch Sử</a>
+<a server="VPH" category="adventure" mode="91" color="gold" icon="vaphim.png">Phiêu Lưu</a>
+<a server="VPH" category="fantasy" mode="91" color="gold" icon="vaphim.png">Thần Thoại</a>
+<a server="VPH" category="thuyet-minh-tieng-viet" mode="91" color="gold" icon="vaphim.png">Thuyết Minh</a>
+<a server="VPH" category="hongkong" mode="91" color="gold" icon="vaphim.png">Hồng Kông</a>
+<a server="VPH" category="india" mode="91" color="gold" icon="vaphim.png">Ấn Độ</a>
+<a server="VPH" category="vietnamese" mode="91" color="gold" icon="vaphim.png">Việt Nam</a>
+<a server="VPH" category="korean" mode="91" color="gold" icon="vaphim.png">Hàn Quốc</a>
+<a server="VPH" category="music" mode="91" color="gold" icon="vaphim.png">Nhạc</a>
+<a server="VPH" category="chuong_trinh-xuan" mode="91" color="gold" icon="vaphim.png">Chương Trình Xuân</a>
+<a server="VPH" category="lossless" mode="91" color="gold" icon="vaphim.png">Lossless</a>
+<a server="VPH" category="liveshow" mode="91" color="gold" icon="vaphim.png">Liveshow</a>
+<a server="VPH" category="mv-chau-a" mode="91" color="gold" icon="vaphim.png">MV Châu Á</a>
+<a server="VPH" category="mv-quoc-te" mode="91" color="gold" icon="vaphim.png">MV Quốc Tế</a>
+<a server="VPH" category="mv-viet-nam" mode="91" color="gold" icon="vaphim.png">MV Việt Nam</a>
+
+<a server="IFI" category="MS4" mode="10" color="blue" icon="4share.png">Search...</a>
+<a server="IFI" category="capnhat" mode="31" color="blue" icon="4share.png">Cập nhật danh mục Ifile.tv</a>
+<a server="IFI" category="phimmoi" mode="34" color="blue" icon="4share.png">Phim mới nhất</a>
+<a server="IFI" category="xemnhieu" mode="35" color="blue" icon="4share.png">Phim được xem nhiều nhất</a>
+<a server="IFI" category="phim-le" mode="91" color="blue" icon="4share.png">Phim Lẻ</a>
+<a server="IFI" category="phim-bo" mode="91" color="blue" icon="4share.png">Phim Bộ</a>
+<a server="IFI" category="3d" mode="91" color="blue" icon="4share.png">3D</a>
+<a server="IFI" category="an-do" mode="91" color="blue" icon="4share.png">Ấn Độ</a>
+<a server="IFI" category="cao-boi" mode="91" color="blue" icon="4share.png">Cao Bồi</a>
+<a server="IFI" category="chien-tranh" mode="91" color="blue" icon="4share.png">Chiến Tranh</a>
+<a server="IFI" category="chuong-trinh-xuan" mode="91" color="blue" icon="4share.png">Chương Trình Xuân</a>
+<a server="IFI" category="co-trang" mode="91" color="blue" icon="4share.png">Cổ Trang</a>
+<a server="IFI" category="gia-dinh" mode="91" color="blue" icon="4share.png">Gia Đình</a>
+<a server="IFI" category="giang-sinh" mode="91" color="blue" icon="4share.png">Giáng Sinh</a>
+<a server="IFI" category="hai" mode="91" color="blue" icon="4share.png">Hài</a>
+<a server="IFI" category="han-quoc" mode="91" color="blue" icon="4share.png">Hàn Quốc</a>
+<a server="IFI" category="hanh-dong" mode="91" color="blue" icon="4share.png">Hành Động</a>
+<a server="IFI" category="hinh-su" mode="91" color="blue" icon="4share.png">Hình Sự</a>
+<a server="IFI" category="hoat-hinh" mode="91" color="blue" icon="4share.png">Hoạt Hình</a>
+<a server="IFI" category="hong-kong" mode="91" color="blue" icon="4share.png">Hồng Kông</a>
+<a server="IFI" category="huyen-bi" mode="91" color="blue" icon="4share.png">Huyền Bí</a>
+<a server="IFI" category="kinh-di" mode="91" color="blue" icon="4share.png">Kinh Dị</a>
+<a server="IFI" category="lang-man" mode="91" color="blue" icon="4share.png">Lãng Mạn</a>
+<a server="IFI" category="lich-su" mode="91" color="blue" icon="4share.png">Lịch Sử</a>
+<a server="IFI" category="nhac-kich" mode="91" color="blue" icon="4share.png">Nhạc Kịch</a>
+<a server="IFI" category="phieu-luu" mode="91" color="blue" icon="4share.png">Phiêu Lưu</a>
+<a server="IFI" category="phim-18" mode="91" color="blue" icon="4share.png">Phim 18+</a>
+<a server="IFI" category="phim-bo-han" mode="91" color="blue" icon="4share.png">Phim Bộ Hàn</a>
+<a server="IFI" category="phim-bo-hong-kong" mode="91" color="blue" icon="4share.png">Phim Bộ Hồng Kông</a>
+<a server="IFI" category="phim-tai-lieu" mode="91" color="blue" icon="4share.png">Phim Tài Liệu</a>
+<a server="IFI" category="rung-ron" mode="91" color="blue" icon="4share.png">Rùng Rợn</a>
+<a server="IFI" category="tam-ly" mode="91" color="blue" icon="4share.png">Tâm Lý</a>
+<a server="IFI" category="than-thoai" mode="91" color="blue" icon="4share.png">Thần Thoại</a>
+<a server="IFI" category="thieu-nhi" mode="91" color="blue" icon="4share.png">Thiếu Nhi</a>
+<a server="IFI" category="thuyet-minh-tv" mode="91" color="blue" icon="4share.png">Thuyết Minh TV</a>
+<a server="IFI" category="tieu-su" mode="91" color="blue" icon="4share.png">Tiểu Sử</a>
+<a server="IFI" category="trinh-tham" mode="91" color="blue" icon="4share.png">Trinh Thám</a>
+<a server="IFI" category="vien-tuong" mode="91" color="blue" icon="4share.png">Viễn Tưởng</a>
+<a server="IFI" category="viet-nam" mode="91" color="blue" icon="4share.png">Việt Nam</a>
+<a server="IFI" category="vo-thuat" mode="91" color="blue" icon="4share.png">Võ Thuật</a>
+
+<a server="PFS" category="Search" mode="06" color="lime" icon="phimfs.png">Search trên PhimFshare.com</a>
+<a server="PFS" category="PhimMoi" mode="06" color="khaki" icon="phimfs.png">Phim mới trên PhimFshare.com</a>
+<a server="PFS" category="hd-1080p" mode="06" color="khaki" icon="phimfs.png">hd 1080p</a>
+<a server="PFS" category="hd-720p" mode="06" color="khaki" icon="phimfs.png">hd 720p</a>
+<a server="PFS" category="mini-hd-m1080p-m720p-mhd-480p" mode="06" color="khaki" icon="phimfs.png">mini HD</a>
+<a server="PFS" category="3d" mode="06" color="khaki" icon="phimfs.png">3D</a>
+<a server="PFS" category="bdrip-brrip" mode="06" color="khaki" icon="phimfs.png">BDRip, BRRip</a>
+<a server="PFS" category="dvd-dvdrip" mode="06" color="khaki" icon="phimfs.png">DVD, DVDRip</a>
+<a server="PFS" category="chat-luong-thap-r5-dvdscr-ts-cam" mode="06" color="khaki" icon="phimfs.png">R5/DVDscr/TS/CAM/...</a>
+<a server="PFS" category="phim-tai-lieu-documentaries" mode="06" color="khaki" icon="phimfs.png">Phim Tài Liệu - Documentaries</a>
+<a server="PFS" category="phim-hoat-hinh-anime-cartoon" mode="06" color="khaki" icon="phimfs.png">Phim Hoạt Hình - Anime - Cartoon</a>
+<a server="PFS" category="phim-bo-series" mode="06" color="khaki" icon="phimfs.png">Phim Bộ - Series</a>
+<a server="PFS" category="tv-show" mode="06" color="khaki" icon="phimfs.png">TV Show</a>
+<a server="PFS" category="music-video" mode="06" color="khaki" icon="phimfs.png">Music Video</a>

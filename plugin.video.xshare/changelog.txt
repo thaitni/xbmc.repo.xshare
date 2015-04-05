@@ -1,0 +1,58 @@
+[B]Version 3.0.0[/B] <06/04/2015>:
+Thay toàn bộ code của xshare 2.21. Quá trình web Scraping sẽ nhanh hơn.
+Fix: 
+- Hỗ trợ Get link VIP Fshare ở chế độ "Không kích hoạt tải trực tiếp"
+- Mở Folder ID Fshare trong mục "Mở link theo ID"
+- Đọc folder Fshare không hạn chế số lượng files
+Bổ sung: 
+- Hỗ trợ play file Fshare có pass.
+- Thêm tính năng google search trên fshare,4share,tênlửa
+- Ghi lại lịch sử tìm kiếm, mở ID file
+- Thêm menu ngữ cảnh cho lịch sử tìm kiếm, mở ID file
+- Auto rss update Vaphim.com
+- Get phim từ các Server http://phimfshare.com, http://fptplay.net, https:\\tenlua.vn
+- Fix lật trang PhimFshare.com
+
+[B]Version 2.2.1[/B] <06/01/2015>:
+- fix phần "Mở link Fshare theo ID & ý tưởng share phim cho nhau" cho tiện dụng. 
+- Gộp 2 phần mở phim theo ID và share phim cho nhau.
+- Bổ sung mục "Phim mới nhất trên Vaphim".
+- Bổ sung fanart cho các phim get trên Vaphim.
+
+[B]Version 2.2.0[/B] <31/12/2014>
+- Fix các lỗi đã phát hiện: ưu tiên dùng acc VIP fshare khi bỏ chế độ dùng acc free.
+- Xóa Cookie ngay lập tức khi chuyển setting download trên Fshare sang gián tiếp.
+- Phân rõ 2 mục Vaphim - Fshare và Ifile.tv - 4share.
+- Phân trang list phim share cho nhau.
+- Cập nhật lai DS phim Vaphim theo hướng chia nhiều trang, tăng tốc độ load DS phim.
+- Phần quan trọng: Bổ sung kho phim trên Ifile.tv của 4share (tich hợp acc VIP 4share), gồm cả modun tìm kiếm trên 4share.
+
+[B]Version 2.1.1[/B] <27/12/2014>
+- Bổ sung phần: "Tạo list phim mới" trong mục "Kho phim riêng"
+- Bổ sung phần: "Mở list phim trên Fshare - ý tưởng share phim cho nhau"
+
+[B]Version 2.1.0[/B] <26/12/2014>
+- Gộp 2 mục Mở link phim trên File server Fshare và 4share vào chung một thư mục.
+- Fix lỗi login vào Fshare và bổ sung tùy chọn thiết lập trực tiếp acc VIP Fshare trên ứng dụng. 
+- Cho phép chọn chế độ Logout khỏi Fshare ngay sau khi bắt được Link phim 
+  (tùy chọn này dành cho các bạn dùng chung 1 Acc VIP).
+- Biên tập lại đầy đủ danh mục phim trên Vaphim
+- Bổ sung phần tìm kiếm trên Vaphim ("Search trên Vaphim")
+- Bổ sung mục "Phim xem nhiều nhất" trên Vaphim.
+
+[B]Version 2.0.0[/B] <20/12/2014>
+- Đưa nội dung trang Vaphim vào danh sách phim.
+- Đặc biệt DS phim được cập nhật về tại máy.
+- Có thêm DS phim riêng của cá nhân tự soạn.
+- Riêng mục Phim 18+ được set mặc định là Disable. Set lại trong mục Setting Add-on.
+- Fix lỗi login Fshare
+- Set "download trực tiếp" Acc VIP Fshare ngay trên ứng dụng.
+
+[B]Version 1.1.1[/B] <15/12/2014>
+- Load phim trực tiếp từ Fshare.vn cả 2 chế độ thiết lập / không thiết lập "Kích hoạt tải trực tiếp"
+
+[B]Version 1.1.0[/B] <13/12/2014>
+- Thêm load phim từ server 4share.vn
+
+[B]Version 1.0.0[/B] <08/12/2014>
+- Initial release

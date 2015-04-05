@@ -1,0 +1,7 @@
+﻿<settings>
+	<category label="Fshare">
+		<setting id="username" type="text" label="User name fshare.vn" default=""/>
+		<setting id="password" type="text" option="hidden" label="Password fshare.vn" default=""/>
+		<setting id="logoutf" type="bool" label="Cho phép tự Logout khỏi Acc VIP (yes/no)" default="true"/>
+	</category>
+</settings>

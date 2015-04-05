@@ -1,0 +1,7 @@
+[B]Version 1.0.1[/B] <02/04/2014>
+- Fix acc VIP Fshare "không kích hoạt tải trực tiếp"
+- Thêm menu ngữ cảnh "xóa mục này" trong danh sách phim đã thêm
+- Hỗ trợ file Fshare có password
+
+[B]Version 1.0.0[/B] <15/03/2015>
+- Initial version
