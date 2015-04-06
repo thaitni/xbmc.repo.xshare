@@ -15,8 +15,8 @@ subscene = "http://subscene.com"
 sys.path.append(libpath)
 import urlfetch
 hd={'User-Agent':'Mozilla/5.0'}
-def mess(message, timeShown=5000):
-	xbmc.executebuiltin((u'XBMC.Notification("%s","%s",%s)'%('Xshare',message,timeShown)).encode("utf-8"))
+def mess(message, timeShown=5000, title='Xshare'):
+	xbmc.executebuiltin((u'XBMC.Notification("%s","%s",%s)'%(title,message,timeShown)).encode("utf-8"))
 
 def no_accent(s):
 	s = s.decode('utf-8')
@@ -119,23 +119,25 @@ def search_movie(title, year, filename):
 	if len(subs) == 0:
 		mess(u'Không tìm thấy phụ đề của Video: %s'%title)
 	
-	filename = os.path.splitext(filename)[0].split('.x264')[0].replace(' ','.').replace('-','.').replace('*','.')
-	ratlist=filename.split('.')
+	fn = os.path.splitext(filename)[0].split('.x264')[0].replace(' ','.').replace('-','.').replace('*','.')
+	ratlist=fn.split('.')
 	for link,lang,name in subs:
 		name=name.strip().replace(' ','.');rat=1;label='vie'
 		if 'Vietnam' in lang:img='vi';url=subscene+link
 		elif 'Phude' in lang:img='vi';url=link;name='[COLOR lime]phudeviet.org[/COLOR]: '+name
 		else:img='en';url=subscene+link
 		for i in ratlist:
-			if re.search(i,name):rat+=1
+			try:
+				if re.search(i,name):rat+=1
+			except:pass
 		#filename:name,link:url,label:label,img:img,rating:str(rat)
 		subtitles.append((name,url,label,img,str(rat)))
 	items=list()
-	for filename,link,label,img,rating in sorted(subtitles,cmp=lambda x,y:cmp(x[0],y[3]),reverse=True):
-		item = xbmcgui.ListItem(label=label,label2=filename,iconImage=rating,thumbnailImage=img)
-		url="plugin://%s/?action=download&link=%s&filename=%s&img=%s"%(service,link,filename,img)
+	for fn,link,label,img,rating in sorted(subtitles,cmp=lambda x,y:cmp(x[0],y[3]),reverse=True):
+		item = xbmcgui.ListItem(label=label,label2=fn,iconImage=rating,thumbnailImage=img)
+		url="plugin://%s/?action=download&link=%s&filename=%s&img=%s"%(service,link,fn,img)
 		items.append((url, item, False))
-	xbmcplugin.addDirectoryItems(int(sys.argv[1]), items)
+	xbmcplugin.addDirectoryItems(int(sys.argv[1]), items);mess(u'Movie: %s'%filename,20000,'Xshare: Movie year - %s'%year)
 	xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def download(link,img):
@@ -242,10 +244,12 @@ params = get_params()
 if params['action'] == 'search':
 	item = {}
 	item['file_original_path'] = urllib.unquote(xbmc.Player().getPlayingFile().decode('utf-8'))
-	filename = os.path.basename(item['file_original_path']).rpartition('.')[0]
+	filename = os.path.basename(re.split('/\w+.m3u8',item['file_original_path'])[0]).rpartition('.')[0]
 	item['title'], item['year'] = xbmc.getCleanMovieTitle(filename)
 	if item['title'] == "":
 		item['title'] = normalizeString(xbmc.getInfoLabel("VideoPlayer.Title"))
+	item['title'] = re.sub('\[.*\]','',item['title'])
+	filename = re.sub('\[.*\]','',filename)
 	print 'xshare -------------------------------------------------------------------'
 	print 'xshare file_original_path : %s'%item['file_original_path']
 	print 'xshare filename : %s'%filename
