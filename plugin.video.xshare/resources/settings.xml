@@ -13,6 +13,7 @@
 		<setting id="passwordt" type="text" option="hidden" label="Password tenlua.vn"/>
 	</category>
 	<category label="Các tùy chọn riêng">
+		<setting id="history" type="bool" label="Cho phép ghi lịch sử tìm kiếm (y/n)" default="true"/>
 		<setting id="googlesearch" type="labelenum" label="Sử dụng phương thức Google search" values="API|Web" default="API"/>
 		<setting id="thumuccucbo" type="folder" label="Thư mục phim & list phim trên máy" default=""/>
 		<setting id="sodonghienthi" type="labelenum" label="Số dòng mỗi trang hiển thị" values="20|30|50" default="30"/>

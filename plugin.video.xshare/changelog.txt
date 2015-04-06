@@ -1,3 +1,10 @@
+[B]Version 3.0.1[/B] <07/04/2015>:
+Fix:
+- Lật trang 2,3, ...
+- Và một số lỗi nhỏ khác
+Bổ sung:
+- Tùy chọn ghi lịch sử tìm kiếm
+
 [B]Version 3.0.0[/B] <06/04/2015>:
 Thay toàn bộ code của xshare 2.21. Quá trình web Scraping sẽ nhanh hơn.
 Fix: 

@@ -112,8 +112,9 @@ def search_movie(title, year, filename):
 			subs.append((href,lang,filename))
 	if len(subs) == 0:
 		url='http://subscene.com/subtitles/release?q=%s'%title.replace(' ','.')+'.'+year
+		print 'bbbb',url
 		pattern='<a href="(/subtitles/.+?)">\s+<span class=".+?">\s*(.+?)\s+</span>\s+<span>\s+(.+?)\s+</span>'
-		subs=re.findall(pattern,urlfetch.get(url=url,headers={'LanguageFilter':'13,45'}).body)
+		subs=re.findall(pattern,urlfetch.get(url=url,headers={'Cookie':'LanguageFilter=13,45'}).body)
 		if subs:mess(u'List subs này có chứa sub có tên phim gần đúng!')
 
 	if len(subs) == 0:

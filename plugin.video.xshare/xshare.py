@@ -13,7 +13,8 @@ thumuccucbo =  myaddon.getSetting('thumuccucbo');copyxml = myaddon.getSetting('c
 if not os.path.exists(thumuccucbo):thumuccucbo=xbmc.translatePath( os.path.join(data_path,'list_xml/'))
 phim18 = myaddon.getSetting('phim18');lastweekupdate=myaddon.getSetting('lastweekupdate')
 rows = int(myaddon.getSetting('sodonghienthi'))
-googlesearch=myaddon.getSetting('googlesearch')
+googlesearch = myaddon.getSetting('googlesearch')
+history = myaddon.getSetting('history')
 if not os.path.exists(xbmc.translatePath(myaddon.getAddonInfo('profile'))):
 	os.mkdir(xbmc.translatePath(myaddon.getAddonInfo('profile')))
 if not os.path.exists(datapath):os.mkdir(datapath)
@@ -173,9 +174,10 @@ def google_search_api(url='',query='',page=0,mode=0,items=[]):
 	elif page==1:
 		string_search = common.getUserInput('Google: Hãy nhập chuỗi cần tìm trên %s.vn'%url)
 		if string_search is None or string_search=='':return 'no'
-		query = ' '.join(s for s in string_search.split(' ') if s!='')
-		makerequest(fstring_search,string='<a search="Google" server="%s">%s</a>\n'%(url,query),attr='a')
-		google_search_api(url,query=query,page=3)
+		query = ' '.join(s for s in string_search.split() if s!='')
+		if history=='true':
+			makerequest(fstring_search,string='<a search="Google" server="%s">%s</a>\n'%(url,query),attr='a')
+		google_search_api(url,query=query,page=3,mode=mode)
 	elif page == 2:#Xóa 1 mục search cũ có string=query
 		items = re.findall('<a search="(.+?)" server="(.+?)">(.+?)</a>',makerequest(fstring_search))
 		rows_string='<?xml version="1.0" encoding="utf-8">\n'
@@ -186,19 +188,18 @@ def google_search_api(url='',query='',page=0,mode=0,items=[]):
 		else:mess(u'[COLOR orangered]Chưa xóa được mục: "%s"'%search_file.decode('utf-8'))
 		xbmc.executebuiltin("Container.Refresh")
 	elif page>2:
-		if googlesearch=='Web':return google_search_web(url,query,page,items)
+		if googlesearch=='Web':return google_search_web(url,query,page,mode,items)
 		google = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&rsz=large&'
 		if '?' in query:
-			if len(query.split('?'))==3:return google_search_web(url,query,page,items)
+			if len(query.split('?'))==3:return google_search_web(url,query,page,mode,items)
 			start=query.split('?')[1];query=query.split('?')[0]
 		else:start='0'
 		string_search = urllib.quote_plus('"'+query+'"')
 		href=google+'start=%s&q=site:%s.vn+%s'%(start,url.lower(),string_search)
-		print href
 		json=urlfetch.get(href,headers=hd).json
 		if json['responseStatus']==403:
 			mess(u'Google: nghi ngờ lạm dụng Dịch vụ. Tự động chuyển sang web search')
-			return google_search_web(url,query,page,items)
+			return google_search_web(url,query,page,mode,items)
 		data=json['responseData']
 		if not data or not data['results']:mess(u'Không tìm được tên phim phù hợp');return 'no'
 		currentPage=int(data['cursor']['currentPageIndex'])+1;nextPage=0
@@ -209,13 +210,13 @@ def google_search_api(url='',query='',page=0,mode=0,items=[]):
 				name=re.search('\w{16,20}/(.*)\Z',i['url'].encode('utf-8')).group(1)
 			else: name=i['titleNoFormatting'].encode('utf-8')
 			name=re.sub('<.{1,10}>|.{4,8}.vn|- ','',name.split(':')[0]).strip()
-			if name and not 'Forum' in name:items.append((name,i['url'].encode('utf-8')));print i['url'].encode('utf-8')
-		  
+			if name and not 'Forum' in name:items.append((name,i['url'].encode('utf-8')))
+		
 		for i in data['cursor']['pages']:
 			if int(i['label'])>int(currentPage):
 				nextPage=i['label'];start=i['start'];break
 		if int(nextPage)>int(currentPage) and len(items)<rows and int(nextPage)<100:
-			google_search_api(url,query=query+'?'+start.strip(),page=page,items=items)
+			google_search_api(url,query=query+'?'+start.strip(),page=page,mode=mode,items=items)
 		else:
 			for name,link in sorted(items,key=lambda l:l[0]):addirs(name,link,icon[url])
 			if int(nextPage)>int(currentPage):
@@ -223,30 +224,29 @@ def google_search_api(url='',query='',page=0,mode=0,items=[]):
 				addir(name,url,icon[url],mode=mode,query=query+'?'+start.strip(),page=page+1,isFolder=True)
 	return ''
 	
-def google_search_web(url='',query='',page=0,items=[]):
+def google_search_web(url='',query='',page=0,mode=0,items=[]):
 	google = 'https://www.google.com.vn';num='8';nextStart=''
 	if '?' in query:start=query.split('?')[1];query=query.split('?')[0]
 	else:start='0';page=3
-	query = ' '.join(s for s in query.split(' ') if s!='')
+	query = ' '.join(s for s in query.split() if s!='')
 	string_search = urllib.quote_plus('"'+query+'"')
 	href=google+'/search?hl=en&ie=utf-8&oe=utf-8&num=%s&start=%s&q=site:%s.vn+%s'%(num,start,url.lower(),string_search)
-	print href
 	body=urlfetch.get(href).body
 	if '<TITLE>302 Moved</TITLE>' in body:mess(u'Google từ chối dịch vụ do bạn đã truy cập quá nhiều');return 'no'
 	#links=re.findall('(https?://www.fshare.vn/\w{4,6}/\w{10,20})["|&].*">(.+?)</a></h3>',body)
 	links=re.findall('<a href=".url.q=(.+?)["|&].*">(.+?)</a></h3>',body)
 	for link,name in links:
-		name=re.sub('<.{1,10}>|.{4,8}.vn|..hare|- ','',name.split(':')[0]).strip()
-		if name and not 'Forum' in name:items.append((name,link));print link
+		name=' '.join(s for s in re.sub('\[.+\]|</?\w{1,}>|\w{4,8}.vn|-|_','',name.split(':')[0]).split() if s!='')
+		name=name.replace('.',' ')
+		if name and not 'Forum' in name:items.append((name,link))
 	for i in re.findall('start=(\d{1,4})',body):
 		if int(i)>int(start):nextStart=i;break
-	if nextStart and len(items)<rows and int(start)<100:google_search_web(url,query+'?'+nextStart,page,items)
+	if nextStart and len(items)<rows and int(start)<100:google_search_web(url,query+'?'+nextStart,page,mode,items)
 	elif len(items)>0:
-		for name,link in sorted(items,key=lambda l:l[0]):addirs(name,link,icon_path+'%s.png'%url);print link
+		for name,link in sorted(items,key=lambda l:l[0]):addirs(name,link,icon_path+'%s.png'%url)
 		if nextStart:
 			name=color['trangtiep']+'Trang tiep theo...trang %s[/COLOR]'%str(page-1)
-			addir(name,url,icon_path+'%s.png'%url,mode=2,query=query+'?'+nextStart+'?web',page=page+1,isFolder=True)
-			#print body
+			addir(name,url,icon_path+'%s.png'%url,mode=mode,query=query+'?'+nextStart+'?web',page=page+1,isFolder=True)
 	return ''
 
 def open_category(query): #category.xml
@@ -745,8 +745,9 @@ def search_noibo(name,url,mode,page,query):
 	elif page==1:
 		string = common.getUserInput('Nhập chuổi tên phim cần tìm link %s trên dữ liệu nội bộ'%server[url])
 		if not string or string.strip()=='':return 'no'
-		string = ' '.join(s for s in string.split(' ') if s!='' and s!='"' and s!="'")
-		makerequest(fstring_search,string='<a search="File" server="%s">%s</a>\n'%(server[url],string.replace('"',"'")),attr='a')
+		string = ' '.join(s for s in string.replace('"','').replace("'",'').split() if s!='')
+		if history=='true':
+			makerequest(fstring_search,string='<a search="File" server="%s">%s</a>\n'%(server[url],string),attr='a')
 		search_noibo(string,url,mode,page=3,query=query)
 	elif page==3:
 		if '?' in query:
@@ -852,8 +853,9 @@ def search_web(url='',query='',mode=0,page=0,items=[]):#13
 	elif page==1:
 		query = common.getUserInput('Nhập chuổi tên phim cần tìm trên %s'%url)
 		if not query:return 'no'
-		query = ' '.join(s for s in query.split(' ') if s!='' and s!='"' and s!="'")
-		makerequest(fstring_search,string='<a search="Web" server="%s">%s</a>\n'%(url,query.replace('"',"'")),attr='a')
+		query = ' '.join(s for s in query.replace('"',"'").split() if s!='')
+		if history=='true':
+			makerequest(fstring_search,string='<a search="Web" server="%s">%s</a>\n'%(url,query),attr='a')
 		items=search_web_detail(query,url,mode)
 		if items and url!='TenLua':
 			string='<a server="%s" string="%s">%s</a>\n'%(url,query.replace('"',"'"),str(items))
