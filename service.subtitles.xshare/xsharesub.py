@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-import os,re,xbmc,xbmcaddon,xbmcgui,xbmcplugin,unicodedata,urllib,urllib2
+import os,shutil,re,xbmc,xbmcaddon,xbmcgui,xbmcplugin,unicodedata,urllib,urllib2
 from datetime import date
 
 addon = xbmcaddon.Addon()
@@ -155,10 +155,10 @@ def download(link,img):
 	if not downloadlink:mess(u'Không tìm được maxspeed link sub');return
 		
 	typeid="srt"
-	for f in os.listdir(tempath):
-		delfile = os.path.join(tempath, f)
-		try:os.remove(delfile)
-		except:pass
+	if os.path.exists(tempath):
+		shutil.rmtree(tempath)
+	os.mkdir(tempath)
+
 	body=urlfetch.get(downloadlink).body
 	tempfile = os.path.join(tempath, "subtitle.sub")
 	f = open(tempfile, "wb");f.write(body);f.close()
@@ -174,18 +174,19 @@ def download(link,img):
 		xbmc.executebuiltin(('XBMC.Extract("%s","%s")' % (tempfile, tempath,)).encode('utf-8'), True)
 
 	exts = [".srt", ".sub", ".txt", ".smi", ".ssa", ".ass"]
-	for f in os.listdir(tempath):
-		file = os.path.join(tempath, f)
-		if os.path.splitext(file)[1] in exts:
-			sub_list.append(file)
-			if img=='en':
-				mess(u'Google đang dịch sub từ tiếng Anh sang tiếng Việt', timeShown=10000)
-				try:
-					tempfile=xshare_trans(file)
-					os.remove(file)
-					os.rename(tempfile,file)
-					mess(u'Đã dịch xong sub từ tiếng Anh sang tiếng Việt') 
-				except:mess(u'Không dịch được sub từ tiếng Anh sang tiếng Việt') 
+	for root, dirs, files in os.walk(tempath):
+		for f in files:
+			file = os.path.join(root, f)
+			if os.path.splitext(file)[1] in exts:
+				sub_list.append(file)
+				if img=='en':
+					mess(u'Google đang dịch sub từ tiếng Anh sang tiếng Việt', timeShown=10000)
+					try:
+						tempfile=xshare_trans(file)
+						os.remove(file)
+						os.rename(tempfile,file)
+						mess(u'Đã dịch xong sub từ tiếng Anh sang tiếng Việt') 
+					except:mess(u'Không dịch được sub từ tiếng Anh sang tiếng Việt') 
 	if len(sub_list) == 0:mess(u'Không tìm thấy sub')
 	return sub_list
 	
