@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import xbmc,xbmcplugin,xbmcgui,xbmcaddon,urllib,re,os,unicodedata,datetime,random,json
-import CommonFunctions as common
 
 myaddon = xbmcaddon.Addon(); home = myaddon.getAddonInfo('path')
 icon_path = xbmc.translatePath(os.path.join( home,'resources/media/'))
@@ -58,6 +57,14 @@ def no_accent(s):
 	s = re.sub(u'đ', 'd', s)
 	return unicodedata.normalize('NFKD', unicode(s)).encode('ASCII', 'ignore')
 
+def get_input(title=u"", default=u""):
+	result = ''
+	keyboard = xbmc.Keyboard(default, title)
+	keyboard.doModal()
+	if keyboard.isConfirmed():
+		result = keyboard.getText()
+	return result
+	
 def tenlua_get_detail_and_starting(idf,h={'User-Agent':'xshare'}):
 	data='[{"a":"filemanager_builddownload_getinfo","n":"'+idf+'","r":'+str(random.random())+'}]'
 	try:
@@ -89,7 +96,7 @@ def resolve_url(url,xml=False):
 			except:dlink='pass'
 		else:dlink=='fail'
 		if dlink=='pass' and "form-control pwd_input" in response.body: 
-			pw = common.getUserInput('Hãy nhập mật khẩu của file này')
+			pw = get_input('Hãy nhập mật khẩu của file này')
 			if pw is None or pw=='':mess(u'Không get được max speed link!');return 'fail'
 			data=urllib.urlencode({'fs_csrf':fs_csrf.group(2),'FilePwdForm[pwd]':pw})
 			response=urlfetch.post(url,headers=hd,data=data,follow_redirects=False)
@@ -99,7 +106,7 @@ def resolve_url(url,xml=False):
 				href='https://www.fshare.vn/download/index';data=urllib.urlencode(data)
 				try:url=urlfetch.post(href,headers=hd,data=data,follow_redirects=False).json['url'].encode('utf-8')
 				except:url='fail'
-		else:url='fail'
+		else:url=dlink
 	elif response.status == 200 and '4share.vn' in url.lower():
 		try:url = re.compile("<a href='(.+?)'> FileDownload").findall(response.body)[0]
 		except:url='fail'
@@ -172,7 +179,7 @@ def google_search_api(url='',query='',page=0,mode=0,items=[]):
 				addir(name,url,icon[url],query='Trang'+str(trang)+'?'+query,mode=mode,page=0,isFolder=True)
 				break
 	elif page==1:
-		string_search = common.getUserInput('Google: Hãy nhập chuỗi cần tìm trên %s.vn'%url)
+		string_search = get_input('Google: Hãy nhập chuỗi cần tìm trên %s.vn'%url)
 		if string_search is None or string_search=='':return 'no'
 		query = ' '.join(s for s in string_search.split() if s!='')
 		if history=='true':
@@ -379,29 +386,30 @@ def vp_update_rss():
 	try:reddit_root = etree.fromstring(reddit_file);items = reddit_root.findall('channel/item')
 	except:mess('Update rss fail',1000);return
 	content_new=''
-	#reddit_feed=[]
+	pattern='(https?://www.fshare.vn/\w{4,6}/\w{10,14})" target="_blank">(.+?)</a>'
 	for item in items:
-		idf=re.search('(\d{5})',item.findtext('guid'))
-		if idf:idf=idf.group(1)
-		else:continue
-		if idf in id_old:continue
-		name=item.findtext('title')
-		pattern='(https?://www.fshare.vn/\w{4,6}/\w{10,14})'
-		content=item.findtext('contentencoded')
-		img=re.search('img src="(.+?jpg)["|?| ]',content)
-		if img:img=re.sub('-134x193','',img.group(1))
-		else:img=''
-		cat=''
+		cate=''
 		for i in item.findall('category'):
 			if i.text.encode('utf-8') in category:
-				cat+=category[i.text.encode('utf-8')]+' '
+				cate+=category[i.text.encode('utf-8')]+' '
 			else:break
-		cat=cat.strip()
-		for link in re.findall(pattern,content):
+		cate=cate.strip()
+		idf=re.search('(\d{5})',item.findtext('guid'))
+		if not idf or not cate or idf.group(1) in id_old:continue
+		idf=idf.group(1)
+		
+		name=item.findtext('title')
+		content=item.findtext('contentencoded')
+		img=re.findall('img src="(.+?jpg)["|?| ]',content)
+		if len(img)>1:fanart=img[1];img=re.sub('-134x193','',img[0])
+		elif len(img)>0:fanart=img=re.sub('-134x193','',img[0])
+		else:fanart=img=''
+		
+		for link,title in re.findall(pattern,content):
 			link=link.lower();idp=re.search('(\w{10,14})',link).group(1)
 			if 'fshare.vn/file' in link:url='https://www.fshare.vn/file/%s'%idp.upper()
 			else:url='https://www.fshare.vn/folder/%s'%idp.upper()
-			content_new+='<a id_tip="" id="%s" category="%s" img="%s" fanart="%s" href="%s">%s</a>\n'%(idf,cat,img,img,url,name)
+			content_new+='<a id_tip="" id="%s" category="%s" img="%s" fanart="%s" href="%s">%s</a>\n'%(idf,cate,img,fanart,url,name+' - '+title)
 	if content_new:
 		makerequest(datapath+"vaphim-1.xml",string=content_new,attr='a');mess('updated from VaPhim.com')
 		mess('Vaphim data Auto update completed')
@@ -554,7 +562,7 @@ def doc_thumuccucbo():
 			if (file_ext[1:].lower() == 'xml'):addirs(filename,filenamefullpath,query='xml')
 
 def Mo_maxspeed_link(): 
-	query = common.getUserInput('Hãy nhập max speed link của Fshare, 4share hoặc tênlửa','')
+	query = get_input('Hãy nhập max speed link của Fshare, 4share hoặc tênlửa')
 	if query is None or query=='':return 'no'
 	query = query.replace(' ','')
 	if len(query)<50:mess(u'Bạn nhập link ID chưa đúng: '+query);return 'no'
@@ -625,7 +633,7 @@ def mo_id_file(url,name='',mode=0,page=0,query=''):
 				addir(name,url,mode=mode,page=trang,query='Trang'+str(trang)+'?'+query,isFolder=True)
 				break
 	elif page == 1:#Nhập ID mới
-		id_ = common.getUserInput('Hãy nhập chuỗi "xxxxxxxxxxxx" ID link của '+query)
+		id_ = get_input('Hãy nhập chuỗi "xxxxxxxxxxxx" ID link của '+query)
 		if id_ is None or id_=='':return 'no'
 		id_ = id_.replace(' ','').strip().upper()
 		if len(id_)<10:mess(u'Bạn nhập ID link chưa đúng: '+id_);return 'no'
@@ -743,7 +751,7 @@ def search_noibo(name,url,mode,page,query):
 				addir(name,url,icon[url],query='Trang'+str(trang)+'?'+query,mode=mode,page=0,isFolder=True)
 				break
 	elif page==1:
-		string = common.getUserInput('Nhập chuổi tên phim cần tìm link %s trên dữ liệu nội bộ'%server[url])
+		string = get_input('Nhập chuổi tên phim cần tìm link %s trên dữ liệu nội bộ'%server[url])
 		if not string or string.strip()=='':return 'no'
 		string = ' '.join(s for s in string.replace('"','').replace("'",'').split() if s!='')
 		if history=='true':
@@ -851,7 +859,7 @@ def search_web(url='',query='',mode=0,page=0,items=[]):#13
 				addir(name,url,icon[url],query='Trang'+str(trang)+'?'+query,mode=mode,page=0,isFolder=True)
 				break
 	elif page==1:
-		query = common.getUserInput('Nhập chuổi tên phim cần tìm trên %s'%url)
+		query = get_input('Nhập chuổi tên phim cần tìm trên %s'%url)
 		if not query:return 'no'
 		query = ' '.join(s for s in query.replace('"',"'").split() if s!='')
 		if history=='true':
@@ -948,7 +956,7 @@ def phimFshare(name,url,mode,page,query):#6
 	fphimfshare=datapath+'phimfshare.xml'
 	home='http://phimfshare.com/'
 	if query=='Search':
-		search_string = common.getUserInput('Nhập chuổi tên phim cần tìm trên phimfshare.com')
+		search_string = get_input('Nhập chuổi tên phim cần tìm trên phimfshare.com')
 		if not search_string or not search_string.strip():return 'no'
 		search_string = urllib.quote_plus(" ".join(search_string.replace('"','').replace("'","").split()))
 		url='https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&'
@@ -1010,7 +1018,7 @@ def fptplay(url,page=1,query=''):
 			if name=='Tổng Hợp':break
 	elif query=="node0":
 		if page==1:
-			search_string = common.getUserInput("Nhập chuổi tên phim cần tìm trên "+fpt)
+			search_string = get_input("Nhập chuổi tên phim cần tìm trên "+fpt)
 			if not search_string or not search_string.strip():return "no"
 			search_string = urllib.quote_plus(" ".join(search_string.replace('"','').replace("'","").split()))
 			link=url=fpt+'/search/'+search_string
@@ -1106,7 +1114,7 @@ try:query=urllib.unquote_plus(params["query"])
 except:pass#urllib.unquote
 try:
 	if lastweekupdate<thisweek and weekday>2:myaddon.setSetting('lastweekupdate',thisweek);vp_update()
-	if lastweekupdate<thisweek and weekday>4:myaddon.setSetting('lastweekupdate',thisweek);ifile_update()
+	if lastweekupdate<thisweek and weekday>3:myaddon.setSetting('lastweekupdate',thisweek);ifile_update()
 except:pass
 
 print "Mode: "+str(mode)

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import xbmcplugin,xbmcgui,xbmcaddon,urllib,re,os
-import CommonFunctions as common
 
 myaddon = xbmcaddon.Addon(id="plugin.video.xshare.tiny")
 home = myaddon.getAddonInfo('path')
@@ -21,6 +20,14 @@ media_ext=['aif','iff','m3u','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp
 def mess(message, timeShown=5000):
 	xbmc.executebuiltin((u'XBMC.Notification("%s","%s",%s)'%('Xshare',message,timeShown)).encode("utf-8"))
 
+def get_input(title=u"", default=u""):
+	result = ''
+	keyboard = xbmc.Keyboard(default, title)
+	keyboard.doModal()
+	if keyboard.isConfirmed():
+		result = keyboard.getText()
+	return result
+	
 def make_request(url, headers={}):
 	try:
 		response = urlfetch.fetch(url,headers=headers)
@@ -67,7 +74,7 @@ def main(url='',query=''):#mode=1
 		addir('[COLOR gold]Add-on setting[/COLOR]','',resource+'icon.png',mode=3,isFolder=True)
 		return ''
 	elif query == 'new': #Nhập ID mới
-		iD = common.getUserInput('Hãy nhập ID phim của Fshare')
+		iD = get_input('Hãy nhập ID phim của Fshare')
 		if iD is None or iD=='':return 'no'
 		iD = iD.strip().upper()
 		if len(iD)<10:mess(u'Bạn nhập ID link chưa đúng: '+iD);return 'no'
@@ -109,7 +116,7 @@ def play_url(url):
 			except:dlink='pass'
 		else:dlink=='fail'
 		if dlink=='pass' and "form-control pwd_input" in response.body: 
-			pw = common.getUserInput('Hãy nhập mật khẩu của file này')
+			pw = get_input('Hãy nhập mật khẩu của file này')
 			if pw is None or pw=='':mess(u'Không get được max speed link!');return 'fail'
 			data=urllib.urlencode({'fs_csrf':fs_csrf.group(2),'FilePwdForm[pwd]':pw})
 			response=urlfetch.post(url,headers=hd,data=data,follow_redirects=False)
@@ -119,7 +126,7 @@ def play_url(url):
 				href='https://www.fshare.vn/download/index';data=urllib.urlencode(data)
 				try:url=urlfetch.post(href,headers=hd,data=data,follow_redirects=False).json['url'].encode('utf-8')
 				except:url='fail'
-		else:url='fail'
+		else:url=dlink
 	if myaddon.getSetting('logoutf')=="true":
 		try:urlfetch.get("https://www.fshare.vn/logout",headers=hd,follow_redirects=False)
 		except:print "Logout fail"

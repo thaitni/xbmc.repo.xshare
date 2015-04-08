@@ -1,4 +1,8 @@
-﻿[B]Version 1.0.1[/B] <07/04/2015>
+﻿[B]Version 1.0.2[/B] <08/04/2015>
+fix:
+- sửa lỗi temp folder chứa sub phudeviet (khi file zip có nhiều subs)
+
+[B]Version 1.0.1[/B] <07/04/2015>
 fix:
 - Tìm subs cho trang FptPlay.net
 - Lọc subs: loại các subs ngôn ngữ khác ngoài tiếng Việt và tiếng Anh

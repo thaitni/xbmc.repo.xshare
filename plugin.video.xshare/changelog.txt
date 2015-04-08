@@ -1,3 +1,10 @@
+[B]Version 3.0.2[/B] <08/04/2015>:
+Fix:
+- Get link maxspeed fshare không kích hoạt tải trực tiếp
+- update rss vaphim.com (mục Tuyển tập phim HOT nhất trong tuần)
+- Gỡ bỏ thư viện "script.module.parsedom"
+
+
 [B]Version 3.0.1[/B] <07/04/2015>:
 Fix:
 - Lật trang 2,3, ...

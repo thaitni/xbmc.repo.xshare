@@ -1,3 +1,8 @@
+[B]Version 1.0.2[/B] <08/04/2015>:
+Fix:
+- Get link maxspeed fshare không kích hoạt tải trực tiếp
+- Gỡ bỏ thư viện "script.module.parsedom"
+
 [B]Version 1.0.1[/B] <02/04/2014>
 - Fix acc VIP Fshare "không kích hoạt tải trực tiếp"
 - Thêm menu ngữ cảnh "xóa mục này" trong danh sách phim đã thêm
