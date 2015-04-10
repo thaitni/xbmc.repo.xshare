@@ -1,2 +1,3 @@
 # xbmc.repo.xshare
 Download and install addons from Xshare Repository: Watch movies from fshare.vn, 4share.vn, tenlua.vn, ...
+icons set of the plugin is designed by LUC QUYET CHIEN

@@ -1,4 +1,8 @@
-﻿[B]Version 1.0.2[/B] <08/04/2015>
+﻿[B]Version 1.0.3[/B] <10/04/2015>
+fix:
+- Unicode compatble filename find subs
+
+[B]Version 1.0.2[/B] <08/04/2015>
 fix:
 - sửa lỗi temp folder chứa sub phudeviet (khi file zip có nhiều subs)
 

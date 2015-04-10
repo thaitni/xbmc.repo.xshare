@@ -97,7 +97,6 @@ def search_movie(title, year, filename):
 	subspage_url = find_movie(title, year)
 	if subspage_url:
 		url = subscene+subspage_url
-		print 'aaaa',url
 		pattern='<a href="(/subtitles/.+?)">\s+<span class=".+?">\s*(.+?)\s+</span>\s+<span>\s+(.+?)\s+</span>'
 		subs=re.findall(pattern,urlfetch.get(url=url,headers={'Cookie':'LanguageFilter=13,45'}).body)
 		
@@ -106,16 +105,16 @@ def search_movie(title, year, filename):
 		phudeviet_url = google_find_phudeviet(title,year)
 	if phudeviet_url:
 		pattern_pdv='<td class="td4".+"(.+png)">.+\s+<td class="td1".+href="(.+?)">(.+?)<.+td>'
-		for lang,href,filename in re.findall(pattern_pdv,urlfetch.get(phudeviet_url).body):
+		for lang,href,fn in re.findall(pattern_pdv,urlfetch.get(phudeviet_url).body):
 			if 'Anh.png' in lang:lang="English"
 			else:lang="Phudeviet"
-			subs.append((href,lang,filename))
+			subs.append((href,lang,fn))
+	notification=''
 	if len(subs) == 0:
 		url='http://subscene.com/subtitles/release?q=%s'%title.replace(' ','.')+'.'+year
-		print 'bbbb',url
 		pattern='<a href="(/subtitles/.+?)">\s+<span class=".+?">\s*(.+?)\s+</span>\s+<span>\s+(.+?)\s+</span>'
 		subs=re.findall(pattern,urlfetch.get(url=url,headers={'Cookie':'LanguageFilter=13,45'}).body)
-		if subs:mess(u'List subs này có chứa sub có tên phim gần đúng!')
+		if subs:notification=u'tìm gần đúng!'
 
 	if len(subs) == 0:
 		mess(u'Không tìm thấy phụ đề của Video: %s'%title)
@@ -131,15 +130,16 @@ def search_movie(title, year, filename):
 			try:
 				if re.search(i,name):rat+=1
 			except:pass
-		#filename:name,link:url,label:label,img:img,rating:str(rat)
 		subtitles.append((name,url,label,img,str(rat)))
 	items=list()
 	for fn,link,label,img,rating in sorted(subtitles,cmp=lambda x,y:cmp(x[0],y[3]),reverse=True):
 		item = xbmcgui.ListItem(label=label,label2=fn,iconImage=rating,thumbnailImage=img)
 		url="plugin://%s/?action=download&link=%s&filename=%s&img=%s"%(service,link,fn,img)
 		items.append((url, item, False))
-	xbmcplugin.addDirectoryItems(int(sys.argv[1]), items);mess(u'Movie: %s'%filename,20000,'Xshare: Movie year - %s'%year)
-	xbmcplugin.endOfDirectory(int(sys.argv[1]))
+	if items:
+		xbmcplugin.addDirectoryItems(int(sys.argv[1]), items)
+		if not filename:filename=title
+		mess(u'Movie: %s'%filename,20000,'Xshare %s: Movie year - %s '%(notification,year))
 
 def download(link,img):
 	sub_list=[];downloadlink=''
@@ -249,7 +249,7 @@ if params['action'] == 'search':
 	filename = os.path.basename(re.split('/\w+.m3u8',item['file_original_path'])[0]).rpartition('.')[0]
 	item['title'], item['year'] = xbmc.getCleanMovieTitle(filename)
 	if item['title'] == "":
-		item['title'] = normalizeString(xbmc.getInfoLabel("VideoPlayer.Title"))
+		item['title'] = no_accent(xbmc.getInfoLabel("VideoPlayer.Title"))
 	item['title'] = re.sub('\[.*\]','',item['title'])
 	filename = re.sub('\[.*\]','',filename)
 	print 'xshare -------------------------------------------------------------------'
@@ -263,4 +263,4 @@ elif params['action'] == 'download':
 	for sub in subs:
 		listitem = xbmcgui.ListItem(label=sub)
 		xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sub, listitem=listitem, isFolder=False)
-		
+xbmcplugin.endOfDirectory(int(sys.argv[1]))

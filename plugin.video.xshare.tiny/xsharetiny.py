@@ -104,36 +104,34 @@ def main(url='',query=''):#mode=1
 def play_url(url):
 	hd['Cookie'] = loginfshare()
 	response = urlfetch.get(url, headers=hd, follow_redirects=False)
-	if response.status==302: url=response.headers['location']
+	if response.status==302:direct_link=response.headers['location']
 	elif response.status==200:
 		data=re.search('<span class="glyphicon glyphicon-remove"><.+b>(.+?)</b></h3>',response.text)
 		if data:mess(data.group(1));return 'fail'
-		fs_csrf=re.search("speed: (.+?).\s+fs_csrf: '(.+?)'",response.body)
+		fs_csrf=re.search("fs_csrf: '(.+?)'",response.body)
 		if fs_csrf:
-			data={'speed':'fast','fs_csrf':fs_csrf.group(2)}
-			href='https://www.fshare.vn/download/index';data=urllib.urlencode(data)
-			try:dlink=urlfetch.post(href,headers=hd,data=data,follow_redirects=False).json['url'].encode('utf-8')
-			except:dlink='pass'
-		else:dlink=='fail'
-		if dlink=='pass' and "form-control pwd_input" in response.body: 
-			pw = get_input('Hãy nhập mật khẩu của file này')
-			if pw is None or pw=='':mess(u'Không get được max speed link!');return 'fail'
-			data=urllib.urlencode({'fs_csrf':fs_csrf.group(2),'FilePwdForm[pwd]':pw})
-			response=urlfetch.post(url,headers=hd,data=data,follow_redirects=False)
-			if response.status == 302: url = response.headers['location']
-			else:
-				data={'speed':'fast','fs_csrf':fs_csrf.group(2)}
+			fs_csrf=fs_csrf.group(1)
+			if re.search("form-control pwd_input",response.body):
+				pw = get_input('Hãy nhập: Mật khẩu tập tin')
+				if pw is None or pw=='':mess(u'Bạn đã không nhập password!');return 'fail'
+				data={'fs_csrf':fs_csrf,'FilePwdForm[pwd]':pw}
+				response=urlfetch.post(url,headers=hd,data=data,follow_redirects=False)
+				if response.status==302:direct_link=response.headers['location']
+			data={'speed':'fast','fs_csrf':fs_csrf}
+			if response.status==200:
 				href='https://www.fshare.vn/download/index';data=urllib.urlencode(data)
-				try:url=urlfetch.post(href,headers=hd,data=data,follow_redirects=False).json['url'].encode('utf-8')
-				except:url='fail'
-		else:url=dlink
+				try:direct_link=urlfetch.post(href,headers=hd,data=data,follow_redirects=False).json['url'].encode('utf-8')
+				except:direct_link='fail';print 'Fshare response status 200 and not json["url"]'
+			elif response.status!=302:direct_link='fail'
+		else:direct_link='fail'
+	else:mess("Get link that bai");direct_link='fail'
 	if myaddon.getSetting('logoutf')=="true":
 		try:urlfetch.get("https://www.fshare.vn/logout",headers=hd,follow_redirects=False)
 		except:print "Logout fail"
-	if os.path.splitext(url)[1][1:].lower() not in media_ext:mess('sorry! this is not a media file');return 'fail'
-	if url=='fail':mess(u'Không get được Fshare maxspeed direct link!');return 'no'
-	item = xbmcgui.ListItem(path=url)
-	xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
+	if direct_link=='fail':mess(u'Không get được max speed direct link!');return 'fail'
+	if os.path.splitext(direct_link)[1][1:].lower() not in media_ext:mess('sorry! this is not a media file');return 'fail'
+	item = xbmcgui.ListItem(path=direct_link)
+	xbmcplugin.setResolvedUrl(int(sys.argv[1]),True,item)
 	return ''
 	
 def addir(name,link,img='',mode=0,query='',isFolder=False):

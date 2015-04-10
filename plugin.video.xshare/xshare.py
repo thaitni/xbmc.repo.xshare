@@ -77,47 +77,52 @@ def resolve_url(url,xml=False):
 	if 'fshare.vn' in url.lower():hd['Cookie'] = loginfshare();url_out="https://www.fshare.vn/logout"
 	elif '4share.vn' in url.lower():hd['Cookie'] = login4share();url_out="http://up.4share.vn/index/logout"
 	elif 'tenlua.vn' in url.lower():
-		hd['Cookie'] = logintenlua()
-		try:
-			if re.search('\w{14,20}',url):id_=re.search('\w{14,20}',url).group(0)
-			else: id_=url.split('/download/')[1].split('/')[0]
-			url=tenlua_get_detail_and_starting(id_,hd)['dlink']
-		except:mess(u'Không get được max speed link!');return
+		hd['Cookie'] = logintenlua();download_info=re.search('\w{14,20}',url)
+		if download_info:idf=download_info.group(0)
+		else:idf=url.split('/download/')[1].split('/')[0]
+		download_info=tenlua_get_detail_and_starting(idf,hd)
+		if 'n' in download_info and os.path.splitext(download_info['n'])[1][1:].lower() not in media_ext:
+			mess('sorry! this is not a media file');return 'fail'
+		if 'dlink' in download_info:url=download_info['dlink']
+		elif 'url' in download_info:url=download_info['url'];mess(u'Slowly direct link!')
+		else:mess(u'Không get được max speed link!');return 'fail'
 	response = urlfetch.get(url, headers=hd, follow_redirects=False)
-	if response.status == 302: url = response.headers['location']
-	elif response.status == 200 and 'fshare.vn' in url.lower():
+	if response.status==302:direct_link=response.headers['location']
+	elif response.status==200 and 'fshare.vn' in url.lower():
 		data=re.search('<span class="glyphicon glyphicon-remove"><.+b>(.+?)</b></h3>',response.text)
 		if data:mess(data.group(1));return 'fail'
-		fs_csrf=re.search("speed: (.+?).\s+fs_csrf: '(.+?)'",response.body)
+		fs_csrf=re.search("fs_csrf: '(.+?)'",response.body)
 		if fs_csrf:
-			data={'speed':'fast','fs_csrf':fs_csrf.group(2)}
-			href='https://www.fshare.vn/download/index';data=urllib.urlencode(data)
-			try:dlink=urlfetch.post(href,headers=hd,data=data,follow_redirects=False).json['url'].encode('utf-8')
-			except:dlink='pass'
-		else:dlink=='fail'
-		if dlink=='pass' and "form-control pwd_input" in response.body: 
-			pw = get_input('Hãy nhập mật khẩu của file này')
-			if pw is None or pw=='':mess(u'Không get được max speed link!');return 'fail'
-			data=urllib.urlencode({'fs_csrf':fs_csrf.group(2),'FilePwdForm[pwd]':pw})
-			response=urlfetch.post(url,headers=hd,data=data,follow_redirects=False)
-			if response.status == 302: url = response.headers['location']
-			else:
-				data={'speed':'fast','fs_csrf':fs_csrf.group(2)}
+			fs_csrf=fs_csrf.group(1)
+			if re.search("form-control pwd_input",response.body):
+				pw = get_input('Hãy nhập: Mật khẩu tập tin')
+				if pw is None or pw=='':mess(u'Bạn đã không nhập password!');return 'fail'
+				data={'fs_csrf':fs_csrf,'FilePwdForm[pwd]':pw}
+				response=urlfetch.post(url,headers=hd,data=data,follow_redirects=False)
+				if response.status==302:direct_link=response.headers['location']
+			data={'speed':'fast','fs_csrf':fs_csrf}
+			if response.status==200:
 				href='https://www.fshare.vn/download/index';data=urllib.urlencode(data)
-				try:url=urlfetch.post(href,headers=hd,data=data,follow_redirects=False).json['url'].encode('utf-8')
-				except:url='fail'
-		else:url=dlink
+				try:direct_link=urlfetch.post(href,headers=hd,data=data,follow_redirects=False).json['url'].encode('utf-8')
+				except:direct_link='fail';print 'Fshare response status 200 and not json["url"]'
+			elif response.status!=302:direct_link='fail'
+		else:direct_link='fail'
 	elif response.status == 200 and '4share.vn' in url.lower():
-		try:url = re.compile("<a href='(.+?)'> FileDownload").findall(response.body)[0]
-		except:url='fail'
-	else: mess("Get link that bai") ; url='fail'
+		FileDownload=re.search("<a href='(.+?)'> FileDownload.{,4}<strong>(.+?)</strong>",response.body)
+		if FileDownload:
+			direct_link=FileDownload.group(1)
+			if os.path.splitext(FileDownload.group(2))[1][1:].lower() not in media_ext:
+				mess('sorry! this is not a media file');return 'fail'
+		else:direct_link='fail'
+	else: mess("Get link that bai");direct_link='fail'
 	if myaddon.getSetting('logoutf')=="true":
 		try:urlfetch.get("https://www.fshare.vn/logout",headers=hd,follow_redirects=False)
 		except:print "Logout fail"
-	if url=='fail':mess(u'Không get được max speed direct link!');return 'fail'
-	if xml:return url
-	if os.path.splitext(url)[1][1:].lower() not in media_ext:mess('sorry! this is not a media file');return 'fail'
-	item = xbmcgui.ListItem(path=url);xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item);return ''
+	if direct_link=='fail':mess(u'Không get được max speed direct link!');return 'fail'
+	if xml:return direct_link
+	if 'fshare.vn' in url.lower() and os.path.splitext(direct_link)[1][1:].lower() not in media_ext:
+		mess('sorry! this is not a media file');return 'fail'
+	item = xbmcgui.ListItem(path=direct_link);xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item);return ''
 
 def loginfshare():
 	url = "https://www.fshare.vn/login"
@@ -972,9 +977,8 @@ def phimFshare(name,url,mode,page,query):#6
 	else:
 		if home not in url:url=home+url+'/'
 		body=urlfetch.get(url).body
-		pattern='<img class="preview" src="(.+?)" style=.+?<a title="" class="title" href="(.+?)" id="thread_title_(.+?)">(.+?)</a>'
+		pattern='<img class="preview" src="(.+?)" .+? class=".+?" href="(.+?)" id="thread_title_(.+?)">(.+?)</a>'
 		items=re.findall(pattern,body)
-		#if not items:items=re.compile('()<a href="(.+?)" class="title">(.+?)</a>').findall(body);page=1
 	
 	content_old=makerequest(fphimfshare);content_new=''
 	for img,href,idf,name in items:
@@ -995,7 +999,7 @@ def phimFshare(name,url,mode,page,query):#6
 			if not img:
 				temp=re.search('<img src="(.+?)" border="0" alt="" />',response)
 				if temp:img=temp.group(1)
-			name=name.split('] ')[len(name.split('] '))-1].replace('MuLtI','').replace('Fshare','').strip()
+			name=' '.join(s for s in re.sub('\[.+?\]|\(.+?\)|MuLtI|Fshare|fshare','',name).split())
 			for server,link in getlinkPFS(response):
 				if link not in content_new:
 					content_new+='<a id="%s" server="%s" href="%s" img="%s">%s</a>\n'%(idf,server,link,img,name)
