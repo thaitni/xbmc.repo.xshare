@@ -1,3 +1,6 @@
+[B]Version 3.0.4[/B] <12/04/2015>:
+- Thêm mục "Thông tin phim mới nhất từ HDVietnam.com Forums"
+
 [B]Version 3.0.3[/B] <10/04/2015>:
 Fix:
 - Get link 4share, tenlua

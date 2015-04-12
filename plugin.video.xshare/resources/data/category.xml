@@ -6,6 +6,7 @@
 <a server="MMN" category="IFI" mode="10" color="blue" icon="4share.png">Kho phim trên http://ifile.tv-4Share</a>
 <a server="MMN" category="PFS" mode="10" color="khaki" icon="phimfs.png">Kho phim trên http://phimfshare.com</a>
 <a server="MMN" category="http://fptplay.net" mode="07" color="orange" icon="fptplay.png">Kho phim trên http://fptplay.net</a>
+<a server="MMN" category="HDV" mode="08" color="crimson" icon="icon.png">Thông tin phim mới nhất từ HDVietnam.com Forums</a>
 <a server="MMN" category="MainMenu" mode="16" color="" icon="icon.png">Mở max speed direct link (khi đã get được link)</a>
 <a server="MMN" category="MM0" mode="10" color="" icon="icon.png">Mở link [COLOR gold]Fshare[/COLOR], [COLOR blue]4share[/COLOR], [COLOR fuchsia]tenlua[/COLOR] [B]theo ID[/B]</a>
 <a server="MMN" category="MainMenu" mode="96" color="" icon="khophim.png">Kho phim & list phim trên máy của tôi</a>

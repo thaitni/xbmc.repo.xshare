@@ -146,6 +146,7 @@ def login4share():
 
 def logintenlua():
 	url = 'https://api2.tenlua.vn/';user=myaddon.getSetting('usernamet');pw=myaddon.getSetting('passwordt')
+	user='duongnguyen2929@gmail.com';pw='Banhmi123!@#'
 	form_fields = '[{"a":"user_login","user":"'+user+'","password":"'+pw+'","permanent":"true"}]'
 	try:response=urlfetch.post(url=url,data=form_fields,follow_redirects=False)
 	except:mess(u'Không truy cập được tenlua.vn');return ''
@@ -1075,6 +1076,31 @@ def fptplay(url,page=1,query=''):
 		xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
 	return ''
 	
+def hdvietnam():
+	from xml.etree import ElementTree as etree
+	url='http://www.hdvietnam.com/diendan/external.php?type=RSS2'
+	reddit_file = urlfetch.get(url).body
+	reddit_file = reddit_file.replace('content:encoded','contentencoded')
+	reddit_root = etree.fromstring(reddit_file)
+	items = reddit_root.findall('channel/item')
+	pattern_link='<a href="(https?://www.fshare.vn/\w{4,6}/\w{10,14})" target|(http://4share.vn/./\w{14,20})|(https?://w?w?w?/?tenlua.vn/.*?)[ |"|<]'
+	dir_items=[]
+	for item in items:
+		content=item.findtext('contentencoded')
+		img=re.search('<a href="(.+?)" class="highslide"',content)
+		links=re.findall(pattern_link,content)
+		if not links or not img:continue
+		img=img.group(1)
+		name=re.sub('\[.*\]|\(.*\)|\|.*','',item.findtext('title')).strip()
+		urls=list()
+		for link in links:
+			for url in link:
+				if 'fshare' in url and url not in urls:urls.append(url);dir_items.append(('Fshare-'+name,url,img))
+				if '4share' in url and url not in urls:urls.append(url);dir_items.append(('4share-'+name,url,img))
+				if 'tenlua' in url and re.search('(\w{16,20})',url) and url not in urls:
+					urls.append(url);dir_items.append(('Tenlua-'+name,url,img))
+	for name,url,img in dir_items:addirs(name.encode('utf-8'),url,img,fanart=img)
+
 def get_params():
 	param=[]
 	paramstring=sys.argv[2]
@@ -1134,6 +1160,7 @@ elif mode==4:phimchon('http://vaphim.com','vaphim-1.xml','data="(.+?)" title')
 elif mode==5:vp_xemnhieu()
 elif mode==6:end=phimFshare(name,url,mode,page,query)
 elif mode==7:end=fptplay(url,page,query)
+elif mode==8:hdvietnam()
 elif mode==10:open_category(query)
 elif mode==11:end=search_noibo(name,url,mode,page,query)
 elif mode==13:end=search_web(url,query,mode,page)
