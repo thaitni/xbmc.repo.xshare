@@ -146,7 +146,6 @@ def login4share():
 
 def logintenlua():
 	url = 'https://api2.tenlua.vn/';user=myaddon.getSetting('usernamet');pw=myaddon.getSetting('passwordt')
-	user='duongnguyen2929@gmail.com';pw='Banhmi123!@#'
 	form_fields = '[{"a":"user_login","user":"'+user+'","password":"'+pw+'","permanent":"true"}]'
 	try:response=urlfetch.post(url=url,data=form_fields,follow_redirects=False)
 	except:mess(u'Không truy cập được tenlua.vn');return ''
