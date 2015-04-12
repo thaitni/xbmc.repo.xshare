@@ -87,7 +87,7 @@ def resolve_url(url,xml=False):
 		elif 'url' in download_info:url=download_info['url'];mess(u'Slowly direct link!')
 		else:mess(u'Không get được max speed link!');return 'fail'
 	response = urlfetch.get(url, headers=hd, follow_redirects=False)
-	if response.status==302:direct_link=response.headers['location']
+	if response.status==302:direct_link=response.headers['location'];print 'as %s'%direct_link
 	elif response.status==200 and 'fshare.vn' in url.lower():
 		data=re.search('<span class="glyphicon glyphicon-remove"><.+b>(.+?)</b></h3>',response.text)
 		if data:mess(data.group(1));return 'fail'
@@ -121,7 +121,7 @@ def resolve_url(url,xml=False):
 	if direct_link=='fail':mess(u'Không get được max speed direct link!');return 'fail'
 	if xml:return direct_link
 	if 'fshare.vn' in url.lower() and os.path.splitext(direct_link)[1][1:].lower() not in media_ext:
-		mess('sorry! this is not a media file');return 'fail'
+		print 'sorry! %s'%direct_link;mess('sorry! this is not a media file');return 'fail'
 	item = xbmcgui.ListItem(path=direct_link);xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item);return ''
 
 def loginfshare():
@@ -1094,7 +1094,8 @@ def hdvietnam():
 		urls=list()
 		for link in links:
 			for url in link:
-				if 'fshare' in url and url not in urls:urls.append(url);dir_items.append(('Fshare-'+name,url,img))
+				if 'fshare' in url and url not in urls:
+					urls.append(url);dir_items.append(('Fshare-'+name,url.replace('http:','https:'),img))
 				if '4share' in url and url not in urls:urls.append(url);dir_items.append(('4share-'+name,url,img))
 				if 'tenlua' in url and re.search('(\w{16,20})',url) and url not in urls:
 					urls.append(url);dir_items.append(('Tenlua-'+name,url,img))
