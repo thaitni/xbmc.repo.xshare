@@ -1,4 +1,7 @@
-﻿[B]Version 1.0.3[/B] <10/04/2015>
+﻿[B]Version 1.1.0[/B] <30/04/2015>
+- Thêm manual search
+- Fix một số lỗi nhỏ
+[B]Version 1.0.3[/B] <10/04/2015>
 fix:
 - Unicode compatble filename find subs
 

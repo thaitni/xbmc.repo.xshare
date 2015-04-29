@@ -1,3 +1,18 @@
+[B]Version 3.1.0[/B] <30/04/2015>:
+- Dùng python ver 2.1.0 tương thích XBMC 2.x
+- Thêm chức năng Google search trên hdvietnam
+- Thêm chức năng tải file zip phụ đề fshare và subscene vào thumucrieng.
+- Thêm chức năng xshare favouris
+- Bố trí lại menu, code lại một số tính năng cũ
+
+[B]Version 3.0.5[/B] </04/2015>:
+Fix:
+- Mục "Phim được xem nhiều nhất" của Vaphim.com
+Recode:
+- menuContext
+Add:
+- Xshare favourites
+
 [B]Version 3.0.4[/B] <12/04/2015>:
 - Thêm mục "Thông tin phim mới nhất từ HDVietnam.com Forums"
 
