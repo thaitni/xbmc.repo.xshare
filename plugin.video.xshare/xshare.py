@@ -440,7 +440,6 @@ def google_search(url,query,mode,page,items=[]):
 		else:items,start=google_search_api(url,start,query,items)
 		if not items:return 'no'
 		for name,link in sorted(items,key=lambda l:l[0]):
-			print link
 			if link in templink:continue
 			if url=='hdvietnam.com':tempurl=hdvn_get_link(link,temp=tempurl)
 			elif url=='vaphim.com':tempurl=google_vaphim(link,temp=tempurl)
@@ -761,14 +760,20 @@ def DocTrangFshare(url,img,fanart,query=''):
 	return name_return
 
 def DocTrang4share(url):#38
-	response=hdvn_request(url)
-	pattern="<a href='(.+?)' target='.+?'><image src = '.+?'>(.+?)<.*?><td style='text-align: right'>(.+?)</td>"
-	pattern+="|<a href='(.+?)'>.*\s.*<image src = '.+?'>(.+?)</a>"
-	for href,name,size,folder_link,folder_name in re.findall(pattern,response):
-		if href:name=name.strip()+' - '+size.strip();href='http://4share.vn'+href
-		else:href='http://4share.vn'+folder_link;name=folder_name.strip()
-		addirs(name,href)
-	
+	temp=[]
+	if '/d/' in url:
+		response=hdvn_request(url)
+		pattern="<a href='(.+?)' target='.+?'><image src = '.+?'>(.+?)<.*?><td style='text-align: right'>(.+?)</td>"
+		pattern+="|<a href='(.+?)'>.*\s.*<image src = '.+?'>(.+?)</a></div>"
+		for href,name,size,folder_link,folder_name in re.findall(pattern,response):
+			if href:name=name.strip()+' - '+size.strip();href='http://4share.vn'+href
+			else:href='http://4share.vn'+folder_link;name=folder_name.strip()
+			temp.append((name,href));addirs(name,href)
+	else:
+		name=re.search('Filename:.{,10}>(.+?)</strong>.{,20}>(.+?)</strong>',hdvn_request(url))
+		if name:name=name.group(1)+' - '+name.group(2);temp.append((name,url));addirs(name,href)
+	return temp
+
 def doc_thumuccucbo(url):
 	if url=='xshare.vn':
 		for dirname, dirnames, filenames in os.walk(thumuccucbo):
@@ -844,22 +849,23 @@ def mo_id_file(url,name='',mode=0,page=0,query=''):
 				break
 	elif page == 1:#Nhập ID mới
 		idf = get_input('Hãy nhập chuỗi ID link của Fshare-4share hoặc tenlua')
-		if idf is None or idf=='':return 'no'
-		idf = idf.replace(' ','').strip().upper()
-		if len(idf)<12:mess(u'Bạn nhập ID link chưa đúng: '+idf);return 'no'
+		if idf is None or idf.strip()=='':return 'no'
+		idf = ''.join(s for s in idf.split()).upper()
+		if len(idf)<10:mess(u'Bạn nhập ID link chưa đúng: '+idf);return 'no'
 		write_id=True
 		if len(idf)<13:
-			url=check_id_fshare(idf)
+			url=check_id_fshare(idf);query='fshare'
 			if url:name=DocTrangFshare(url,icon[query],'')
 			else:write_id=False
 		elif len(idf)<17:
-			share4_f='http://4share.vn/f/';share4_d='http://4share.vn/d/';query='4share'
-			if urlfetch.get(share4_f+query).status==200:url=share4_f+idf
-			elif urlfetch.get(share4_d+query).status==200:url=share4_d+idf
-			name=re.compile('<center>Filename.*<strong>(.+?)</strong>.*<strong>(.+?)</strong>').findall(make_request(url))
-			try:name=name[0][0]+' - '+name[0][1]
-			except:mess(u'Không tìm được link có ID: '+idf);write_id=False
-			addirs(name,url,icon[query])
+			query='4share';url='http://4share.vn/f/%s'%idf
+			name=re.search('Filename:.{,10}>(.+?)</strong>.{,20}>(.+?)</strong>',hdvn_request(url))
+			if name:name=name.group(1)+' - '+name.group(2);addirs(name,url,icon[query])
+			else:
+				url='http://4share.vn/d/%s'%idf
+				name=re.findall("<br/><b>(.+?)</b>|<a href='(/f/\w+)|<a href='(/d/\w+)'>",hdvn_request(url))
+				if len(name)>1:name=name[0][0];addirs(name,url,icon[query])
+				else:mess(u'Không tìm được link có ID: %s'%idf);write_id=False
 		elif len(idf)<20:
 			response=tenlua_get_detail_and_starting(idf);query='tenlua'
 			if response["type"]=="none": mess(u'Không tìm được link có ID: '+idf);write_id=False
@@ -1411,7 +1417,6 @@ def hdvn_ngaytruoc(query,content):
 	if len(items)>0:
 		ngaytruoc=items[0]
 		for i in items:
-			print i
 			if i==query:break
 			ngaytruoc=i
 	return ngaytruoc

@@ -1,3 +1,6 @@
+[B]Version 3.1.1[/B] <30/04/2015>:
+Fix: Mở link Fshare, 4share, tenlua theo ID
+
 [B]Version 3.1.0[/B] <30/04/2015>:
 - Dùng python ver 2.1.0 tương thích XBMC 2.x
 - Thêm chức năng Google search trên hdvietnam
