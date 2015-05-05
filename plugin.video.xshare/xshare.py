@@ -753,22 +753,23 @@ def phimchon(url,filename,re_string):
 		except:continue
 
 def DocTrangFshare(url,img,fanart,query=''):
+	pageIndex=filescount=rowscount=files_count=0
 	if 'pageIndex' in url:
 		pageIndex=int(url.split('?')[1].split('=')[1]);filescount=int(url.split('?')[2].split('=')[1])
 		rowscount=int(url.split('?')[3].split('=')[1])
-	else:pageIndex=filescount=rowscount=0
 	response = make_request(url);name=xshare_group(re.search('<title>(.+?)</title>',response),1)
 	if not name:name='No name'
 	if no_accent(name)=='Loi 404':mess(u'file/folder đã bị xóa');return 'no'
 	else:name=re.sub('Fshare - ','',name)
-	name_return=name;files_count=xshare_group(re.search('Số lượng:(.+?)</div>',response),1)
-	if files_count:files_count=int(files_count)
-	else:files_count=filescount
-	if int(files_count)==0:mess(u'Thư mục trống');return 'no'
+	name_return=name
 	if '/file/' in url:
 		size=xshare_group(re.search('width="29".*\s.*<td>(.+?)</td>',response),1)
 		items=[(url,name,size)]
 	else:
+		files_count=xshare_group(re.search('Số lượng:(.+?)</div>',response),1)
+		if files_count:files_count=int(files_count)
+		else:files_count=filescount
+		if files_count==0:mess(u'Thư mục trống');return 'no'
 		pattern='href="(.+?)".+title="(.+?)"[\W\w]{,500}size align-right">(.+?)</div>'
 		items=re.findall(pattern,response)
 	for href,name,size in items:
@@ -883,7 +884,7 @@ def mo_id_file(url,name='',mode=0,page=0,query=''):
 		if len(idf)<13:
 			url=check_id_fshare(idf);query='fshare'
 			if url:name=DocTrangFshare(url,icon[query],'')
-			else:write_id=False
+			if not url or not name or name=='no':return 'no'
 		elif len(idf)<17:
 			query='4share';url='http://4share.vn/f/%s'%idf
 			name_size=re.search('Filename:.{,10}>(.+?)</strong>.{,20}>(.+?)</strong>',make_request(url))
