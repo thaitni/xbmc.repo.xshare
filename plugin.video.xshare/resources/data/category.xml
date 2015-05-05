@@ -109,7 +109,7 @@
 <a server="IFI" category="viet-nam" mode="91" color="blue" icon="4share.png">Việt Nam</a>
 <a server="IFI" category="vo-thuat" mode="91" color="blue" icon="4share.png">Võ Thuật</a>
 
-<a server="PFS" category="Search" mode="06" color="lime" icon="phimfs.png">Search trên PhimFshare.com</a>
+<a server="PFS" category="SearchPFS" mode="06" color="lime" icon="phimfs.png">Search trên PhimFshare.com</a>
 <a server="PFS" category="PhimMoi" mode="06" color="khaki" icon="phimfs.png">Phim mới trên PhimFshare.com</a>
 <a server="PFS" category="hd-1080p" mode="06" color="khaki" icon="phimfs.png">hd 1080p</a>
 <a server="PFS" category="hd-720p" mode="06" color="khaki" icon="phimfs.png">hd 720p</a>

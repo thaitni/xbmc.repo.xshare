@@ -15,7 +15,7 @@
 		<setting id="cookieh" type="text" label="hdvietnam cookiestring" default="" visible="false"/>
 	</category>
 	<category label="Các tùy chọn riêng">
-		<setting id="hdvnfindall" type="bool" label="Không giới hạn tìm kiếm trên HDVN (All Uploader) (y/n)" default="false"/>
+		<setting id="hdvnfindall" type="bool" label="Không giới hạn tìm kiếm trên HDVN (All Uploader) (y/n)" default="true"/>
 		<setting id="uploaders" type="text" label="DS uploaders yêu thích (cách nhau:'-')" default="xemaydinh-hungdaita-truoduc-ledung123-cocongidau-invisible9x-love_yejin-coduocgidau-HDCP-linhlee0709-Coti-henryduc96-luanthieugia"/>
 		<setting id="history" type="bool" label="Cho phép hiển thị lịch sử tìm kiếm (y/n)" default="true"/>
 		<setting id="googlesearch" type="labelenum" label="Sử dụng phương thức Google search" values="API|Web" default="API"/>
@@ -23,6 +23,6 @@
 		<setting id="sodonghienthi" type="labelenum" label="Số dòng mỗi trang hiển thị" values="20|30|50" default="30"/>
 		<setting id="copyxml" type="bool" label="Cho phép Copy list phim xml về máy (y/n)" default="true"/>
 		<setting id="phim18" type="bool" label="Kích hoạt xem phim 18+ (y/n)" default="false"/>
-		<setting id="last_update" type="text" label="Ngày cập nhật danh mục phim gần nhất" default="01/01/2015" visible="false"/>
+		<setting id="last_update" type="text" label="Lần cập nhật danh mục phim gần nhất" default="2015050101" visible="false"/>
 	</category>
 </settings>
