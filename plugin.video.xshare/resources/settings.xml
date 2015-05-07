@@ -3,7 +3,7 @@
 		<setting id="usernamef" type="text" label="User name fshare.vn"/>
 		<setting id="passwordf" type="text" option="hidden" label="Password fshare.vn"/>
 		<setting id="thumucrieng" type="text" label="Thư mục chia sẻ của tôi trên Fshare" default="RDA4FHXVE2UU"/>
-		<setting id="logoutf" type="bool" label="Tự động Logout khỏi Acc VIP Fshare(yes/no)" default="true"/>
+		<setting id="logoutf" type="bool" label="Tự động Logout Fshare, 4share.vn, Tenlua.vn(yes/no)" default="true"/>
 	</category>
 	<category label="4share-tenlua-HDVietnam">
 		<setting id="username4" type="text" label="User name 4share.vn"/>

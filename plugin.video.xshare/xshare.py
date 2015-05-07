@@ -178,7 +178,7 @@ def xshare_group(object,group):
 	else:temp=''
 	return temp
 
-def download_sub_fshare(url):
+def download_subs(url):
 	response=urlfetch.get(url)
 	if int(response.getheaders()[0][1])<10485760:#size<10MB
 		filename=no_accent(os.path.basename(url))
@@ -186,7 +186,6 @@ def download_sub_fshare(url):
 		if os.path.isfile(f_fullpath):
 			try:os.remove(f_fullpath)
 			except:mess(u'File đã có trong Thư mục riêng trên máy: %s'%filename);return
-		tempfile = os.path.join(datapath, "data.zip")
 		try:
 			f=open(f_fullpath,"wb");f.write(response.body);f.close()
 			mess(u'Đã tải file %s vào Thư mục riêng trên máy'%filename)
@@ -222,36 +221,37 @@ def resolve_url(url,xml=False):
 		if 'dlink' in download_info:url=download_info['dlink']
 		elif 'url' in download_info:url=download_info['url'];mess(u'Slowly direct link!')
 		else:mess(u'Không get được max speed link!');return 'fail'
-	try:response=urlfetch.get(url, headers=hd, follow_redirects=False);cookie = hd['Cookie']
-	except:mess(u'Không kết nối được server %s'%srv);return 'fail'
+	cookie = hd['Cookie']
+	try:response=urlfetch.get(url, headers=hd, follow_redirects=False)
+	except:mess(u'Không kết nối được server %s'%srv);xbmc.sleep(500);logout_site(cookie);return 'fail'
 	if response.status==302:direct_link=response.headers['location']
 	elif response.status==200 and 'fshare.vn' in url.lower():direct_link=resolve_url_fshare200(url,response,hd)
 	elif response.status==200 and '4share.vn' in url.lower():
 		FileDownload=re.search("<a href='(.+?)'> FileDownload.{,4}<strong>(.+?)</strong>",response.body)
-		if FileDownload:
-			direct_link=xshare_group(FileDownload,1)
+		if FileDownload:direct_link=xshare_group(FileDownload,1);srv=xshare_group(FileDownload,2)
 		else:direct_link='fail'
 	else:direct_link='fail'
-	if 'fshare.vn' in url.lower() and myaddon.getSetting('logoutf')=="true":logoutfshare(cookie,direct_link)
-	if '4share.vn' in url.lower():logout4share(cookie)
+	logout_site(cookie)
 	if direct_link=='fail':
 		if 'fshare.vn' not in url.lower():mess(u'Không get được max speed direct link!')
 		return 'fail'
 	if xml:return direct_link
-	if not check_media_ext(direct_link):return 'fail'
+	if not check_media_ext(direct_link,srv):return 'fail'
 	item = xbmcgui.ListItem(path=direct_link);xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item);return ''
 
-def check_media_ext(direct_link):
+def check_media_ext(direct_link,srv):
 	check=True;message='sorry! this is not a media file'
+	sub_ext=['rar','zip','srt', 'sub', 'txt', 'smi', 'ssa', 'ass']
 	if 'fshare.vn' in direct_link and os.path.splitext(direct_link)[1][1:].lower() not in media_ext:
-		sub_ext=["rar","zip","srt", "sub", "txt", "smi", "ssa", "ass"]
 		if os.path.splitext(direct_link)[1][1:].lower() in sub_ext:
-			download_sub_fshare(direct_link)
+			download_subs(direct_link)
 		else:mess(message)
 		check=False
-	elif '4share.vn' in direct_link:
-		if os.path.splitext(xshare_group(FileDownload,2))[1][1:].lower() not in media_ext:
-			mess(message);check=False
+	elif '4share.vn' in direct_link and os.path.splitext(srv)[1][1:].lower() not in media_ext:
+		if os.path.splitext(srv)[1][1:].lower() in sub_ext:
+			download_subs(direct_link)
+		else:mess(message)
+		check=False
 	return check
 
 def resolve_url_fshare200(url,response,hd):
@@ -279,6 +279,12 @@ def get_direct_link_fshare200(fs_csrf,hd):
 	except:direct_link='fail';print 'Fshare response status 200 and not json["url"]'
 	return direct_link
 	
+def logout_site(cookie):
+	if myaddon.getSetting('logoutf')=="true":
+		if 'fshare.vn' in url.lower():logoutfshare(cookie)
+		elif '4share.vn' in url.lower():logout4share(cookie)
+		elif 'tenlua.vn' in url.lower():logouttenlua(cookie)
+
 def loginfshare():
 	url = "https://www.fshare.vn/login"
 	try:
@@ -295,11 +301,11 @@ def loginfshare():
 	except:mess(u'Lỗi Login Fshare.vn');f=''
 	return f
 
-def logoutfshare(cookie,direct_link):
+def logoutfshare(cookie):
 	hd['Cookie'] = cookie
 	try:
 		urlfetch.get("https://www.fshare.vn/logout",headers=hd,follow_redirects=False)
-		if direct_link!='fail':mess(u'Logout Fshare.vn thành công')
+		mess(u'Logout Fshare.vn thành công')
 	except:mess(u'Logout Fshare.vn không thành công')
 	
 def login4share():
@@ -316,7 +322,7 @@ def logout4share(cookie):
 	try:
 		urlfetch.get("http://up.4share.vn/index/logout",headers=hd,follow_redirects=False)
 		mess(u'Logout 4share.vn thành công')
-	except:mess("Logout 4share.vn không thành công")
+	except:mess(u"Logout 4share.vn không thành công")
 	
 def logintenlua():
 	url = 'https://api2.tenlua.vn/';user=myaddon.getSetting('usernamet');pw=myaddon.getSetting('passwordt')
@@ -328,8 +334,11 @@ def logintenlua():
 	return f
 	
 def logouttenlua(cookie):
-	url = 'https://api2.tenlua.vn/';hd['Cookie']=cookie
-	urlfetch.response(url=url,method='POST',headers=hd,data=urllib.urlencode({"a":"user_logout"}),follow_redirects=False)
+	url = 'https://api2.tenlua.vn/';hd['Cookie']=cookie;data=urllib.urlencode({"a":"user_logout"})
+	try:
+		urlfetch.post(url=url,headers=hd,data=data,follow_redirects=False)
+		mess(u'Logout tenlua.vn thành công')
+	except:mess(u"Logout tenlua.vn không thành công")
 	
 def loginhdvietnam():
 	url='http://www.hdvietnam.com/diendan/login.php';hd={'User-Agent':'Mozilla/5.0 Chrome/39.0.2171.71 Firefox/33.0'}
