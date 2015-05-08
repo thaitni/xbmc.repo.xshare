@@ -259,9 +259,9 @@ def resolve_url_fshare200(url,response,hd):
 	direct_link=get_direct_link_fshare200(fs_csrf,hd)
 	if direct_link=='fail':
 		temp=re.search('<span class="glyphicon glyphicon-remove"><.+b>(.+?)</b></h3>',response.body)
-		if temp:mess(xshare_group(data,1));return 'fail'
+		if temp:mess(xshare_group(temp,1).decode('utf8'));return 'fail'
 		temp=re.search('<div class="alert alert-danger".+>[\s.*]{,3}(.+?)<a.+>(.+?)</a>',response.body)
-		if temp:mess((xshare_group(temp,1).strip().split('.')[0]).decode('utf-8'));return 'fail'
+		if temp:mess(xshare_group(temp,1).strip().split('.')[0].decode('utf-8'));return 'fail'
 		if re.search("form-control pwd_input",response.body):
 			pw = get_input('Hãy nhập: Mật khẩu tập tin')
 			if pw is None or pw=='':mess(u'Bạn đã không nhập password!');return 'fail'
