@@ -1,6 +1,10 @@
-﻿[B]Version 1.1.0[/B] <30/04/2015>
+﻿[B]Version 1.1.1[/B] <15/05/2015>
+- Thêm tùy chọn không tự động dịch ra tiếng Việt
+
+[B]Version 1.1.0[/B] <30/04/2015>
 - Thêm manual search
 - Fix một số lỗi nhỏ
+
 [B]Version 1.0.3[/B] <10/04/2015>
 fix:
 - Unicode compatble filename find subs

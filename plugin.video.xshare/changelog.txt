@@ -1,3 +1,8 @@
+[B]Version 3.2.0[/B] <15/05/2015>:
+Fix: Kho phim trên fptplay.net
+Thêm các cụm server megabox.vn, dangcaphd.com
+Thêm tùy chọn không tự động dịch subs
+
 [B]Version 3.1.5[/B] <08/05/2015>:
 Fix: Thông báo lỗi Fshare
 

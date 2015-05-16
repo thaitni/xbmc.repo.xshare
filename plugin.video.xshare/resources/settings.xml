@@ -12,7 +12,9 @@
 		<setting id="passwordt" type="text" option="hidden" label="Password tenlua.vn"/>
 		<setting id="usernameh" type="text" label="User name HDVietnam.com"/>
 		<setting id="passwordh" type="text" option="hidden" label="Password HDVietnam.com"/>
-		<setting id="cookieh" type="text" label="hdvietnam cookiestring" default="" visible="false"/>
+		<setting id="mail_dchd" type="text" label="Mail acc dangcaphd.com" default="xshare@thanhthai.net"/>
+		<setting id="pass_dchd" type="text" option="hidden" label="Password dangcaphd.com" default="123456"/>
+		<setting id="cookie" type="text" label="cookiestring" default="" visible="false"/>
 	</category>
 	<category label="Các tùy chọn riêng">
 		<setting id="hdvnfindall" type="bool" label="Không giới hạn tìm kiếm trên HDVN (All Uploader) (y/n)" default="true"/>
@@ -20,6 +22,7 @@
 		<setting id="history" type="bool" label="Cho phép hiển thị lịch sử tìm kiếm (y/n)" default="true"/>
 		<setting id="googlesearch" type="labelenum" label="Sử dụng phương thức Google search" values="API|Web" default="API"/>
 		<setting id="thumuccucbo" type="folder" label="Thư mục cục bộ (trên máy của tôi)" default=""/>
+		<setting id="trans_sub" type="bool" label="Tự động dịch sau khi download sub tiếng Anh(y/n)" default="true"/>
 		<setting id="sodonghienthi" type="labelenum" label="Số dòng mỗi trang hiển thị" values="20|30|50" default="30"/>
 		<setting id="copyxml" type="bool" label="Cho phép Copy list phim xml về máy (y/n)" default="true"/>
 		<setting id="phim18" type="bool" label="Kích hoạt xem phim 18+ (y/n)" default="false"/>

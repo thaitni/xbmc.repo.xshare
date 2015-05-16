@@ -4,7 +4,7 @@
 <a server="MMN" category="VPH" mode="10" color="gold" icon="vaphim.png">Kho phim trên http://vaphim.com-Fshare</a>
 <a server="MMN" category="IFI" mode="10" color="blue" icon="4share.png">Kho phim trên http://ifile.tv-4Share</a>
 <a server="MMN" category="PFS" mode="10" color="khaki" icon="phimfs.png">Kho phim trên http://phimfshare.com</a>
-<a server="MMN" category="http://fptplay.net" mode="07" color="orange" icon="fptplay.png">Kho phim trên http://fptplay.net</a>
+<a server="MMN" category="FRE" mode="10" color="orange" icon="icon.png">Kho phim trên các server khác (có phí và free)</a>
 <a server="MMN" category="HDV" mode="08" color="crimson" icon="icon.png">Thông tin phim mới nhất từ HDVietnam.com Forums</a>
 <a server="MMN" category="MainMenu" mode="16" color="" icon="icon.png">Mở max speed direct link (khi đã get được link)</a>
 <a server="MMN" category="subscene.com" mode="94" color="" icon="icon.png">Download subs từ subscene.com</a>
@@ -109,7 +109,7 @@
 <a server="IFI" category="viet-nam" mode="91" color="blue" icon="4share.png">Việt Nam</a>
 <a server="IFI" category="vo-thuat" mode="91" color="blue" icon="4share.png">Võ Thuật</a>
 
-<a server="PFS" category="SearchPFS" mode="06" color="lime" icon="phimfs.png">Search trên PhimFshare.com</a>
+<a server="PFS" category="phimfshare.com" mode="06" color="lime" icon="phimfs.png">Search trên PhimFshare.com</a>
 <a server="PFS" category="PhimMoi" mode="06" color="khaki" icon="phimfs.png">Phim mới trên PhimFshare.com</a>
 <a server="PFS" category="hd-1080p" mode="06" color="khaki" icon="phimfs.png">hd 1080p</a>
 <a server="PFS" category="hd-720p" mode="06" color="khaki" icon="phimfs.png">hd 720p</a>
@@ -123,3 +123,12 @@
 <a server="PFS" category="phim-bo-series" mode="06" color="khaki" icon="phimfs.png">Phim Bộ - Series</a>
 <a server="PFS" category="tv-show" mode="06" color="khaki" icon="phimfs.png">TV Show</a>
 <a server="PFS" category="music-video" mode="06" color="khaki" icon="phimfs.png">Music Video</a>
+
+<a server="FRE" category="FPP" mode="07" color="orange" icon="fptplay.png">Kho phim trên fptplay.net (free - sắp thu phí)</a>
+<a server="FRE" category="MGB" mode="17" color="orangered" icon="megabox.png">Kho phim trên megabox.vn (free)</a>
+<a server="MGB" category="megabox.vn" mode="17" color="lime" icon="megabox.png">Search trên megabox.vn</a>
+<a server="MGB" category="MGP" mode="10" color="orangered" icon="megabox.png">Danh mục phân loại phim</a>
+<a server="MGB" category="MG0" mode="17" color="orangered" icon="megabox.png">Trang chủ megabox.vn</a>
+<a server="MGP" category="MGL" mode="17" color="orangered" icon="megabox.png">Phim lẻ</a>
+<a server="MGP" category="MGS" mode="17" color="orangered" icon="megabox.png">Phim bộ</a>
+<a server="FRE" category="DHD" mode="18" color="yellow" icon="dangcaphd.png">Kho phim trên dangcaphd.com (có phí - Thử nghiệm)</a>

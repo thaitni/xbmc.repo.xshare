@@ -36,9 +36,9 @@ def make_request(url):
 	
 def find_movie(title,film_year):
 	href = subscene+'/subtitles/title?q='+urllib.quote_plus(title)+'&r=true'
-	pattern=".*".join(title.split(' ')).lower();url = None
+	pattern=".*".join(title.split()).lower();url = None
 	for link,name,year in re.findall('<a href="(/subtitles/.+)">(.+)\((\d\d\d\d)\)</a>',urlfetch.get(href).body):
-		name=no_accent(name).replace("&","and").replace("&#39;","").lower()
+		name=re.sub("&# ","",no_accent(name).replace("&","and")).lower()
 		if film_year and re.search(pattern,name) and year==film_year:url=link;break
 		elif not film_year:
 			film_year1=str(date.today().year)
@@ -54,9 +54,9 @@ def find_movie(title,film_year):
 
 def find_phudeviet(title,film_year):
 	href='http://phudeviet.org/findfilm/?select=1&film_name=%s'%urllib.quote_plus(title)
-	pattern=".*".join(title.split(' ')).lower();url = None
+	pattern=".*".join(title.split()).lower();url = None
 	for link,name in re.findall('<td class="td6"><.+?><a href="(.+?)">(.+?)</a></td>',urlfetch.get(href).body):
-		name=no_accent(name).replace("&","and").replace("&#39;","").lower()
+		name=re.sub("&# ","",no_accent(name).replace("&","and")).lower()
 		if film_year and re.search(pattern,name) and film_year in name:url=link;break
 		elif not film_year:
 			film_year1=str(date.today().year)
@@ -71,7 +71,7 @@ def find_phudeviet(title,film_year):
 	return url
 
 def google_find_phudeviet(title,film_year):
-	pattern=".*".join(title.split(' ')).lower();url = None
+	pattern=".*".join(title.split()).lower();url = None
 	hd={'User-Agent':'Mozilla/5.0','Accept-Language':'en-US,en;q=0.8,vi;q=0.6'}
 	string_search = urllib.quote_plus('"'+title+'"')
 	href='http://ajax.googleapis.com/ajax/services/search/web?v=1.0&rsz=large&start=0&'
@@ -129,7 +129,9 @@ def search_movie(item):
 		name=name.strip().replace(' ','.');rat=1;label='vie'
 		if 'Vietnam' in lang:img='vi';url=subscene+link
 		elif 'Phude' in lang:img='vi';url=link;name='[COLOR lime]phudeviet.org[/COLOR]: '+name
-		else:img='en';url=subscene+link
+		else:
+			img='en';url=subscene+link
+			if addon.getSetting('trans_sub')=='false':label='eng'
 		for i in ratlist:
 			try:
 				if re.search(i,name):rat+=1
@@ -187,7 +189,7 @@ def download(link,img):
 			f=re.sub(',','',f);file = os.path.join(root, f)
 			if os.path.splitext(file)[1] in exts:
 				sub_list.append(file)
-				if img=='en':
+				if img=='en' and addon.getSetting('trans_sub')=='true':
 					mess(u'Google đang dịch sub từ tiếng Anh sang tiếng Việt', timeShown=20000)
 					try:
 						tempfile=xshare_trans(file)
@@ -250,7 +252,6 @@ def get_params():
 	return param
 
 params = get_params()
-
 if params['action'] == 'search' or params['action'] == 'manualsearch':
 	item = {}
 	item['file_original_path'] = urllib.unquote(xbmc.Player().getPlayingFile().decode('utf-8'))
@@ -269,7 +270,6 @@ if params['action'] == 'search' or params['action'] == 'manualsearch':
 	item['mansearchstr'] = ''
 	if 'searchstring' in params:
 		item['mansearchstr'] = params['searchstring']
-		print 'ssssssssssssssss %s'%item['mansearchstr']
 	search_movie(item)
 elif params['action'] == 'download':
 	subs = download(params["link"],params["img"])
