@@ -24,7 +24,7 @@
 		<setting id="thumuccucbo" type="folder" label="Thư mục cục bộ (trên máy của tôi)" default=""/>
 		<setting id="trans_sub" type="bool" label="Tự động dịch sau khi download sub tiếng Anh(y/n)" default="true"/>
 		<setting id="sodonghienthi" type="labelenum" label="Số dòng mỗi trang hiển thị" values="20|30|50" default="30"/>
-		<setting id="copyxml" type="bool" label="Cho phép Copy list phim xml về máy (y/n)" default="true"/>
+		<setting id="copyxml" type="bool" label="Cho phép Copy list phim xml về máy (y/n)" default="false"/>
 		<setting id="phim18" type="bool" label="Kích hoạt xem phim 18+ (y/n)" default="false"/>
 		<setting id="last_update" type="text" label="Lần cập nhật danh mục phim gần nhất" default="2015050101" visible="false"/>
 	</category>

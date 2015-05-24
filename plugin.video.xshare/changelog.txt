@@ -1,3 +1,7 @@
+[B]Version 3.2.1[/B] <22/05/2015>:
+update: 4share.vn
+Thêm một số tools: MyFshare, MyList menuContext
+
 [B]Version 3.2.0[/B] <15/05/2015>:
 Fix: Kho phim trên fptplay.net
 Thêm các cụm server megabox.vn, dangcaphd.com
