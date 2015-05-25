@@ -1,4 +1,8 @@
-[B]Version 3.2.1[/B] <22/05/2015>:
+[B]Version 3.2.2[/B] <25/05/2015>:
+update: dangcaphd.com, Mở ID file
+Fix: một số lỗi nhỏ
+
+[B]Version 3.2.1[/B] <24/05/2015>:
 update: 4share.vn
 Thêm một số tools: MyFshare, MyList menuContext
 

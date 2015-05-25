@@ -8,7 +8,7 @@ datapath = xbmc.translatePath(os.path.join( xbmc.translatePath(myaddon.getAddonI
 sys.path.append(xbmc.translatePath(os.path.join(home, 'resources', 'lib')));import urlfetch
 thumucrieng = 'https://www.fshare.vn/folder/'+myaddon.getSetting('thumucrieng').upper()
 thumuccucbo =  myaddon.getSetting('thumuccucbo');copyxml = myaddon.getSetting('copyxml')
-phim18 = myaddon.getSetting('phim18');search_file=datapath+"search.xml"
+phim18 = myaddon.getSetting('phim18');search_file=os.path.join(datapath,"search.xml")
 rows = int(myaddon.getSetting('sodonghienthi'))
 googlesearch = myaddon.getSetting('googlesearch')
 
@@ -25,20 +25,16 @@ if not os.path.exists(thumuccucbo):
 	mess(u'Bạn hãy set "thư mục cục bộ"')
 
 def init_file():
-	result=True
 	if not os.path.exists(xbmc.translatePath(myaddon.getAddonInfo('profile'))):
 		os.mkdir(xbmc.translatePath(myaddon.getAddonInfo('profile')))
 	if not os.path.exists(datapath):os.mkdir(datapath)
-	for file in ['search.xml','hdvietnam.xml','favourites.xml']:
-		if not os.path.isfile(datapath+file):
-			if not makerequest(datapath+file,string='<?xml version="1.0" encoding="utf-8">\n',attr='w'):
-				mess(u'Không tạo được file %s'%file)
-				result=False
-	if not os.path.isfile(thumuccucbo+'mylist.xml'):
-		if not makerequest(thumuccucbo+'mylist.xml',string='<?xml version="1.0" encoding="utf-8">\n',attr='w'):
-			mess(u'Không tạo được file mylist.xml')
-			result=False
-	return result
+	xmlheader='<?xml version="1.0" encoding="utf-8">\n';p=datapath;q=thumuccucbo
+	for i in [(p,'search.xml'),(p,'hdvietnam.xml'),(p,'favourites.xml'),(q,'mylist.xml')]:
+		if not os.path.isfile(os.path.join(i[0],i[1])):
+			if not makerequest(os.path.join(i[0],i[1]),string=xmlheader,attr='w'):
+				mess(u'Không tạo được file %s'%i[1])
+	if not os.path.exists(os.path.join(thumuccucbo,'temp')):
+		os.mkdir(os.path.join(thumuccucbo,'temp'))
 
 def mess_yesno(title='Xshare', line1='Are you ready ?', line2=''):
 	dialog = xbmcgui.Dialog()#dialog.yesno(heading, line1[, line2, line3,nolabel,yeslabel])
@@ -135,7 +131,7 @@ def searchContext(name,link,img,fanart,mode):
 	
 def favouritesContext(name,link,img,fanart,mode):
 	command=[]
-	if link in makerequest(datapath+"favourites.xml"):
+	if link in makerequest(os.path.join(datapath,"favourites.xml")):
 		command.append((makeContext(name,link,img,fanart,98,'Rename in MyFavourites')))
 		command.append((makeContext(name,link,img,fanart,98,'Remove from MyFavourites')))
 	else:
@@ -146,7 +142,7 @@ def favouritesContext(name,link,img,fanart,mode):
 			command.append((makeContext(name,link,img,fanart,11,'Rename from MyFshare')))
 		else:
 			command.append((makeContext(name,link,img,fanart,11,'Add to MyFshare')))
-	if link in makerequest(thumuccucbo+'mylist.xml'):
+	if link in makerequest(os.path.join(thumuccucbo,'mylist.xml')):
 		command.append((makeContext(name,link,img,fanart,12,'Rename in Mylist.xml')))
 		command.append((makeContext(name,link,img,fanart,12,'Remove from Mylist.xml')))
 	else:
@@ -236,20 +232,20 @@ def make_myFshare(name,url,img,fanart,mode,query):#11
 		name=re.sub('\[COLOR.{,12}\]|\[/COLOR\]|Fshare|4share|TenLua|List xml|-|:|"','',os.path.basename(url))
 		path=xshare_group(re.search('data-id="%s" path-origin = "" data-path="(.+?)"'%myFshare,body),1)
 		data='{"SESSID":"%s","name":"%s","size":"%s","path":"%s","token":"%s","secured":1}'%(SESSID,name,size,path,token)
-		response=urlfetch.post(url=href,headers=hd,data=data,follow_redirects=False)
-		if response.status==200:href=response.json['location'];data=content;noti='Upload to MyFshare'
+		response=make_post(href,data,hd)
+		if response and response.status==200:
+			href=response.json['location'];data=content;noti='Upload to MyFshare'
 		else:mess(u'Không lấy được link upload');return
-
-	response=urlfetch.post(url=href,headers=hd,data=data,follow_redirects=False)
-	logoutfshare(hd['Cookie'])
-	if response.status==200:
+	
+	response=make_post(href,data,hd);logoutfshare(hd['Cookie'])
+	if response and response.status==200:
 		mess(u'%s thành công'%noti)
 		if query!='Add' and query!='Upload':xbmc.executebuiltin("Container.Refresh");mess(u'Đang reload list')
 	else:mess(u'%s không thành công'%noti)
 	return
 
 def make_favourites(name,url,img,fanart,mode,query):
-	favourites=datapath+"favourites.xml"
+	favourites=os.path.join(datapath,"favourites.xml")
 	name=re.sub('\[COLOR.{,12}\]|\[/COLOR\]|Fshare|4share|TenLua|List xml|-|:|"','',name).strip()
 	if query=='Add':
 		if url.strip() in makerequest(favourites):mess(u'Mục này đã có trong MyFavourites');return
@@ -285,7 +281,7 @@ def make_favourites(name,url,img,fanart,mode,query):
 	return
 
 def make_mylist(name,url,img,fanart,mode,query):
-	mylist=thumuccucbo+'mylist.xml'
+	mylist=os.path.join(thumuccucbo,'mylist.xml')
 	name=re.sub('\[COLOR.{,12}\]|\[/COLOR\]|Fshare|4share|TenLua|List xml|-|:|"','',name).strip()
 	if query=='Add':
 		if url.strip() in makerequest(mylist):mess(u'Mục này đã có trong MyList');return
@@ -319,6 +315,11 @@ def make_request(url,headers={'User-Agent':'Mozilla/5.0 Chrome/39.0.2171.71 Fire
 	except: mess('Make Request Error: %s'%url);print 'Make Request Error: %s'%url;body=''
 	return body#unicode:body=response.text
 
+def make_post(url,data,headers):
+	try:response=urlfetch.post(url=url,headers=hd,data=data, follow_redirects=False)
+	except:mess(u'Không truy cập được %s'%url);response=''
+	return response
+
 def makerequest(file,string='',attr='r'):
 	file=str2u(file)
 	if attr=='r':
@@ -333,7 +334,7 @@ def download_subs(url):
 	response=urlfetch.get(url)
 	if int(response.getheaders()[0][1])<10485760:#size<10MB
 		filename=no_accent(os.path.basename(url))
-		filename=re.sub('\[.+?\]','',filename);f_fullpath=thumuccucbo+filename
+		filename=re.sub('\[.+?\]','',filename);f_fullpath=os.path.join(thumuccucbo,filename)
 		if os.path.isfile(f_fullpath):
 			try:os.remove(f_fullpath)
 			except:mess(u'File đã có trong Thư mục riêng trên máy: %s'%filename);return
@@ -416,18 +417,23 @@ def resolve_url_fshare200(url,response,hd):
 		if re.search("form-control pwd_input",response.body):
 			pw = get_input('Hãy nhập: Mật khẩu tập tin')
 			if pw is None or pw=='':mess(u'Bạn đã không nhập password!');return 'fail'
-			data={'fs_csrf':fs_csrf,'FilePwdForm[pwd]':pw}
-			response=urlfetch.post(url,headers=hd,data=data,follow_redirects=False)
-			if response.status==302:direct_link=response.headers['location']
-			elif response.status==200:direct_link=get_direct_link_fshare200(fs_csrf,hd)
-			else:direct_link='fail'
+			data={'fs_csrf':fs_csrf,'FilePwdForm[pwd]':pw};response=make_post(url,data,hd)
+			if response:
+				try:
+					if response.status==302:direct_link=response.headers['location']
+					elif response.status==200:direct_link=get_direct_link_fshare200(fs_csrf,hd)
+					else:direct_link='fail'
+				except:direct_link='fail';print 'Fshare not response direct_link'
+			else:f=''
 	return direct_link
 
 def get_direct_link_fshare200(fs_csrf,hd):
-	data={'speed':'fast','fs_csrf':fs_csrf}
-	href='https://www.fshare.vn/download/index';data=urllib.urlencode(data)
-	try:direct_link=urlfetch.post(href,headers=hd,data=data,follow_redirects=False).json['url'].encode('utf-8')
-	except:direct_link='fail';print 'Fshare response status 200 and not json["url"]'
+	data=urllib.urlencode({'speed':'fast','fs_csrf':fs_csrf})
+	response=make_post('https://www.fshare.vn/download/index',data,hd)
+	if response:
+		try:direct_link=response.json['url'].encode('utf-8')
+		except:direct_link='fail';print 'Fshare response status 200 and not json["url"]'
+	else:direct_link='fail'
 	return direct_link
 	
 def logout_site(cookie):
@@ -435,11 +441,6 @@ def logout_site(cookie):
 		if 'fshare.vn' in url.lower():logoutfshare(cookie)
 		elif '4share.vn' in url.lower():logout4share(cookie)
 		elif 'tenlua.vn' in url.lower():logouttenlua(cookie)
-
-def make_post(url,data,headers):
-	try:response=urlfetch.post(url=url,headers=hd,data=data, follow_redirects=False)
-	except:mess(u'Không truy cập được %s'%url);response=''
-	return response
 	
 def loginfshare():
 	url = "https://www.fshare.vn/login"
@@ -452,10 +453,8 @@ def loginfshare():
 			"LoginForm[password]": myaddon.getSetting('passwordf'),"LoginForm[rememberMe]": "0",
 			"fs_csrf":fs_csrf}
 		data=urllib.urlencode(form_fields);response=make_post(url,data,hd)
-		if response:
-			if response.status==302:mess(u'Login Fshare.vn thành công',timeShown=100);f=response.cookiestring
-			else:mess(u'Login Fshare.vn không thành công');f=''
-		else:f=''
+		if response and response.status==302:mess(u'Login Fshare.vn thành công',timeShown=100);f=response.cookiestring
+		else:mess(u'Login Fshare.vn không thành công');f=''
 	except:mess(u'Lỗi Login Fshare.vn');f=''
 	return f
 
@@ -470,10 +469,8 @@ def login4share():
 	url = 'http://up.4share.vn/index/login'
 	form_fields = {"username":myaddon.getSetting('username4'),"password":myaddon.getSetting('password4')}
 	data=urllib.urlencode(form_fields);response=make_post(url,data,hd)
-	if response:
-		if response.status==302:mess(u'Login 4share.vn thành công',timeShown=100);f=response.cookiestring
-		else:mess(u'Login 4share.vn không thành công');f=''
-	else:f=''
+	if response and response.status==302:mess(u'Login 4share.vn thành công',timeShown=100);f=response.cookiestring
+	else:mess(u'Login 4share.vn không thành công');f=''
 	return f
 
 def logout4share(cookie):
@@ -487,30 +484,25 @@ def logintenlua():
 	url = 'https://api2.tenlua.vn/';user=myaddon.getSetting('usernamet');pw=myaddon.getSetting('passwordt')
 	data='[{"a":"user_login","user":"'+user+'","password":"'+pw+'","permanent":"true"}]'
 	response=make_post(url,data,hd)
-	if response:
-		if response.body=='[-1]':mess(u'Login tenlua.vn không thành công');f=''
-		else:mess(u'Login tenlua.vn thành công');f=response.headers.get('set-cookie')
-	else:f=''
+	if response and response.body!='[-1]':mess(u'Login tenlua.vn thành công');f=response.headers.get('set-cookie')
+	else:mess(u'Login tenlua.vn không thành công');f=''
 	return f
 	
 def logouttenlua(cookie):
-	url = 'https://api2.tenlua.vn/';hd['Cookie']=cookie;data=urllib.urlencode({"a":"user_logout"})
-	try:
-		urlfetch.post(url=url,headers=hd,data=data,follow_redirects=False)
-		mess(u'Logout tenlua.vn thành công')
-	except:mess(u"Logout tenlua.vn không thành công")
+	hd['Cookie']=cookie;data=urllib.urlencode({"a":"user_logout"})
+	response=make_post('https://api2.tenlua.vn/',data,hd)
+	if response:mess(u'Logout tenlua.vn thành công')
+	else:mess(u"Logout tenlua.vn không thành công")
 	
 def loginhdvietnam():
 	url='http://www.hdvietnam.com/diendan/login.php';hd={'User-Agent':'Mozilla/5.0 Chrome/39.0.2171.71 Firefox/33.0'}
 	user=myaddon.getSetting('usernameh');pw=myaddon.getSetting('passwordh')
 	form_fields ={"vb_login_username":user,"vb_login_password":pw,"do":"login"}
-	data=urllib.urlencode(form_fields);response=make_post(url,data,hd);response=make_post(url,data,hd)
-	if response:
+	data=urllib.urlencode(form_fields);response=make_post(url,data,hd)
+	if response and 'vbseo_loggedin=yes' in response.cookiestring:
 		f=response.cookiestring
-		if 'vbseo_loggedin=yes' in f:
-			mess(u'Login hdvietnam.com thành công',timeShown=100);myaddon.setSetting('cookie',f)
-		else:mess(u'Login hdvietnam.com không thành công');f=''
-	else:f=''
+		mess(u'Login hdvietnam.com thành công',timeShown=100);myaddon.setSetting('cookie',f)
+	else:mess(u'Login hdvietnam.com không thành công');f=''
 	return f
 
 def logindangcaphd():
@@ -680,7 +672,7 @@ def google_search_web(url,start,query,items):
 
 def open_category(query): #category.xml
 	pattern='<a server="(...)" category="(.+?)" mode="(..)" color="(.*?)" icon="(.*?)">(.+?)</a>'
-	items=re.findall(pattern,makerequest(data_path+'category.xml'))
+	items=re.findall(pattern,makerequest(os.path.join(data_path,'category.xml')))
 	for server,category,mode,colo,icon,name in items:
 		if (server!=query) or (("18" in category) and (phim18=="false")):continue
 		if query=='VPH' and mode!='10':q='vaphim.xml'
@@ -690,7 +682,7 @@ def open_category(query): #category.xml
 		addir(name,category,icon,home+'/fanart.jpg',mode=int(mode),page=0,query=q,isFolder=(mode!='16'))
 
 def main_menu(category,page,mode,query): #Doc list tu vaphim.xml hoac ifiletv.xml
-	items = doc_xml(datapath+query,para=category);pages=len(items)/rows+1
+	items = doc_xml(os.path.join(datapath,query),para=category);pages=len(items)/rows+1
 	del items[0:page*rows];count=0;down=len(items)
 	for id,img,fanart,href,name in items:
 		down-=1;addirs(name,href,img,fanart);count+=1
@@ -705,11 +697,9 @@ def update_xml(items_new,items_old,filename): #update vaphim,ifiletv xml
 	content='<?xml version="1.0" encoding="utf-8">\n'
 	for id_tip,id_htm,category,img,fanart,href,fullname in items:
 		content+='<a id_tip="%s" id="%s" category="%s" img="%s" fanart="%s" href="%s">%s</a>\n'%(id_tip,id_htm,category,img,fanart,href,fullname)
-	try:
-		f=open(datapath+filename,'w')
-		f.write(content);f.close()
+	if makerequest(os.path.join(datapath,filename),string=content,attr='w'):
 		mess(u"Đã cập nhật được %d phim"%len(items_new))
-	except: mess(u'Đã xảy ra lỗi cập nhật')
+	else: mess(u'Đã xảy ra lỗi cập nhật')
 	return
 
 def vp_update():
@@ -722,6 +712,7 @@ def vp_update():
 			try:
 				for img,fanart,href,fullname in vp2fshare(href): # vp2fshare:img,fanart,href,fullname
 					if href not in str_items_old:
+						fullname=' '.join(s for s in fullname.split())
 						items_new.append((id_tip,id_htm,category,img,fanart,href,fullname))
 			except:continue
 	if items_new:update_xml(items_new,items_old,"vaphim.xml")
@@ -729,8 +720,8 @@ def vp_update():
 	return 'ok'
 
 def data_download():
-	check=True
-	if not os.path.isfile(datapath+"vaphim.xml") or os.path.getsize(datapath+"vaphim.xml")<4317000:
+	check=True;p=datapath
+	if not os.path.isfile(os.path.join(p,"vaphim.xml")) or os.path.getsize(os.path.join(p,"vaphim.xml"))<4317000:
 		mess(u'Đang download danh mục Vaphim.com, ifile.tv,...');data1='data-3.2.0.zip';data2='data_hot-3.2.0.zip'
 		for filename in os.listdir(datapath):
 			if '.' in filename:
@@ -761,7 +752,7 @@ def data_download():
 
 def vp_update_rss():
 	items=rss_content('http://feed.vaphim.com/category/phim-2/feed/')
-	id_old=re.findall('id="(\d{5})" category',makerequest(datapath+"vaphim.xml"))
+	id_old=re.findall('id="(\d{5})" category',makerequest(os.path.join(datapath,"vaphim.xml")))
 	category={'Phim Lẻ':'phim-le','Phim Bộ':'series','Phim Bộ Hàn':'korean-series','Phim Bộ Hồng Kông':'hongkong-series','Phim Bộ Mỹ':'us-tv-series','Phim Tài Liệu':'documentary','Phim 18+':'18','Hoạt Hình':'animation','Huyền Bí':'mystery','Viễn Tưởng':'sci-fi','3D':'3d','Cao Bồi':'western','Chiến Tranh':'war','Thiếu Nhi':'family','Hài Hước':'comedy','Hành Động':'action','Hình Sự':'crime','Rùng Rợn':'thriller','Tâm Lý':'drama','TVB':'tvb','Kinh Dị':'horror','Lãng Mạn':'romance','Lịch Sử':'history','Phiêu Lưu':'adventure','Thần Thoại':'fantasy','Thuyết Minh':'thuyet-minh-tieng-viet','Hồng Kông':'hongkong','Ấn Độ':'india','Việt Nam':'vietnamese','Hàn Quốc':'korean'}
 	content_new=''
 	pattern='(https?://www.fshare.vn/\w{4,6}/\w{10,14})" target="_blank">(.+?)</a>'
@@ -788,7 +779,7 @@ def vp_update_rss():
 			else:url='https://www.fshare.vn/folder/%s'%idp.upper()
 			content_new+='<a id_tip="" id="%s" category="%s" img="%s" fanart="%s" href="%s">%s</a>\n'%(idf,cate,img,fanart,url,name+' - '+title)
 	if content_new:
-		makerequest(datapath+"vaphim.xml",string=content_new.encode('utf-8'),attr='a')
+		makerequest(os.path.join(datapath,"vaphim.xml"),string=content_new.encode('utf-8'),attr='a')
 
 def vaphim_page(url):
 	body=make_request(url);items_new=[]
@@ -849,7 +840,7 @@ def vp2fshare(url):
 def vp_xemnhieu():
 	body=urlfetch.get('http://vaphim.com/request/').body
 	url_new = re.findall('<li><a href="(http://vaphim.com.+?)"',body);list_new=[];ghifile=False
-	body = makerequest(data_path+"vp_xemnhieu.xml")
+	body = makerequest(os.path.join(data_path,"vp_xemnhieu.xml"))
 	url_old = re.findall('<a url="(.+?)"',body)
 	content='<?xml version="1.0" encoding="utf-8" mode="91">\n'
 	for url in url_new:
@@ -861,7 +852,7 @@ def vp_xemnhieu():
 		for img,fanart,href,name in items:
 			addirs(re.sub('&.* ','',name),href,img,fanart,url)
 			content+='<a url="%s" img="%s" fanart="%s" href="%s">%s</a>\n'%(url,img,fanart,href,name)
-	if ghifile:f=open(data_path+"vp_xemnhieu.xml",'w');f.write(content);f.close()
+	if ghifile:makerequest(os.path.join(data_path,"vp_xemnhieu.xml"),string=content,attr='w')
 
 def daklak47(name,url,img):
 	reps = urlfetch.get(url)
@@ -888,8 +879,10 @@ def phimchon(url,filename,re_string):
 		except:continue
 
 def doc_list_xml(url,filename='',page=0):
-	if not page:items=doc_xml(url,filename=filename);f=open(data_path+'temp.txt','w');f.write(str(items));f.close()
-	else:f=open(data_path+'temp.txt');items=eval(f.readlines()[0]);	f.close()
+	if not page:
+		items=doc_xml(url,filename=filename)
+		makerequest(os.path.join(data_path,'temp.txt'),string=str(items),attr='w')
+	else:f=open(os.path.join(data_path,'temp.txt'));items=eval(f.readlines()[0]);f.close()
 	pages=len(items)/rows+1
 	del items[0:page*rows];count=0
 	for id,href,img,fanart,name in items:
@@ -927,7 +920,7 @@ def doc_xml(url,filename='',para=''):
 		if len(items)<1:items = re.findall('.+()href="(.+?)".*()()>(.+?)</a>',body)
 		if (copyxml=="true") and ('http' in url) and (len(items)>0) :
 			filename=re.sub('\.xml.*','.xml',filename.replace('[COLOR orange]List xml[/COLOR]-',''))
-			filename=re.sub('\[.{1,10}\]','',filename);f_fullpath=thumuccucbo+filename
+			filename=re.sub('\[.{1,10}\]','',filename);f_fullpath=os.path.join(thumuccucbo,filename)
 			if not os.path.isfile(f_fullpath):
 				string='<?xml version="1.0" encoding="utf-8">\n'
 				for id,href,img,fanart,name in items:
@@ -1068,11 +1061,11 @@ def check_id_fshare(id):
 	return url
 
 def check_id_4share(id):
-	url='http://4share.vn/f/%s'%id;name=''
+	url='http://4share.vn/f/%s/'%id;name=''
 	item=re.search('<center>.+?<strong>(.+?)</strong>.+?<strong>(.+?)</strong></center>',make_request(url))
 	if item:name=xshare_group(item,1)+' - '+xshare_group(item,2)
 	else:
-		url='http://4share.vn/d/%s'%id
+		url='http://4share.vn/d/%s/'%id
 		items=re.findall("<br/><b>(.+?)</b>|<a href='(/f/\w+)|<a href='(/d/\w+)'>",make_request(url))
 		if len(items)>1:name=items[0][0]
 	return name,url
@@ -1164,19 +1157,20 @@ def ifile_update():
 			for url4share,fanart,name2,catalog in ifile_tv_4share(href):
 				if name in name2:fullname = name2
 				else:fullname=name
+				fullname=' '.join(s for s in fullname.split())
 				items_new.append((id_tip,id_htm,catalog,img,fanart,url4share,fullname))
 	if items_new:update_xml(items_new,items_old,"ifiletv.xml")
 	else:mess(u'Không có phim mới...')
 	return 'ok'
 	
 def read_items_old(filename):
-	items_old = doc_xml(datapath+filename);id_old=[]
+	items_old = doc_xml(os.path.join(datapath,filename));id_old=[]
 	for i in items_old:id_old.append((i[1]))
 	return items_old, id_old
 
 def read_all_filexml(fn="vaphim.xml",string_search='',lists=[],index=[]):
-	if string_search:lists = lists+doc_xml(datapath+fn,para='search:'+string_search)
-	else:lists = lists+doc_xml(datapath+fn)
+	if string_search:lists = lists+doc_xml(os.path.join(datapath,fn),para='search:'+string_search)
+	else:lists = lists+doc_xml(os.path.join(datapath,fn))
 	if not string_search:
 		for id_tip,id_htm,category,img,fanart,url,name in lists:index.append((id_htm))
 	return lists,index
@@ -1344,8 +1338,8 @@ def internal_search(url,string,mode,temp=[],p=0):
 			items,index=read_all_filexml(fn=fn,string_search=".*".join(string.split()),lists=items)
 		items=sorted(items,key=lambda l:no_accent(l[3]).lower());p=str(len(items))
 		if not items:mess(u'Không tìm thấy phim nào có chuổi phù hợp');return
-		if len(items)>(rows+rows/2):f=open(data_path+'temp.txt','w');f.write(str(items));f.close()
-	else:f=open(data_path+'temp.txt');items=eval(f.readlines()[0]);f.close()
+		if len(items)>(rows+rows/2):makerequest(os.path.join(data_path,'temp.txt'),string=str(items),attr='w')
+	else:f=open(os.path.join(data_path,'temp.txt'));items=eval(f.readlines()[0]);f.close()
 
 	trang=int(trang);del items[:rows*(trang-1)]
 	if len(items)>(rows+rows/2):
@@ -1394,7 +1388,7 @@ def xshare_search(url,query,mode,page,items=[]):#13
 def updatePFS():#6+
 	items=rss_content('http://phimfshare.com/external.php?type=RSS2')
 	content_new=''
-	fphimfshare=datapath+'phimfshare.xml'
+	fphimfshare=os.path.join(datapath,'phimfshare.xml')
 	content_old=makerequest(fphimfshare)
 	idf_old=re.findall('<a id="(.+?)" server',content_old)
 	for item in items:
@@ -1430,7 +1424,7 @@ def getlinkPFS(content):#6+
 	return items
 	
 def phimFshare(name,url,mode,page,query):#6
-	fphimfshare=datapath+'phimfshare.xml'
+	fphimfshare=os.path.join(datapath,'phimfshare.xml')
 	home='http://phimfshare.com/'
 	if query=='phimfshare.com':get_file_search(url,mode);return ''
 	elif page==4 and name==query:return phimFshare('Search',url,mode,page,query)
@@ -1513,7 +1507,7 @@ def correct_link(url):
 	return url
 
 def hdvn_update():
-	file_hdvn=datapath+"hdvietnam.xml"
+	file_hdvn=os.path.join(datapath,"hdvietnam.xml")
 	hdvn_content=makerequest(file_hdvn)
 	items = rss_content('http://www.hdvietnam.com/diendan/external.php?type=RSS2')
 	pattern_link='(https?://www.fshare.vn/\w{4,6}/\w{10,14})|(http://4share.vn/./\w{14,20})|(https?://w?w?w?/?tenlua.vn/.*?)[ |"|<]|(http://subscene.com/subtitles/.+?)[ |"|\'|<]'
@@ -1537,7 +1531,7 @@ def hdvn_update():
 
 def hdvietnam(query,mode):
 	if query=='HDV':query=homnay;hdvn_update()
-	file_hdvn=datapath+"hdvietnam.xml"
+	file_hdvn=os.path.join(datapath,"hdvietnam.xml")
 	hdvn_content=makerequest(file_hdvn)
 	items=re.findall('date="%s" href="(.+?)" img="(.+?)">(.+?)</a>'%query,hdvn_content)
 	for href,img,name in sorted(items,key=lambda l:no_accent(l[2])):addirs(name,href,img,img)
@@ -1565,6 +1559,23 @@ def data_update():
 			myaddon.setSetting('last_update',last_update[:8]+gio)
 			mess(u'Đã cập nhật danh mục phim từ các dữ liệu RSS')
 	except:mess('Data update error');pass
+
+def mkdir_temp(tempdir,delete=True):
+	tempdir=temp=xbmc.translatePath(os.path.join(thumuccucbo,'temp'))
+	if os.path.exists(tempdir) and delete:
+		import shutil
+		try:shutil.rmtree(tempdir)
+		except:
+			xbmc.sleep(1000)
+			try:shutil.rmtree(tempdir)
+			except:pass
+	if not os.path.exists(tempdir):
+		try:os.mkdir(tempdir)
+		except:
+			xbmc.sleep(1000)
+			try:os.mkdir(tempdir)
+			except:mess(u'Không tạo được thư mục temp');temp=''
+	return temp
 
 def subscene(name,url,query):#,img='',fanart='',query=''
 	if query=='subscene.com':
@@ -1601,14 +1612,8 @@ def subscene(name,url,query):#,img='',fanart='',query=''
 	if typeid in "rar-zip":
 		tempath=thumuccucbo
 		if 'Eng' in name and myaddon.getSetting('trans_sub')=='true':
-			tempath = xbmc.translatePath(os.path.join(thumuccucbo,'temp/'));import shutil
-			if os.path.exists(tempath):
-				shutil.rmtree(tempath)
-			try:os.mkdir(tempath)
-			except:
-				xbmc.sleep(1000)
-				try:os.mkdir(tempath)
-				except:mess(u'Không tạo được thư mục sub');return 'no'
+			tempath=mkdir_temp('temp')
+			if not tempath:return 'no'
 		xbmc.sleep(500)
 		try:xbmc.executebuiltin(('XBMC.Extract("%s","%s")'%(tempfile,tempath)).encode('utf-8'), True)
 		except:pass
@@ -1884,17 +1889,20 @@ def megabox(name,url,mode,page,query):
 			name=color['trangtiep']+u'Trang tiếp theo: trang %s/%s[/COLOR]'%(page_control[0][2],page_control[1][3])
 			addir(name,page_control[0][1],mode=mode,query='MG4',isFolder=True)
 	elif query=='MGP':xbmcsetResolvedUrl(url)
+	elif query=='MBP':
+		response=urlfetch.get(url)
+		if response.status==200:
+			link=xshare_group(re.search("changeStreamUrl\('(.+?)'\)",response.body),1)
+		elif response.status==301:
+			link=xshare_group(re.search("changeStreamUrl\('(.+?)'\)",make_request(response.headers['location'])),1)
+		else:mess(u'Không get được megabox maxspeed link');return 'no' 
+		xbmcsetResolvedUrl(link+'|'+urllib.urlencode(hd))
 	elif len(query)>3:
-		#if home not in url:url=home+url
 		for item in make_request(url,json=1):
 			name=item['name']
 			img='http://img.phim.megabox.vn/728x409'+item['image_banner']
-			response=urlfetch.get(query+'/%s-%s.html'%(item['cat_id'],item['content_id']))
-			if response.status!=301:
-				response=urlfetch.get(query+'/%s-%s.html'%(item['cat_id'],item['content_id']))
-				if response.status!=301:continue
-			link=xshare_group(re.search("changeStreamUrl\('(.+?)'\)",make_request(response.headers['location'])),1)
-			addir(name,link+'|'+urllib.urlencode(hd),img,img,mode=mode,query='MGP')
+			href=query+'/%s-%s.html'%(item['cat_id'],item['content_id'])
+			addir(name,href,img,img,mode=mode,query='MBP')
 	return ''
 	
 def megabox_load_menu(items,mode):
@@ -1907,8 +1915,7 @@ def megabox_load_menu(items,mode):
 			response=urlfetch.get(href)
 			if response.status==301:body=make_request(response.headers['location'])
 			elif response.status==200:body=response.body
-			else:continue
-			print response.status,href
+			else:print response.status,href;continue
 		except:continue
 		links=re.findall('<a onclick=.getListEps\((.+?)\).{,20} href=.{,25}>(.+?)</a>',body)
 		if len(links)==1:
@@ -1925,6 +1932,8 @@ def dangcaphd(name,url,img,mode,page,query):
 	home='http://dangcaphd.com/'
 	if query=='DHD':
 		body=make_request(home)
+		name=color['search']+"Search trên dangcaphd.com[/COLOR]"
+		addir(name,"dangcaphd.com/movie/search.html",icon['dangcaphd'],mode=mode,query="DHS",isFolder=True)
 		name=color['dangcaphd']+'Trang chủ dangcaphd.com[/COLOR]'
 		addir(name,home,icon['dangcaphd'],mode=mode,query='DC0',isFolder=True)
 		for name in re.findall('</i>(.+?)<span class="caret">',body):
@@ -1932,6 +1941,15 @@ def dangcaphd(name,url,img,mode,page,query):
 		for href,name in re.findall('<a href="(.+?)"><i class=".+?"></i>(.+?)</a>',body):
 			if 'channel.html' not in href and 'product.html' not in href:
 				addir(color['dangcaphd']+name.strip()+'[/COLOR]',href,icon['dangcaphd'],mode=mode,query='DC2',isFolder=True)
+	elif query=="DHS":get_file_search(url,mode)
+	elif query=="INP":
+		query=get_string_search(url)
+		if query:return dangcaphd(name,url,img,mode,page,query)
+		else:return 'no'
+	elif url=="dangcaphd.com/movie/search.html":
+		search_string = urllib.quote_plus(query)
+		url='http://dangcaphd.com/movie/search.html?key=%s&search_movie=1'%search_string
+		return dangcaphd(name,url,img,mode,page,query='DC2')
 	elif query=='DC0':
 		body=make_request(home)
 		for href,name in re.findall('<a class="title" href="(.+?)"><i class="fa fa-film "></i>(.+?)</a>',body):
@@ -1971,7 +1989,7 @@ def dangcaphd(name,url,img,mode,page,query):
 		if subtitle:
 			xbmc.sleep(500);xbmc.Player().setSubtitles(subtitle);mess(u'Phụ đề của dangcaphd.com')
 		if 'xshare' in myaddon.getSetting('mail_dchd'):
-			mess(u'Bạn đang dùng acc xshare. Hãy ủng hộ dangcaphd.com: tạo và nâng cấp VIP acc của bạn nhé!',50000)
+			mess(u'Bạn đang dùng acc xshare. Hãy ủng hộ dangcaphd.com: tạo và nâng cấp VIP acc của bạn nhé!',30000)
 
 def dangcaphd_get_page_control(body,mode,query):
 	pattern='<a class="current">\d{1,5}</a><a href="(.+?)">(\d{1,5})</a>.*<a href=".+?page=(\d{1,5})">.+?</a></div>'
@@ -1998,7 +2016,9 @@ def dangcaphd_get_link(url):
 	return re.findall('"(\d{,3})" _link="(.+?)" _sub="(.*?)"',body)
 	
 def dangcaphd_download_sub(url):
-	subfullpathfilename=os.path.join(thumuccucbo,os.path.basename(url));sub=''
+	tempdir=mkdir_temp('temp')
+	if not tempdir:return ''
+	subfullpathfilename=os.path.join(tempdir,os.path.basename(url));sub=''
 	if os.path.splitext(subfullpathfilename)[1] in [".srt", ".sub", ".txt", ".smi", ".ssa", ".ass"]:
 		if makerequest(subfullpathfilename,string=make_request(url),attr='wb'):sub=subfullpathfilename
 	return sub
@@ -2042,9 +2062,8 @@ try:query=urllib.unquote_plus(params["query"])
 except:pass#urllib.unquote
 print "Main---------- Mode: "+str(mode),"URL: "+str(url),"Name: "+str(name),"query: "+str(query),"page: "+str(page)
 
-if mode==0 or mode=='':
-	init_file();open_category("MMN")
-	xbmcplugin.endOfDirectory(int(sys.argv[1]))
+if not mode:
+	init_file();open_category("MMN");xbmcplugin.endOfDirectory(int(sys.argv[1]))
 	data_download();data_update()
 elif mode==2:end=google_search(url,query,mode,page)
 elif mode==3:end=resolve_url(url)
@@ -2067,7 +2086,6 @@ elif mode==31:end=ifile_update()
 elif mode==34:phimchon("http://ifile.tv/phim","ifiletv.xml",'href=".+(\d{5}).+" class="mosaic-backdrop"')
 elif mode==35:phimchon("http://ifile.tv/phim/index","ifiletv.xml",'href=".+(\d{5}).+" class="mosaic-backdrop"')
 elif mode==38:doc_Trang4share(url)#38
-elif mode==39:DocTrangifiletv(url)
 elif mode==47:daklak47(name,url,img)
 elif mode==90:end=doc_TrangFshare(url,img,fanart)
 elif mode==91:main_menu(url,page,mode,query)
@@ -2077,9 +2095,7 @@ elif mode==96:end=doc_thumuccucbo(name,url,img,fanart,mode,query)
 elif mode==97:doc_list_xml(url,name,page)
 elif mode==98:make_favourites(name,url,img,fanart,mode,query)
 elif mode==99:myaddon.openSettings();end='ok'
-#xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_DATE)
 if not end or end not in 'no-ok':xbmcplugin.endOfDirectory(int(sys.argv[1]))
 #https://urlfetch.readthedocs.org/en/v0.5.3/examples.html
 #http://hdonline.vn/
 #addir(name,url,img,fanart,mode,page,query,isFolder)
-# kg mo duoc id https://www.tenlua.vn/fm/folder/0f37e52ee50e6e02/tuyen-tap-phim-chung-tu-don
