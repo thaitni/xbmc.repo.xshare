@@ -1,3 +1,8 @@
+[B]Version 3.2.3[/B] <29/05/2015>:
+update: auto load subs, fptplay
+Fix: một số lỗi về tên file, tên film, tên thư mục sử dụng font unicode
+Thêm một số tools: MyFshare, MyList menuContext
+
 [B]Version 3.2.2[/B] <25/05/2015>:
 update: dangcaphd.com, Mở ID file
 Fix: một số lỗi nhỏ
