@@ -14,6 +14,8 @@
 	<category label="Thông tin khác">
 		<setting id="thumucrieng" type="text" label="Thư mục chia sẻ của tôi trên Fshare (ID MyFshare)" default="RDA4FHXVE2UU"/>
 		<setting id="thumuccucbo" type="folder" label="Thư mục cục bộ (MyFolder)" default=""/>
+		<setting id="googlesearch" type="labelenum" label="Sử dụng phương thức Google search" values="API|Web" default="API"/>
+		<setting id="sodonghienthi" type="labelenum" label="Số dòng hiển thị cho 1 trang" values="20|30|50" default="30"/>
 		<setting id="uploaders" type="text" label="DS uploaders yêu thích (cách nhau:'-')" default="xemaydinh-hungdaita-truoduc-ledung123-cocongidau-invisible9x-love_yejin-coduocgidau-HDCP-linhlee0709-Coti-henryduc96-luanthieugia"/>
 		<setting id="cookie" type="text" label="cookiestring" default="" visible="false"/>
 		<setting id="last_update" type="text" label="Lần cập nhật danh mục phim gần nhất" default="2015050101" visible="false"/>
@@ -24,8 +26,6 @@
 		<setting id="autoload_sub" type="bool" label="Tự động load sub trong SubsFolder (y/n)" default="true"/>
 		<setting id="autotrans_sub" type="bool" label="Tự động dịch sau khi download sub tiếng Anh (y/n)" default="true"/>
 		<setting id="autodel_sub" type="bool" label="Tự động xóa thư mục SubsFolder (y/n)" default="true"/>
-		<setting id="googlesearch" type="labelenum" label="Sử dụng phương thức Google search" values="API|Web" default="API"/>
-		<setting id="sodonghienthi" type="labelenum" label="Số dòng hiển thị cho 1 trang" values="20|30|50" default="30"/>
 		<setting id="hdvnfindall" type="bool" label="Không giới hạn tìm kiếm trên HDVN (All Uploader) (y/n)" default="true"/>
 		<setting id="history" type="bool" label="Cho phép hiển thị lịch sử tìm kiếm (y/n)" default="true"/>
 		<setting id="phim18" type="bool" label="Kích hoạt xem phim 18+ (y/n)" default="false"/>

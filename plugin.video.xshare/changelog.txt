@@ -1,4 +1,9 @@
-[B]Version 3.2.3[/B] <29/05/2015>:
+[B]Version 3.2.4[/B] <01/06/2015>:
+update: auto load subs
+Fix: một số lỗi về tên file, tên film, tên thư mục sử dụng font unicode
+Thêm một số thông tin từ hdvietnam.com
+
+[[B]Version 3.2.3[/B] <29/05/2015>:
 update: auto load subs, fptplay
 Fix: một số lỗi về tên file, tên film, tên thư mục sử dụng font unicode
 Thêm một số tools: MyFshare, MyList menuContext
