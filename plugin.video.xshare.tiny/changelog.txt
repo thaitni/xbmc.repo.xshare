@@ -1,3 +1,6 @@
+[B]Version 1.0.4[/B] <08/06/2015>:
+Update get maxspeed link on www.fshare.vn
+
 [B]Version 1.0.3[/B] <10/04/2015>:
 Fix:
 - Fix thông báo: "this is not a media file"

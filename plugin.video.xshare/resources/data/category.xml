@@ -130,15 +130,15 @@
 <a server="MGP" category="MGL" mode="17" color="orangered" icon="megabox.png">Phim lẻ</a>
 <a server="MGP" category="MGS" mode="17" color="orangered" icon="megabox.png">Phim bộ</a>
 <a server="FRE" category="DHD" mode="18" color="yellow" icon="dangcaphd.png">Kho phim trên dangcaphd.com (có phí - Thử nghiệm)</a>
-<a server="HDV" category="UPD" mode="08" color="crimson" icon="hdvietnam.png">[COLOR lime]Cập nhật data[/COLOR] từ tất cả RSS của hdvietnam.com</a>
-<a server="HDV" category="000" mode="08" color="crimson" icon="hdvietnam.png">RSS trang chủ hdvietnam.com</a>
-<a server="HDV" category="33" mode="08" color="crimson" icon="hdvietnam.png">RSS Mục CHIA SẺ PHIM: [COLOR gold]Fshare.vn[/COLOR]</a>
-<a server="HDV" category="146" mode="08" color="crimson" icon="hdvietnam.png">RSS Mục CHIA SẺ PHIM: [COLOR blue]4share.vn[/COLOR]</a>
-<a server="HDV" category="311" mode="08" color="crimson" icon="hdvietnam.png">RSS Mục CHIA SẺ PHIM: [COLOR fuchsia]tenlua.vn[/COLOR]</a>
-<a server="HDV" category="265" mode="08" color="crimson" icon="hdvietnam.png">RSS Mục CHIA SẺ PHIM: [/COLOR]Thuyết minh hoặc lồng tiếng[COLOR gold]</a>
-<a server="HDV" category="110" mode="08" color="crimson" icon="hdvietnam.png">RSS Mục CHIA SẺ PHIM: [/COLOR]3D[COLOR gold]</a>
-<a server="HDV" category="116" mode="08" color="crimson" icon="hdvietnam.png">RSS Mục CHIA SẺ PHIM: [/COLOR]Phim tài liệu - Documentaries[COLOR gold]</a>
-<a server="HDV" category="123" mode="08" color="crimson" icon="hdvietnam.png">RSS Mục CHIA SẺ PHIM: [/COLOR]Phim hoạt hình[COLOR gold]</a>
-<a server="HDV" category="57" mode="08" color="crimson" icon="hdvietnam.png">RSS Mục CHIA SẺ PHIM: [/COLOR]Phim bộ - Series[COLOR gold]</a>
-<a server="HDV" category="157" mode="08" color="crimson" icon="hdvietnam.png">RSS Mục CHIA SẺ PHIM: [/COLOR]Phim cho iOS/Android[COLOR gold]</a>
-<a server="HDV" category="PLP" mode="08" color="crimson" icon="hdvietnam.png">Mục CHIA SẺ PHIM: theo phân loại phim - Đọc trên hdvietnam site</a>
+<a server="HDV" category="UPD" mode="08" color="crimson" icon="hdvietnam.png">[COLOR lime]Cập nhật data[/COLOR] từ tất cả [COLOR blue]RSS [COLOR crimson]của hdvietnam.com</a>
+<a server="HDV" category="MCS" mode="08" color="crimson" icon="hdvietnam.png">[COLOR blue]Mục CHIA SẺ PHIM[/COLOR] của hdvietnam.com</a>
+<a server="HDV" category="000" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]trang chủ hdvietnam.com</a>
+<a server="HDV" category="33" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [COLOR gold]Fshare.vn[/COLOR]</a>
+<a server="HDV" category="146" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [COLOR blue]4share.vn[/COLOR]</a>
+<a server="HDV" category="311" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [COLOR fuchsia]tenlua.vn[/COLOR]</a>
+<a server="HDV" category="265" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Thuyết minh hoặc lồng tiếng</a>
+<a server="HDV" category="110" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]3D</a>
+<a server="HDV" category="116" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Phim tài liệu - Documentaries</a>
+<a server="HDV" category="123" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Phim hoạt hình</a>
+<a server="HDV" category="57" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Phim bộ - Series</a>
+<a server="HDV" category="157" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Phim cho iOS/Android</a>

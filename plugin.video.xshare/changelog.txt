@@ -1,4 +1,8 @@
-[B]Version 3.2.4[/B] <03/06/2015>:
+[B]Version 3.2.6[/B] <03/06/2015>:
+update: get direct links Fshare.vn
+Fix: một số lỗi nhỏ
+
+[B]Version 3.2.5[/B] <03/06/2015>:
 update: Thay bộ icon cũ bằng bộ mới của LUC QUYET CHIEN, update từ tất cả RSS của hdvietnam
 Fix: một số lỗi nhỏ
 Thêm mục update từ RSS của hdvietnam.com
