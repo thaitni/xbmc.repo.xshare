@@ -1,4 +1,7 @@
-[B]Version 3.2.6[/B] <03/06/2015>:
+[B]Version 3.2.7[/B] <09/06/2015>:
+Fix: Bỏ mục auto post thanks lits trên hdvietnam
+
+[[B]Version 3.2.6[/B] <08/06/2015>:
 update: get direct links Fshare.vn
 Fix: một số lỗi nhỏ
 

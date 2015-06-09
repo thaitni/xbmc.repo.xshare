@@ -130,9 +130,10 @@
 <a server="MGP" category="MGL" mode="17" color="orangered" icon="megabox.png">Phim lẻ</a>
 <a server="MGP" category="MGS" mode="17" color="orangered" icon="megabox.png">Phim bộ</a>
 <a server="FRE" category="DHD" mode="18" color="yellow" icon="dangcaphd.png">Kho phim trên dangcaphd.com (có phí - Thử nghiệm)</a>
-<a server="HDV" category="UPD" mode="08" color="crimson" icon="hdvietnam.png">[COLOR lime]Cập nhật data[/COLOR] từ tất cả [COLOR blue]RSS [COLOR crimson]của hdvietnam.com</a>
+<a server="HDV" category="xshare.vn" mode="13" color="lime" icon="isearch.png">Search trên dữ liệu đã cập nhật về máy</a>
+<a server="HDV" category="UPD" mode="08" color="crimson" icon="hdvietnam.png">[COLOR lime]Cập nhật data[/COLOR] từ tất cả [COLOR blue]RSS hôm nay[COLOR crimson]của hdvietnam.com</a>
 <a server="HDV" category="MCS" mode="08" color="crimson" icon="hdvietnam.png">[COLOR blue]Mục CHIA SẺ PHIM[/COLOR] của hdvietnam.com</a>
-<a server="HDV" category="000" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]trang chủ hdvietnam.com</a>
+<a server="HDV" category="000" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay của hdvietnam.com</a>
 <a server="HDV" category="33" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [COLOR gold]Fshare.vn[/COLOR]</a>
 <a server="HDV" category="146" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [COLOR blue]4share.vn[/COLOR]</a>
 <a server="HDV" category="311" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [COLOR fuchsia]tenlua.vn[/COLOR]</a>
