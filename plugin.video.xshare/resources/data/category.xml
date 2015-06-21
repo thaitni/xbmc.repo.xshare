@@ -68,8 +68,9 @@
 <a server="VPH" category="mv-viet-nam" mode="91" color="gold" icon="vaphim.png">MV Việt Nam</a>
 
 <a server="IFI" category="capnhat" mode="31" color="blue" icon="ifiletv.png">Cập nhật danh mục Ifile.tv</a>
-<a server="IFI" category="phimmoi" mode="34" color="blue" icon="ifiletv.png">Phim mới nhất</a>
-<a server="IFI" category="xemnhieu" mode="35" color="blue" icon="ifiletv.png">Phim được xem nhiều nhất</a>
+<a server="IFI" category="demo" mode="34" color="blue" icon="ifiletv.png">Ifile.tv đề nghị</a>
+<a server="IFI" category="new" mode="34" color="blue" icon="ifiletv.png">Phim mới nhất</a>
+<a server="IFI" category="index" mode="34" color="blue" icon="ifiletv.png">Phim được xem nhiều nhất</a>
 <a server="IFI" category="phim-le" mode="91" color="blue" icon="ifiletv.png">Phim Lẻ</a>
 <a server="IFI" category="phim-bo" mode="91" color="blue" icon="ifiletv.png">Phim Bộ</a>
 <a server="IFI" category="3d" mode="91" color="blue" icon="ifiletv.png">3D</a>
@@ -130,6 +131,8 @@
 <a server="MGP" category="MGL" mode="17" color="orangered" icon="megabox.png">Phim lẻ</a>
 <a server="MGP" category="MGS" mode="17" color="orangered" icon="megabox.png">Phim bộ</a>
 <a server="FRE" category="DHD" mode="18" color="yellow" icon="dangcaphd.png">Kho phim trên dangcaphd.com (có phí - Thử nghiệm)</a>
+<a server="FRE" category="vuahd.tv" mode="21" color="deeppink" icon="icon.png">Kho phim trên Vuahd.tv</a>
+<a server="FRE" category="pubvn.tv" mode="19" color="limegreen" icon="icon.png">Kho phim trên Pubvn.net</a>
 <a server="HDV" category="xshare.vn" mode="13" color="lime" icon="isearch.png">Search trên dữ liệu đã cập nhật về máy</a>
 <a server="HDV" category="UPD" mode="08" color="crimson" icon="hdvietnam.png">[COLOR lime]Cập nhật data[/COLOR] từ tất cả [COLOR blue]RSS hôm nay[COLOR crimson]của hdvietnam.com</a>
 <a server="HDV" category="MCS" mode="08" color="crimson" icon="hdvietnam.png">[COLOR blue]Mục CHIA SẺ PHIM[/COLOR] của hdvietnam.com</a>

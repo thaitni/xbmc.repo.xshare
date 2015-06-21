@@ -1,3 +1,13 @@
+[B]Version 3.2.8[/B] <21/06/2015>:
+Fix chế độ tự động chuyển từ phương thức search API sang Web của google search một cách trông suốt.
+Updata:
+- Get direct link Fshare - Cố gắng thực hiện lại 3 lần khi bị "Lỗi hệ thống"
+- Auto load 
+- Cải thiện tốc độ load mục "Phim mới nhất" và "Xem nhiều nhất" của vaphim.com
+Thêm:
+- phần phụ mục (WEB-DL, HDTV; Bluray Remux; mHD, SD; Bluray nguyên gốc) trong "Mục Chia sẻ phim"-Fshare.vn của hdvietnam
+- 2 cụm server mới: pub.vn, vuahd.tv
+
 [B]Version 3.2.7[/B] <09/06/2015>:
 Fix: Bỏ mục auto post thanks lits trên hdvietnam
 
