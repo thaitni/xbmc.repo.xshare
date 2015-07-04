@@ -123,7 +123,9 @@
 <a server="PFS" category="tv-show" mode="06" color="khaki" icon="phimfs.png">TV Show</a>
 <a server="PFS" category="music-video" mode="06" color="khaki" icon="phimfs.png">Music Video</a>
 
-<a server="FRE" category="FPP" mode="07" color="orange" icon="fptplay.png">Kho phim trên fptplay.net (free - sắp thu phí)</a>
+<a server="FRE" category="hdviet.com" mode="22" color="darkorange" icon="hdviet.png">Kho phim trên hdviet.com</a>
+<a server="FRE" category="hayhaytv.vn" mode="23" color="tomato" icon="hayhaytv.png">Kho phim trên hayhaytv.vn</a>
+<a server="FRE" category="FPP" mode="07" color="orange" icon="fptplay.png">Kho phim trên fptplay.net</a>
 <a server="FRE" category="MGB" mode="17" color="orangered" icon="megabox.png">Kho phim trên megabox.vn (free)</a>
 <a server="MGB" category="megabox.vn" mode="17" color="lime" icon="megabox.png">Search trên megabox.vn</a>
 <a server="MGB" category="MGP" mode="10" color="orangered" icon="megabox.png">Danh mục phân loại phim</a>
