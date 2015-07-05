@@ -1,3 +1,6 @@
+[B]Version 3.2.10[/B] <05/07/2015>:
+- Fix: Đọc thư muc phim hdviet.com
+
 [B]Version 3.2.9[/B] <04/07/2015>:
 - Fix: Đọc thư muc Myfhare và một số lỗi nhỏ khác
 - Bổ sung: 2 cụm server hdviet.com và hayhaytv.vn

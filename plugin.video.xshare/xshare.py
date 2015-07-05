@@ -70,7 +70,7 @@ def endxbmc():xbmcplugin.endOfDirectory(int(sys.argv[1]))
 def xbmcsetResolvedUrl(url,name=''):
 	item=xbmcgui.ListItem(path=url)
 	xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item);endxbmc()
-	if myaddon.getSetting('autoload_sub')=='true':
+	if myaddon.getSetting('autoload_sub')=='true' and name!='xshare':
 		if name:url=name
 		urltitle=urllib.unquote(os.path.splitext(os.path.basename(url))[0]).lower()
 		urltitle='.'+'.'.join(s for s in re.sub('_|\W+',' ',re.split('\d\d\d\d',urltitle)[0]).split())+'.'
@@ -2491,6 +2491,8 @@ def hdviet(name,url,img,mode,page,query):
 		links=getResolvedUrl(url);linksub='';maxspeedlink=''
 		if not links:mess(u'[COLOR red]HDViet.com: Get link thất bại[/COLOR]');return
 		link=re.sub('_320_480_','_320_1920_vip_',links['LinkPlay'])
+		epi=xshare_group(re.search('/(\d{1,6}_e\d{1,4})_',link),1)
+		if epi:link=link.replace(epi,url)
 		href=link+'?audioindex=1' if myaddon.getSetting('hdvietaudio')=='true' else link
 		allresolution=make_request(href)
 		if len(allresolution)<100:
@@ -2512,11 +2514,18 @@ def hdviet(name,url,img,mode,page,query):
 			maxspeedlink=xshare_group(re.search('(http.+%s.+)\s'%resolutions[res],allresolution),1)
 			if maxspeedlink:break
 		if not maxspeedlink: maxspeedlink=href
-		for source in ['Subtitle','SubtitleExt','SubtitleExtSe']:
-			try:
-				linksub=links['%s'%source]['VIE']['Source']
-				if linksub:download_subs(linksub);break
-			except:pass
+		try:linksub='xshare' if links["AudioExt"][0]['Label']==u'Thuyết Minh' else linksub
+		except:pass
+		if not linksub:
+			for source in ['Subtitle','SubtitleExt','SubtitleExtSe']:
+				try:
+					linksub=links['%s'%source]['VIE']['Source']
+					if linksub:
+						ep1=xshare_group(re.search('/(e\d{1,3})/',linksub,re.I),1)
+						ep2=xshare_group(re.search('_(e\d{1,3})_',maxspeedlink,re.I),1)
+						if ep1 and ep2:linksub=linksub.replace(ep1,ep2.upper())
+						if download_subs(linksub):break
+				except:pass
 		xbmcsetResolvedUrl(maxspeedlink,urllib.unquote(os.path.splitext(os.path.basename(linksub))[0]))
 	else:
 		body=make_request(url);body=body[body.find('box-movie-list'):body.find('h2-ttl cf')];additems(body)
