@@ -8,8 +8,8 @@
 		<setting id="passwordt" type="text" option="hidden" label="Password [COLOR fuchsia]tenlua.vn[/COLOR]"/>
 		<setting id="usernameh" type="text" label="User name [COLOR crimson]HDVietnam.com[/COLOR]"/>
 		<setting id="passwordh" type="text" option="hidden" label="Password [COLOR crimson]HDVietnam.com[/COLOR]"/>
-		<setting id="mail_dchd" type="text" label="User name [COLOR yellow]dangcaphd.com[/COLOR] (email)" default="xshare@thanhthai.net"/>
-		<setting id="pass_dchd" type="text" option="hidden" label="Password [COLOR yellow]dangcaphd.com[/COLOR]" default="123456"/>
+		<setting id="mail_dchd" type="text" label="User name [COLOR yellow]dangcaphd.com[/COLOR] (email)" default=""/>
+		<setting id="pass_dchd" type="text" option="hidden" label="Password [COLOR yellow]dangcaphd.com[/COLOR]" default=""/>
 		<setting id="usernamep" type="text" label="User name [COLOR deepskyblue]pub.vn[/COLOR]"/>
 		<setting id="passwordp" type="text" option="hidden" label="Password [COLOR deepskyblue]pub.vn[/COLOR]"/>
 		<setting id="usernamev" type="text" label="User name [COLOR deeppink]vuahd.tv[/COLOR] (email)"/>
@@ -18,21 +18,22 @@
 		<setting id="passhdviet" type="text" option="hidden" label="Password [COLOR darkorange]hdviet.com[/COLOR]"/>
 		<setting id="userhayhay" type="text" label="User name [COLOR tomato]hayhaytv.vn[/COLOR] (email/Số ĐT)"/>
 		<setting id="passhayhay" type="text" option="hidden" label="Password [COLOR tomato]hayhaytv.vn[/COLOR]"/>
+		<setting id="mail_fptplay" type="text" label="User name [COLOR orange]fptplay.net[/COLOR] (email)" default=""/>
+		<setting id="pass_fptplay" type="text" option="hidden" label="Password [COLOR orange]fptplay.net[/COLOR]" default=""/>
 	</category>
 	<category label="Thông tin khác">
 		<setting id="thumucrieng" type="text" label="[COLOR blue]Mục chia sẻ của tôi trên Fshare[/COLOR] ([COLOR gold]ID MyFshare[/COLOR])" default="RDA4FHXVE2UU"/>
 		<setting id="thumuccucbo" type="folder" label="[COLOR blue]Thư mục cục bộ[/COLOR] ([COLOR gold]MyFolder[/COLOR])" default=""/>
 		<setting id="googlesearch" type="labelenum" label="[COLOR blue]Sử dụng phương thức Google search[/COLOR]" values="API|Web" default="API"/>
 		<setting id="hdvietresolution" type="labelenum" label="[COLOR blue]Chọn độ phân giải tối đa trên[/COLOR] [COLOR darkorange]hdviet.com[/COLOR]" values="720|1080" default="720"/>
+		<setting id="phimmoiresolution" type="labelenum" label="[COLOR blue]Chọn độ phân giải tối đa trên[/COLOR] [COLOR ghostwhite]phimmoi.net[/COLOR]" values="720|1080" default="720"/>
 		<setting id="sodonghienthi" type="labelenum" label="[COLOR blue]Số dòng hiển thị cho 1 trang[/COLOR]" values="20|30|50" default="30"/>
 		<setting id="uploaders" type="text" label='[COLOR blue]DS uploaders yêu thích[/COLOR] (cách nhau: "-")' default="xemaydinh-hungdaita-truoduc-ledung123-cocongidau-invisible9x-love_yejin-coduocgidau-HDCP-linhlee0709-Coti-henryduc96-luanthieugia"/>
 		<setting id="cookie" type="text" label="cookiestring" default="" visible="false"/>
-		<setting id="last_update" type="text" label="Lần cập nhật danh mục phim gần nhất" default="2015050101" visible="false"/>
 		<setting id="pagethanked" type="text" label="Trang cuối đã get thank cho xshare" default="0-0-0-0" visible="false"/>
 	</category>
 	<category label="Các tùy chọn riêng">
 		<setting id="copyxml" type="bool" label="[COLOR green]Tự động Copy list phim xml vào [COLOR gold]MyFolder[/COLOR][/COLOR] (y/n)" default="false"/>
-		<setting id="thank2friend" type="bool" label='[COLOR green]Cho phép tự động post lời cảm ơn[/COLOR] "[COLOR gold]Mục chia sẻ[/COLOR]" mà bạn quan tâm (y/n)' default="true"/>
 		<setting id="checkdatabase" type="bool" label="[COLOR green]Mở chế độ kiểm tra database cho xshare[/COLOR] (y/n)" default="false"/>
 		<setting id="logoutf" type="bool" label="[COLOR green]Tự động Logout [COLOR gold]Fshare, [COLOR blue]4share.vn, [COLOR fuchsia]Tenlua.vn[/COLOR][/COLOR][/COLOR][/COLOR] (yes/no)" default="true"/>
 		<setting id="autoload_sub" type="bool" label="[COLOR green]Tự động load sub trong [COLOR green]SubsFolder[/COLOR][/COLOR] (y/n)" default="true"/>
@@ -40,6 +41,7 @@
 		<setting id="autodel_sub" type="bool" label="[COLOR green]Tự động xóa thư mục SubsFolder[/COLOR] (y/n)" default="true"/>
 		<setting id="hdvnfindall" type="bool" label="[COLOR green]Không giới hạn tìm kiếm trên [COLOR red]hdvietnam.com[/COLOR][/COLOR] (All Uploader) (y/n)" default="true"/>
 		<setting id="hdvietaudio" type="bool" label="[COLOR green]Tự động chọn Audio thuyết minh trên[/COLOR] [COLOR darkorange]hdviet.com[/COLOR] (y/n)" default="true"/>
+		<setting id="phimmoiaudio" type="bool" label="[COLOR green]Tự động chọn Audio thuyết minh trên[/COLOR] [COLOR ghostwhite]phimmoi.net[/COLOR] (y/n)" default="true"/>
 		<setting id="history" type="bool" label="[COLOR green]Cho phép hiển thị lịch sử tìm kiếm[/COLOR] (y/n)" default="true"/>
 		<setting id="phim18" type="bool" label="[COLOR red]Kích hoạt xem phim 18+[/COLOR] (y/n)" default="false"/>
 		<setting id="thank2xshare" type="bool" label="[COLOR green]Cho phép tự động cảm ơn xshare trong [COLOR red]hdvietnam.com[/COLOR][/COLOR] (y/n)" default="true"/>

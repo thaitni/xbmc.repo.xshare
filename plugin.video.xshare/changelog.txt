@@ -1,3 +1,7 @@
+[B]Version 3.2.11[/B] <26/07/2015>:
+- Bổ sung: cụm server phimmoi.net
+- Update fptplay,vaphim,hdvietnam
+
 [B]Version 3.2.10[/B] <05/07/2015>:
 - Fix: Đọc thư muc phim hdviet.com
 
