@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR]-[COLOR green]XBMC[/COLOR] [COLOR blue]HD Video[/B][/COLOR]" version="3.2.10" provider-name="thaitni">
+<addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR]-[COLOR green]XBMC[/COLOR] [COLOR blue]HD Video[/B][/COLOR]" version="3.2.11" provider-name="thaitni">
     <requires>
         <import addon="xbmc.python" version="2.1.0" optional="true" />
     </requires>
@@ -8,7 +8,7 @@
     </extension>
     <extension point="xbmc.addon.metadata">
         <summary>Xshare - XBMC HD Video</summary>
-		<description lang="en">Tìm và Xem HD Video trên XBMC từ: fshare.vn, 4share.vn, vaphim.com, ifile.tv, phimfshare.com, fptplay.net, hdvietnam.com, megabox.vn, dangcaphd.com, hayhaytv.vn, hdviet.com, pubvn.net, vuahd.tv</description>
+		<description lang="en">Tìm và Xem HD Video trên XBMC từ: fshare.vn, 4share.vn, vaphim.com, ifile.tv, phimfshare.com, fptplay.net, hdvietnam.com, megabox.vn, dangcaphd.com, hayhaytv.vn, hdviet.com, pubvn.net, vuahd.tv, phimmoi.net</description>
 		<platform>all</platform>
 		<language>en</language>
 		<license>GNU General Public License - v2</license>

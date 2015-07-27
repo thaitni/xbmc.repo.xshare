@@ -26,47 +26,10 @@
 <a server="GGS" category="hdvietnam.com" mode="13" color="lime" icon="hdvietnam.png">Search[/COLOR] Trực tiếp trên [COLOR crimson]hdvietnam.com...</a>
 
 <a server="VPH" category="capnhat" mode="20" color="gold" icon="vaphim.png">Cập nhật danh mục Vaphim</a>
+<a server="VPH" category="chonloc" mode="93" color="gold" icon="vaphim.png">VaPhim.com chọn lọc</a>
 <a server="VPH" category="phimmoi" mode="04" color="gold" icon="vaphim.png">Phim mới nhất</a>
 <a server="VPH" category="xemnhieu" mode="05" color="gold" icon="vaphim.png">Phim được xem nhiều nhất</a>
-<a server="VPH" category="phim-le" mode="91" color="gold" icon="vaphim.png">Tất Cả Phim Lẻ</a>
-<a server="VPH" category="series" mode="91" color="gold" icon="vaphim.png">Tất Cả Phim Bộ</a>
-<a server="VPH" category="korean-series" mode="91" color="gold" icon="vaphim.png">Phim Bộ Hàn</a>
-<a server="VPH" category="hongkong-series" mode="91" color="gold" icon="vaphim.png">Phim Bộ Hồng Kông</a>
-<a server="VPH" category="us-tv-series" mode="91" color="gold" icon="vaphim.png">Phim Bộ Mỹ</a>
-<a server="VPH" category="documentary" mode="91" color="gold" icon="vaphim.png">Phim Tài Liệu</a>	
-<a server="VPH" category="18" mode="91" color="gold" icon="vaphim.png">Phim 18+</a>	
-<a server="VPH" category="animation" mode="91" color="gold" icon="vaphim.png">Hoạt Hình</a>
-<a server="VPH" category="mystery" mode="91" color="gold" icon="vaphim.png">Huyền Bí</a>
-<a server="VPH" category="sci-fi" mode="91" color="gold" icon="vaphim.png">Viễn Tưởng</a>
-<a server="VPH" category="3d" mode="91" color="gold" icon="vaphim.png">3D</a>
-<a server="VPH" category="western" mode="91" color="gold" icon="vaphim.png">Cao Bồi</a>
-<a server="VPH" category="war" mode="91" color="gold" icon="vaphim.png">Chiến Tranh</a>
-<a server="VPH" category="family" mode="91" color="gold" icon="vaphim.png">Thiếu Nhi</a>
-<a server="VPH" category="giang-sinh" mode="91" color="gold" icon="vaphim.png">Giáng Sinh</a>
-<a server="VPH" category="comedy" mode="91" color="gold" icon="vaphim.png">Hài Hước</a>
-<a server="VPH" category="action" mode="91" color="gold" icon="vaphim.png">Hành Động</a>
-<a server="VPH" category="crime" mode="91" color="gold" icon="vaphim.png">Hình Sự</a>
-<a server="VPH" category="thriller" mode="91" color="gold" icon="vaphim.png">Rùng Rợn</a>
-<a server="VPH" category="drama" mode="91" color="gold" icon="vaphim.png">Tâm Lý</a>
-<a server="VPH" category="tvb" mode="91" color="gold" icon="vaphim.png">TVB</a>
-<a server="VPH" category="horror" mode="91" color="gold" icon="vaphim.png">Kinh Dị</a>
-<a server="VPH" category="romance" mode="91" color="gold" icon="vaphim.png">Lãng Mạn</a>
-<a server="VPH" category="history" mode="91" color="gold" icon="vaphim.png">Lịch Sử</a>
-<a server="VPH" category="adventure" mode="91" color="gold" icon="vaphim.png">Phiêu Lưu</a>
-<a server="VPH" category="fantasy" mode="91" color="gold" icon="vaphim.png">Thần Thoại</a>
-<a server="VPH" category="thuyet-minh-tieng-viet" mode="91" color="gold" icon="vaphim.png">Thuyết Minh</a>
-<a server="VPH" category="hongkong" mode="91" color="gold" icon="vaphim.png">Hồng Kông</a>
-<a server="VPH" category="india" mode="91" color="gold" icon="vaphim.png">Ấn Độ</a>
-<a server="VPH" category="vietnamese" mode="91" color="gold" icon="vaphim.png">Việt Nam</a>
-<a server="VPH" category="korean" mode="91" color="gold" icon="vaphim.png">Hàn Quốc</a>
-<a server="VPH" category="music" mode="91" color="gold" icon="vaphim.png">Nhạc</a>
-<a server="VPH" category="chuong_trinh-xuan" mode="91" color="gold" icon="vaphim.png">Chương Trình Xuân</a>
-<a server="VPH" category="lossless" mode="91" color="gold" icon="vaphim.png">Lossless</a>
-<a server="VPH" category="liveshow" mode="91" color="gold" icon="vaphim.png">Liveshow</a>
-<a server="VPH" category="mv-chau-a" mode="91" color="gold" icon="vaphim.png">MV Châu Á</a>
-<a server="VPH" category="mv-quoc-te" mode="91" color="gold" icon="vaphim.png">MV Quốc Tế</a>
-<a server="VPH" category="mv-viet-nam" mode="91" color="gold" icon="vaphim.png">MV Việt Nam</a>
-
+<a server="VPH" category="collection" mode="92" color="gold" icon="vaphim.png">Các Bộ Sưu Tập</a>
 <a server="IFI" category="capnhat" mode="31" color="blue" icon="ifiletv.png">Cập nhật danh mục Ifile.tv</a>
 <a server="IFI" category="demo" mode="34" color="blue" icon="ifiletv.png">Ifile.tv đề nghị</a>
 <a server="IFI" category="new" mode="34" color="blue" icon="ifiletv.png">Phim mới nhất</a>
@@ -125,6 +88,7 @@
 
 <a server="FRE" category="hdviet.com" mode="22" color="darkorange" icon="hdviet.png">Kho phim trên hdviet.com</a>
 <a server="FRE" category="hayhaytv.vn" mode="23" color="tomato" icon="hayhaytv.png">Kho phim trên hayhaytv.vn</a>
+<a server="FRE" category="phimmoi.net" mode="24" color="ghostwhite" icon="phimmoi.png">Kho phim trên phimmoi.net</a>
 <a server="FRE" category="FPP" mode="07" color="orange" icon="fptplay.png">Kho phim trên fptplay.net</a>
 <a server="FRE" category="MGB" mode="17" color="orangered" icon="megabox.png">Kho phim trên megabox.vn (free)</a>
 <a server="MGB" category="megabox.vn" mode="17" color="lime" icon="megabox.png">Search trên megabox.vn</a>
@@ -133,8 +97,8 @@
 <a server="MGP" category="MGL" mode="17" color="orangered" icon="megabox.png">Phim lẻ</a>
 <a server="MGP" category="MGS" mode="17" color="orangered" icon="megabox.png">Phim bộ</a>
 <a server="FRE" category="DHD" mode="18" color="yellow" icon="dangcaphd.png">Kho phim trên dangcaphd.com (có phí - Thử nghiệm)</a>
-<a server="FRE" category="vuahd.tv" mode="21" color="deeppink" icon="icon.png">Kho phim trên Vuahd.tv</a>
-<a server="FRE" category="pubvn.tv" mode="19" color="limegreen" icon="icon.png">Kho phim trên Pubvn.net</a>
+<a server="FRE" category="vuahd.tv" mode="21" color="deeppink" icon="vuahd.png">Kho phim trên vuahd.tv</a>
+<a server="FRE" category="pubvn.tv" mode="19" color="limegreen" icon="pubvn.png">Kho phim trên pubvn.net</a>
 <a server="HDV" category="xshare.vn" mode="13" color="lime" icon="isearch.png">Search trên dữ liệu đã cập nhật về máy</a>
 <a server="HDV" category="UPD" mode="08" color="crimson" icon="hdvietnam.png">[COLOR lime]Cập nhật data[/COLOR] từ tất cả [COLOR blue]RSS hôm nay[COLOR crimson]của hdvietnam.com</a>
 <a server="HDV" category="MCS" mode="08" color="crimson" icon="hdvietnam.png">[COLOR blue]Mục CHIA SẺ PHIM[/COLOR] của hdvietnam.com</a>
