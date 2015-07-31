@@ -14,7 +14,7 @@ if not os.path.exists(datapath):os.mkdir(datapath)
 language = myaddon.getLocalizedString
 logoutf=myaddon.getSetting('logoutf')
 hd={'User-Agent':'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.81'}
-media_ext=['aif','iff','m3u','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp','asf','asx','avi','flv','mov','mp4','mpg','mkv','m4v','rm','swf','vob','wmv','bin','cue','dmg','iso','mdf','toast','vcd','ts','flac']
+media_ext=['aif','iff','m3u','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp','asf','asx','avi','flv','mov','mp4','mpg','mkv','m4v','rm','swf','vob','wmv','bin','cue','dmg','iso','mdf','toast','vcd','ts','flac','m2ts']
 icon={'icon':resource+'icon.png','fshare':resource+'fshare.png'}
 
 def mess(message, timeShown=5000):
@@ -64,17 +64,16 @@ def loginfshare():
 		"LoginForm[password]": myaddon.getSetting('password'),"LoginForm[rememberMe]": "0",
 		"fs_csrf":fs_csrf}
 	response=urlfetch.post(url=url,headers=hd,data=urllib.urlencode(form_fields))
-	if response and response.status==302:mess(u'Login Fshare.vn thành công',timeShown=100);f=response.cookiestring
-	else:mess(u'Login Fshare.vn thất bại');f=''
+	if response and response.status==302:
+		f=response.cookiestring;mess(u'[COLOR gold]Login Fshare.vn thành công[/COLOR]',timeShown=100)
+	else:mess(u'[COLOR red]Login Fshare.vn thất bại[/COLOR]');f=''
 	return f
 	
 def check_id_fshare(id):
-	url='https://www.fshare.vn/file/%s'%id;body=make_request(url)
-	if 'fshare' not in xshare_group(re.search('<title>(.+?)</title>',body),1).lower():
-		url='https://www.fshare.vn/folder/%s'%id
-		response=make_request(url,resp='o');body=response.body
-		if response and response.status==404:url=''
-	return url,body
+	url='https://www.fshare.vn/folder/%s'%os.path.basename(id).upper()
+	body=make_request(url,resp='o')
+	if body.status!=200:url=url.replace('folder','file');body=make_request(url,resp='o')
+	return url,body.body
 
 def main(url='',query=''):#mode=1
 	datafile=datapath+'xshare.xml'
@@ -85,13 +84,12 @@ def main(url='',query=''):#mode=1
 			if '/file/' in href:addir(name,href,icon['fshare'],mode=2,query='ContextMenu')
 			else:addir('[COLOR gold]'+name+'[/COLOR]',href,icon['fshare'],mode=1,query='ContextMenu',isFolder=True)
 	elif query == 'new': #Nhập ID mới
-		id = get_input('Hãy nhập ID phim của Fshare')
-		if id is None or id=='':return 'no'
-		id = id.strip().upper()
+		id = get_input('Hãy nhập ID phim của Fshare').strip()
+		if not id:return 'no'
 		if len(id)<10:mess(u'Bạn nhập ID link chưa đúng: '+id);return 'no'
 		url,body=check_id_fshare(id)
-		if url=='':mess(u'Không tìm được phim có ID là: '+id);return 'no'
-		name=re.search('<title>Fshare - (.+?)</title>',body);name=name.group(1) if name else url
+		name=xshare_group(re.search('<title>Fshare - (.+?)</title>',body),1)
+		if not name:name=url
 		makerequest(datafile,'<a href="%s">%s</a>\n'%(url,name),'a')
 		if '/file/' in url:addir(name,url,icon['fshare'],mode=2)
 		else:return main(url,body)
@@ -108,9 +106,7 @@ def main(url='',query=''):#mode=1
 	return ''
 	
 def play_url(url):
-	hd['Cookie'] = loginfshare()
-	if not hd['Cookie']: return 'no'
-	response = make_request(url,headers=hd,resp='o')
+	hd['Cookie']=loginfshare();response=make_request(url,hd,'o')
 	if response.status==302:direct_link=response.headers['location']
 	elif response.status==200:
 		fs_csrf=xshare_group(re.search('value="(.+?)" name="fs_csrf"',response.body),1);pw=''
@@ -122,10 +118,16 @@ def play_url(url):
 		try:
 			if 'url' in resp.json.keys():direct_link=resp.json['url'].encode('utf-8')
 			else:
+				retry=1;direct_link='fail'
+				while retry<4:
+					mess(u'[COLOR red]Đang cố gắng get link lại lần %d[/COLOR]'%retry)
+					xbmc.sleep(2000);response=make_request(url,hd,'o')
+					if response.status==302:direct_link=response.headers['location']
+					else:retry+=1
 				string=resp.json.items()[0][1] if len(resp.json.items()[0][1])>1 else resp.json.items()[0][1][0]
-				mess(string);direct_link='fail'
+				if direct_link=='fail':mess(string)
 		except:mess("Get link that bai");direct_link='fail'
-	else:mess("Get link that bai");direct_link='fail'
+	else:mess(u'[COLOR red]Get link that bai[/COLOR]');direct_link='fail'
 	if myaddon.getSetting('logoutf')=="true":make_request("https://www.fshare.vn/logout",hd)
 	if direct_link=='fail':return 'fail'
 	if os.path.splitext(direct_link)[1][1:].lower() not in media_ext:mess('sorry! this is not a media file');return 'fail'

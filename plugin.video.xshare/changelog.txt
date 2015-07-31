@@ -1,3 +1,10 @@
+[B]Version 3.2.12[/B] <31/07/2015>:
+ fix 18+ filter.
+ fix phimmoi.net nhieu part 
+ và một số hiệu chỉnh nhỏ khác
+ Thêm ContextMenu mục "Add to My Fshare favorite" và "Remove from My Fshare favorite"
+ 
+
 [B]Version 3.2.11[/B] <26/07/2015>:
 - Bổ sung: cụm server phimmoi.net
 - Update fptplay,vaphim,hdvietnam
