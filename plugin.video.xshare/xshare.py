@@ -229,9 +229,7 @@ def make_myFshare(name,url,img,fanart,mode,query):#11
 	def read_home():
 		file=joinpath(tempfolder,'fshare.cookie');hd['Cookie']=makerequest(file)
 		url='https://www.fshare.vn/home';body=make_request(url,hd)
-		if not body:
-			hd['Cookie']=loginfshare();body=make_request(url,hd)
-			makerequest(file,hd['Cookie'],'w');logout_site(hd['Cookie'],url)
+		if not body:hd['Cookie']=loginfshare();body=make_request(url,hd);makerequest(file,hd['Cookie'],'w')
 		return body
 	myFshare=myaddon.getSetting('thumucrieng')
 	if not myFshare or (myFshare=='RDA4FHXVE2UU' and myaddon.getSetting('usernamef')!='thai@thanhthai.net'):
