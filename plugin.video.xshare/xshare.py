@@ -9,7 +9,7 @@ sys.path.append(os.path.join(home,'resources','lib'));from urlfetch import get,p
 search_file=os.path.join(datapath,"search.xml");data_path=os.path.join(home,'resources','data')
 
 myfolder= myaddon.getSetting('thumuccucbo').decode('utf-8');copyxml=myaddon.getSetting('copyxml')
-if not os.path.exists(myfolder):myfolder=os.path.join(datapath,'myfolder')
+if not os.path.exists(myfolder.encode('utf-8')):myfolder=os.path.join(datapath,'myfolder')
 subsfolder=os.path.join(myfolder,'subs');tempfolder=os.path.join(myfolder,'temp')
 rows=int(myaddon.getSetting('sodonghienthi'))
 googlesearch=myaddon.getSetting('googlesearch')
@@ -2981,7 +2981,6 @@ def get_params():#print json.dumps(json["content"],indent=2,sort_keys=True)
 			if (len(splitparams))==2:
 				param[splitparams[0]]=splitparams[1]
 	return param
-
 xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 params=get_params()
 homnay=datetime.date.today().strftime("%d/%m/%Y")
