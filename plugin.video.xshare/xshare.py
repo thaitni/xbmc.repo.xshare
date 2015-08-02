@@ -2,21 +2,14 @@
 import xbmc,xbmcplugin,xbmcgui,xbmcaddon,urllib,re,os,unicodedata,datetime,random,json
 
 myaddon=xbmcaddon.Addon()
-home=xbmc.translatePath(myaddon.getAddonInfo('path'))
-datapath=xbmc.translatePath(os.path.join( xbmc.translatePath(myaddon.getAddonInfo('profile')),'data'))
-iconpath=xbmc.translatePath(os.path.join( xbmc.translatePath(myaddon.getAddonInfo('profile')),'icon'))
+home=xbmc.translatePath(myaddon.getAddonInfo('path'));datapath=xbmc.translatePath(myaddon.getAddonInfo('profile'))
+iconpath=os.path.join(datapath,'icon');datapath=os.path.join(datapath,'data')
 sys.path.append(os.path.join(home,'resources','lib'));from urlfetch import get,post
 search_file=os.path.join(datapath,"search.xml");data_path=os.path.join(home,'resources','data')
-
-myfolder= myaddon.getSetting('thumuccucbo').decode('utf-8');copyxml=myaddon.getSetting('copyxml')
-if not os.path.exists(myfolder.encode('utf-8')):myfolder=os.path.join(datapath,'myfolder')
-subsfolder=os.path.join(myfolder,'subs');tempfolder=os.path.join(myfolder,'temp')
-rows=int(myaddon.getSetting('sodonghienthi'))
-googlesearch=myaddon.getSetting('googlesearch')
-thumucrieng='https://www.fshare.vn/folder/'+myaddon.getSetting('thumucrieng').upper()
+rows=int(myaddon.getSetting('sodonghienthi'));googlesearch=myaddon.getSetting('googlesearch')
 
 media_ext=['aif','iff','m3u','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp','asf','asx','avi','flv','mov','mp4','mpg','mkv','m4v','rm','swf','vob','wmv','bin','cue','dmg','iso','mdf','toast','vcd','ts','flac','m2ts']
-color={'fshare':'[COLOR gold]','vaphim':'[COLOR gold]','phimfshare':'[COLOR khaki]','4share':'[COLOR blue]','tenlua':'[COLOR fuchsia]','fptplay':'[COLOR orange]','trangtiep':'[COLOR lime]','search':'[COLOR lime]','ifile':'[COLOR blue]','hdvietnam':'[COLOR crimson]','xshare':'[COLOR blue]','subscene':'[COLOR green]','megabox':'[COLOR orangered]','dangcaphd':'[COLOR yellow]'};icon={}
+color={'fshare':'[COLOR gold]','vaphim':'[COLOR gold]','phimfshare':'[COLOR khaki]','4share':'[COLOR blue]','tenlua':'[COLOR fuchsia]','fptplay':'[COLOR orange]','trangtiep':'[COLOR lime]','search':'[COLOR lime]','ifile':'[COLOR blue]','hdvietnam':'[COLOR firebrick]','xshare':'[COLOR blue]','subscene':'[COLOR green]','megabox':'[COLOR orangered]','dangcaphd':'[COLOR yellow]'};icon={}
 for hd in ['xshare','4share', 'dangcaphd', 'downsub', 'favorite', 'fptplay', 'fshare', 'gsearch', 'hdvietnam', 'icon', 'id', 'ifiletv', 'isearch', 'khophim', 'maxspeed', 'megabox', 'movie', 'msearch', 'myfolder', 'myfshare', 'phimfshare', 'serverphimkhac', 'setting', 'tenlua', 'vaphim']:
 	icon.setdefault(hd,os.path.join(iconpath,'%s.png'%hd))
 hd = {'User-Agent' : 'Mozilla/5.0 Chrome/39.0.2171.71 Firefox/33.0'}
@@ -47,10 +40,9 @@ def joinpath(p1,p2):
 	return p
 
 def init_file():
-	if not os.path.exists(xbmc.translatePath(myaddon.getAddonInfo('profile'))):
-		os.mkdir(xbmc.translatePath(myaddon.getAddonInfo('profile')))
-	for i in (datapath,iconpath,myfolder,subsfolder,tempfolder):
-		if not os.path.exists(i):os.mkdir(i)
+	datafolder=xbmc.translatePath(myaddon.getAddonInfo('profile'))
+	for folder in (datafolder,datapath,iconpath,myfolder,subsfolder,tempfolder):
+		if not os.path.exists(folder):os.mkdir(folder)
 	xmlheader='<?xml version="1.0" encoding="utf-8">\n';p=datapath;q=myfolder
 	for i in [(p,'search.xml'),(p,'hdvietnam.xml'),(p,'favourites.xml'),(p,'phimmoi.xml'),(p,'fpt.xml'),(q,'mylist.xml')]:
 		file=joinpath(i[0],i[1])
@@ -1027,7 +1019,7 @@ def doc_xml(url,filename='',para=''):
 		items = re.compile(r).findall(body)
 		if len(items)<1:items = re.findall('.+()href="(.+?)".+img="(.*?)".*()>(.+?)</a>',body)
 		if len(items)<1:items = re.findall('.+()href="(.+?)".*()()>(.+?)</a>',body)
-		if (copyxml=="true") and ('http' in url) and (len(items)>0) :
+		if (myaddon.getSetting('copyxml')=="true") and ('http' in url) and (len(items)>0) :
 			filename=re.sub('\.xml.*','.xml',filename.replace('[COLOR orange]List xml[/COLOR]-',''))
 			filename=re.sub('\[.{1,10}\]','',filename);f_fullpath=joinpath(myfolder,filename)
 			if not os.path.isfile(f_fullpath):
@@ -1167,13 +1159,34 @@ def doc_thumuccucbo(name,url,img,fanart,mode,query):
 	else:mess(u'Chưa xử lý kiểu file này')
 	return 'no'
 
-def play_maxspeed_link(): 
-	query = get_input('Hãy nhập max speed link của Fshare, 4share hoặc tênlửa')
-	if query is None or query=='':return 'no'
-	query = query.replace(' ','')
-	if len(query)<50:mess(u'Bạn nhập link ID chưa đúng: '+query);return 'no'
-	xbmcsetResolvedUrl(query)
+def play_maxspeed_link(url):
+	if not url or url=='Maxlink':
+		query=get_input('Hãy nhập max speed link của Fshare, 4share hoặc tênlửa')
+		if query is None or query=='':return 'no'
+		url=query.replace(' ','')
+	elif len(url)<13:
+		fsend=getFsend(url)
+		if fsend:url=fsend[0][1]
+		else:mess(u'[COLOR red]Lỗi get Fsend[/COLOR]');return
+	if not check_media_ext(url,'fshare.vn'):xbmcsetResolvedUrl(url)
 	return ''
+
+def getFsend(id):
+	response=make_request('http://fsend.vn/'+id,hd,'o')#http://fsend.vn/2LJL4GPVZ48L file XXOA5LADP6FC folder
+	hd['Cookie']=response.cookiestring
+	token=xshare_group(re.search('"(.+?)"',urllib.unquote(response.cookiestring)),1)
+	data={"fs_csrf":"%s"%token,"DownloadForm[speed]":"slow","ajax":"download-form","undefined":"undefined"}
+	resp=make_post('http://fsend.vn/default/download',data=urllib.urlencode(data),headers=hd)
+	if resp.status==200:
+		try:json=resp.json
+		except:json=''
+	else:json=''
+	if json and json['code']==200:items=[(os.path.basename(json['url']),json['url'],'')]
+	elif json and json['code']==400:
+		pattern='avatar. title="(.+?)".+?<p><b>(.+?)</b></p>.+?<a href="/(.+?)"';items=[]
+		for title,size,id in re.findall(pattern,response.body,re.DOTALL):items.append((title,size,id))
+	else:items=[]
+	return items
 
 def tenlua_getlink(href):
 	idf=xshare_group(re.search('\w{14,20}',href),0)
@@ -1220,7 +1233,7 @@ def id_2url(url,name='',mode=0,page=0,query=''):
 		return items
 	if query=='MyFshare':query=thumucrieng;page=4
 	if page==0:
-		name='Nhập ID phim %sFshare[/COLOR]-%s4share[/COLOR] hoặc %stenlua[/COLOR]'%(color['fshare'],color['4share'],color['tenlua'])
+		name='Nhập ID (hoặc url) phim %sFshare (hoặc Fsend)[/COLOR]-%s4share[/COLOR] hoặc %stenlua[/COLOR]'%(color['fshare'],color['4share'],color['tenlua'])
 		addir(name,url,icon['icon'],mode=mode,query=query,page=1,isFolder=True)
 		for href,name in re.findall('<a href="(.+?)">(.+?)</a>',makerequest(search_file)):
 			addirs(name,href,icon['id'],query='ID?'+query)
@@ -1233,7 +1246,13 @@ def id_2url(url,name='',mode=0,page=0,query=''):
 		if items:addirs(items['name'],items['href'],items['img']);record.append((items['href'],items['name']))
 		elif len(idf)<13:
 			url=check_id_fshare(idf);query='fshare'
-			if url:name=doc_TrangFshare(name,url,icon[query],'')
+			fsend=getFsend(idf)
+			if fsend:
+				for title,size,id in fsend:#title,size,id
+					if id:addir(title+' - '+size,id,img=icon['fshare'],mode=16,query=id)
+					else:addir(title,size,img=icon['fshare'],mode=16,query=size)
+				name=fsend[0][0]
+			elif url:name=doc_TrangFshare(name,url,icon[query],'')
 			if url and name and name!='no':items['name']=name;items['href']=url;items['img']=icon['id']
 		else:
 			query='4share';name,url=check_id_4share(idf)
@@ -1529,7 +1548,7 @@ def pfs_getlink(content):#6+
 
 def subtitle_of_year(title):
 	string=xshare_group(re.search('(.+?20\d\d|.+?19\d\d)',title),1)
-	string=re.sub('multi ','',string,flags=re.I)
+	string=re.sub(xshare_group(re.search('multi ',string,re.IGNORECASE),0),'',string)
 	return string if string else title
 
 def phimFshare(name,url,mode,page,query):#6
@@ -2923,9 +2942,9 @@ def phimmoi(name,url,img,mode,page,query):
 			else:content=body;body=''
 			temp=re.search('data-servername=".+?" data-language="(.+?)"',content)
 			if temp:
-				temp='Server%d-%s[/COLOR] '%(numb,'Vietsub' if temp.group(1)=='subtitle' else 'TM')
-				temp+=re.sub('\[.?COLOR.{,12}\]|\(Lượt xem.*?\)','',name)
-			else:temp='[/COLOR]'+re.sub('\[.?COLOR.{,12}\]|\(Lượt xem.*?\)','',name)
+				temp='S%d-%s[/COLOR] '%(numb,'sub' if temp.group(1)=='subtitle' else 'TM')
+				temp+=re.sub('\[.?COLOR.{,12}\]|\(Lượt xem.*?\)|TM','',name)
+			else:temp='[/COLOR]'+re.sub('\[.?COLOR.{,12}\]|\(Lượt xem.*?\)|TM','',name)
 			for href,title in re.findall('href="(.+?)">(\d{1,3}).{,10}</a>',content,re.DOTALL):
 				title=colo[numb%2]+'Tập '+title.strip()+' '+temp
 				addir(title,home+href,img,fanart,mode,page,query='play')
@@ -2948,7 +2967,8 @@ def phimmoi(name,url,img,mode,page,query):
 				for epi in eps:
 					if geteps(epi)[1]==part_id:epiurl=geteps(epi)[0];break
 				body=make_post(href%epiurl) if epiurl else ''
-			else:make_eps(url,eps);body=make_post(href%geteps(eps[0])[0]);refresh=True
+			elif 'xem-phim.html' not in url:body=make_post(href%xshare_group(re.search(pattern,content),1))
+			else:make_eps(url,eps);body=make_post(href%geteps(eps[0])[0])
 		elif len(links)==1:#Chi co 1 ban full
 			body=make_post(href%xshare_group(re.search(pattern,make_request(home+links.values()[0])),1))
 		elif myaddon.getSetting('phimmoiaudio')=='true' and links.has_key('illustrate'):#sub Vie
@@ -2963,7 +2983,6 @@ def phimmoi(name,url,img,mode,page,query):
 			elif item.has_key('height') and item['height']>height:height=item['height'];url=item['url']
 		if not url:mess(u'[COLOR red]Không get được maxspeedlink[/COLOR]')
 		xbmcsetResolvedUrl(url)
-		if refresh:endxbmc();xbmc.executebuiltin("Container.Refresh")
 
 def get_params():#print json.dumps(json["content"],indent=2,sort_keys=True)
 	param=[]
@@ -2981,11 +3000,18 @@ def get_params():#print json.dumps(json["content"],indent=2,sort_keys=True)
 			if (len(splitparams))==2:
 				param[splitparams[0]]=splitparams[1]
 	return param
-xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-params=get_params()
-homnay=datetime.date.today().strftime("%d/%m/%Y")
-url=name=fanart=img=date=query=end=''
-mode=page=0;temp=[]
+
+try:
+	myfolder=str2u(myaddon.getSetting('thumuccucbo'))
+	if not os.path.exists(myfolder):myfolder=joinpath(datapath,'myfolder')
+except:myfolder=joinpath(datapath,'myfolder')
+subsfolder=joinpath(myfolder,'subs');tempfolder=joinpath(myfolder,'temp')
+thumucrieng=''.join(s for s in myaddon.getSetting('thumucrieng').split()).upper()
+if not thumucrieng or len(thumucrieng)<10:thumucrieng='RDA4FHXVE2UU'
+thumucrieng='https://www.fshare.vn/folder/'+thumucrieng
+
+xbmcplugin.setContent(int(sys.argv[1]), 'movies');params=get_params();mode=page=0;temp=[]
+homnay=datetime.date.today().strftime("%d/%m/%Y");url=name=fanart=img=date=query=end=''
 
 try:url=urllib.unquote_plus(params["url"])
 except:pass
@@ -3020,7 +3046,7 @@ elif mode==11:make_myFshare(name,url,img,fanart,mode,query)
 elif mode==12:make_mylist(name,url,img,fanart,mode,query)
 elif mode==13:end=xshare_search(name,url,query,mode,page)
 elif mode==15:end=id_2url(url,name,mode,page,query)
-elif mode==16:end=play_maxspeed_link()
+elif mode==16:end=play_maxspeed_link(url)
 elif mode==17:end=megabox(name,url,mode,page,query)
 elif mode==18:dangcaphd(name,url,img,mode,page,query)
 elif mode==19:pubvn(name,url,img,mode,page,query)

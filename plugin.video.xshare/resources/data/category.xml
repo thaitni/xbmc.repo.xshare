@@ -6,9 +6,9 @@
 <a server="MMN" category="PFS" mode="10" color="khaki" icon="phimfs.png">Kho phim trên http://phimfshare.com</a>
 <a server="MMN" category="FRE" mode="10" color="orange" icon="serverphimkhac.png">Kho phim trên các server khác (có phí và free)</a>
 <a server="MMN" category="HDV" mode="10" color="crimson" icon="hdvietnam.png">Thông tin phim mới nhất từ HDVietnam.com Forums</a>
-<a server="MMN" category="MainMenu" mode="16" color="gold" icon="maxspeed.png">Mở max speed direct link (khi đã get được link)</a>
 <a server="MMN" category="subscene.com" mode="94" color="green" icon="downsub.png">Download subs từ subscene.com</a>
-<a server="MMN" category="IDF" mode="15" color="" icon="id.png">Mở link [COLOR gold]Fshare[/COLOR], [COLOR blue]4share[/COLOR], [COLOR fuchsia]tenlua[/COLOR] [B]theo ID[/B]</a>
+<a server="MMN" category="Maxlink" mode="16" color="gold" icon="maxspeed.png">Mở max speed direct link (khi đã get được link)</a>
+<a server="MMN" category="IDF" mode="15" color="" icon="id.png">Mở link [COLOR gold]Fshare (Kể cả Fsend)[/COLOR], [COLOR blue]4share[/COLOR], [COLOR fuchsia]tenlua[/COLOR] [B]theo ID[/B]</a>
 <a server="MMN" category="thumuccucbo" mode="96" color="orange" icon="Myfolder.png">Thư mục cục bộ (MyFolder)</a>
 <a server="MMN" category="MyFshare" mode="15" color="gold" icon="Myfshare.png">Thư mục chia sẻ của tôi trên Fshare (MyFshare)</a>
 <a server="GGS" category="xshare.vn" mode="13" color="lime" icon="isearch.png">Search trên dữ liệu đã cập nhật về máy</a>
