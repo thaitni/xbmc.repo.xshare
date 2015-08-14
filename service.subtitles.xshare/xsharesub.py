@@ -36,20 +36,21 @@ def make_request(url):
 	
 def find_movie(title,film_year):
 	href = subscene+'/subtitles/title?q='+urllib.quote_plus(title)+'&r=true'
+	try:body=urlfetch.get(href).body
+	except:body=''
 	pattern=".*".join(title.split()).lower();url = None
-	for link,name,year in re.findall('<a href="(/subtitles/.+)">(.+)\((\d\d\d\d)\)</a>',urlfetch.get(href).body):
+	for link,name,year in re.findall('<a href="(/subtitles/.+)">(.+)\((\d\d\d\d)\)</a>',body):
 		name=re.sub("&# ","",no_accent(name).replace("&","and")).lower()
 		if film_year and re.search(pattern,name) and year==film_year:url=link;break
 		elif not film_year:
 			film_year1=str(date.today().year)
 			if re.search(pattern,name) and year==film_year1:url=link;break
-	if not url and re.search('S\d\d',title):
-		e=re.search('S(\d\d)',title).group(1)
-		thutu={'01':'First','02':'Second','03':'Third','04':'Fourth','05':'Fifth','06':'sixth','07':'Seventh','08':'Eighth','09':'ninth'}
-		seasons=["Specials","First","Second","Third","Fourth","Fifth","Sixth","Seventh","Eighth","Ninth","Tenth","Eleventh","Twelfth","Thirteenth","Fourteenth","Fifteenth","Sixteenth","Seventeenth","Eighteenth","Nineteenth","Twentieth","Twenty-first","Twenty-second","Twenty-third","Twenty-fourth","Twenty-fifth","Twenty-sixth","Twenty-seventh","Twenty-eighth","Twenty-ninth"]
-
-		title=re.sub('S\d\d.*','%s season'%seasons[int(e)],title)
-		url=find_movie(title,film_year)
+	if not url and re.search('[S|s]\d\d',title):
+		ss=re.search('[S|s](\d\d)',title).group(1)
+		seasons={'01':'First','02':'Second','03':'Third','04':'Fourth','05':'Fifth','06':'Sixth','07':'Seventh','08':'Eighth','09':'Ninth','10':'Tenth','11':'Eleventh','12':'Twelfth','13':'Thirteenth','14':'Fourteenth','15':'Fifteenth','16':'Sixteenth','17':'Seventeenth','18':'Eighteenth','19':'Nineteenth','20':'Twentieth','21':'Twenty-first','22':'Twenty-second','23':'Twenty-third','24':'Twenty-fourth','25':'Twenty-fifth','26':'Twenty-sixth','27':'Twenty-seventh','28':'Twenty-eighth','29':'Twenty-ninth'}
+		newtitle=re.sub('[S|s]\d\d.*','%s season'%seasons[ss],title)
+		if not re.search('[S|s]\d\d',newtitle):
+			return find_movie(newtitle,film_year)
 	return url
 
 def find_phudeviet(title,film_year):

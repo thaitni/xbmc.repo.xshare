@@ -1,4 +1,7 @@
-﻿[B]Version 1.1.1[/B] <15/05/2015>
+﻿[B]Version 1.1.2[/B] <14/08/2015>
+- Fix get subs film series
+
+[B]Version 1.1.1[/B] <15/05/2015>
 - Thêm tùy chọn không tự động dịch ra tiếng Việt
 
 [B]Version 1.1.0[/B] <30/04/2015>

@@ -1,3 +1,7 @@
+[B]Version 3.2.14[/B] <14/08/2015>:
+ Update Megabox.vn
+ Fix một số lỗi nhỏ
+
 [B]Version 3.2.13[/B] <02/08/2015>:
  fix lỗi không tương thích AB
  Bổ sung get ID Fsend.vn
