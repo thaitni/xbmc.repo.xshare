@@ -1,3 +1,8 @@
+[B]Version 3.2.15[/B] <14/09/2015>:
+ Update HDViet.com, hayhaytv.vn, FPTplay.net, Megabox.vn
+ Fix một số lỗi nhỏ
+ Thử nghiệm ViewMode Movie detail cho hayhaytv.vn
+
 [B]Version 3.2.14[/B] <14/08/2015>:
  Update Megabox.vn
  Fix một số lỗi nhỏ
