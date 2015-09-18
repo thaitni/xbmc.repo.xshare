@@ -1,3 +1,8 @@
+[B]Version 3.2.16[/B] <18/09/2015>:
+ Update HDViet.com
+ Fix một số lỗi nhỏ
+ Bổ sung HTVonline.com.vn
+
 [B]Version 3.2.15[/B] <14/09/2015>:
  Update HDViet.com, hayhaytv.vn, FPTplay.net, Megabox.vn
  Fix một số lỗi nhỏ
