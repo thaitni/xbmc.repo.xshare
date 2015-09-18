@@ -123,7 +123,7 @@ def addir(name,link,img='',fanart='',mode=0,page=0,query='',isFolder=False):
 	if not fanart:fanart=joinpath(home,'fanart.jpg')
 	item.setProperty('Fanart_Image',fanart)
 	li='%s?name=%s&url=%s&img=%s&fanart=%s&mode=%d&page=%d&query=%s'
-	li=li%(sys.argv[0],quote(name),quote(link),quote(img),quote(fanart),mode,page,query)
+	li=li%(sys.argv[0],name,quote(link),quote(img),quote(fanart),mode,page,query)
 	if not isFolder:item.setProperty('IsPlayable', 'true')
 	xbmcplugin.addDirectoryItem(int(sys.argv[1]),li,item,isFolder)
 
