@@ -8,8 +8,8 @@
 		<setting id="passwordt" type="text" option="hidden" label="Password [COLOR fuchsia]tenlua.vn[/COLOR]"/>
 		<setting id="usernameh" type="text" label="User name [COLOR crimson]HDVietnam.com[/COLOR]"/>
 		<setting id="passwordh" type="text" option="hidden" label="Password [COLOR crimson]HDVietnam.com[/COLOR]"/>
-		<setting id="mail_dchd" type="text" label="User name [COLOR yellow]dangcaphd.com[/COLOR] (email)" default=""/>
-		<setting id="pass_dchd" type="text" option="hidden" label="Password [COLOR yellow]dangcaphd.com[/COLOR]" default=""/>
+		<setting id="mail_dchd" type="text" label="User name [COLOR yellow]dangcaphd.com[/COLOR] (email)"/>
+		<setting id="pass_dchd" type="text" option="hidden" label="Password [COLOR yellow]dangcaphd.com[/COLOR]"/>
 		<setting id="usernamep" type="text" label="User name [COLOR deepskyblue]pub.vn[/COLOR]"/>
 		<setting id="passwordp" type="text" option="hidden" label="Password [COLOR deepskyblue]pub.vn[/COLOR]"/>
 		<setting id="usernamev" type="text" label="User name [COLOR deeppink]vuahd.tv[/COLOR] (email)"/>
@@ -18,8 +18,10 @@
 		<setting id="passhdviet" type="text" option="hidden" label="Password [COLOR darkorange]hdviet.com[/COLOR]"/>
 		<setting id="userhayhay" type="text" label="User name [COLOR tomato]hayhaytv.vn[/COLOR] (email/Số ĐT)"/>
 		<setting id="passhayhay" type="text" option="hidden" label="Password [COLOR tomato]hayhaytv.vn[/COLOR]"/>
-		<setting id="mail_fptplay" type="text" label="User name [COLOR orange]fptplay.net[/COLOR] (email)" default=""/>
-		<setting id="pass_fptplay" type="text" option="hidden" label="Password [COLOR orange]fptplay.net[/COLOR]" default=""/>
+		<setting id="mail_fptplay" type="text" label="User name [COLOR orange]fptplay.net[/COLOR] (email)"/>
+		<setting id="pass_fptplay" type="text" option="hidden" label="Password [COLOR orange]fptplay.net[/COLOR]"/>
+		<setting id="userphimmoi" type="text" label="User name [COLOR ghostwhite]phimmoi.net[/COLOR]"/>
+		<setting id="passphimmoi" type="text" option="hidden" label="Password [COLOR ghostwhite]phimmoi.net[/COLOR]"/>
 	</category>
 	<category label="Thông tin khác">
 		<setting id="thumucrieng" type="text" label="[COLOR blue]Mục chia sẻ của tôi trên Fshare[/COLOR] ([COLOR gold]ID MyFshare[/COLOR])" default="RDA4FHXVE2UU"/>

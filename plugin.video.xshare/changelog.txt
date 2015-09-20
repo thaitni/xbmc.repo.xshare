@@ -1,3 +1,7 @@
+[B]Version 3.2.17[/B] <20/09/2015>:
+ Update phimmoi.net, hayhaytv
+ Fix một số lỗi nhỏ
+ 
 [B]Version 3.2.16[/B] <18/09/2015>:
  Update HDViet.com
  Fix một số lỗi nhỏ
