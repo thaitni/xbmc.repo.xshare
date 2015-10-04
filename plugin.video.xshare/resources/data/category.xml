@@ -97,6 +97,8 @@
 <a server="FRE" category="vuahd.tv" mode="21" color="deeppink" icon="vuahd.png">Kho phim trên vuahd.tv</a>
 <a server="FRE" category="pubvn.tv" mode="19" color="limegreen" icon="pubvn.png">Kho phim trên pubvn.net</a>
 <a server="HDV" category="xshare.vn" mode="13" color="lime" icon="isearch.png">Search trên dữ liệu đã cập nhật về máy</a>
+<a server="HDV" category="muctheodoi" mode="08" color="crimson" icon="hdvietnam.png">[COLOR blue]Room Theo dõi của tôi[/COLOR] trên hdvietnam.com</a>
+<a server="HDV" category="get_room_id" mode="08" color="lime" icon="hdvietnam.png">Get room HDVietnam theo ID</a>
 <a server="HDV" category="UPD" mode="08" color="crimson" icon="hdvietnam.png">[COLOR lime]Cập nhật data[/COLOR] từ tất cả [COLOR blue]RSS hôm nay[COLOR crimson]của hdvietnam.com</a>
 <a server="HDV" category="MCS" mode="08" color="crimson" icon="hdvietnam.png">[COLOR blue]Mục CHIA SẺ PHIM[/COLOR] của hdvietnam.com</a>
 <a server="HDV" category="000" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay của hdvietnam.com</a>
