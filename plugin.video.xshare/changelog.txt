@@ -1,3 +1,7 @@
+[B]Version 3.2.21[/B] <27/10/2015>:
+ Update Xshare search, hayhaytv
+ Fix vuahd và một số lỗi nhỏ
+ 
 [B]Version 3.2.20[/B] <21/10/2015>:
  Rebuild Xshare search
  Fix hdviet.com, phimmoi.net, 4share, getlink Fshare và một số lỗi nhỏ
