@@ -11,9 +11,6 @@ tempath = xbmc.translatePath(os.path.join( xbmc.translatePath(addon.getAddonInfo
 if not os.path.exists(xbmc.translatePath(addon.getAddonInfo('profile'))):
 	os.mkdir(xbmc.translatePath(addon.getAddonInfo('profile')))
 if not os.path.exists(tempath):os.mkdir(tempath)
-subsfolder = os.path.join(xbmc.translatePath('special://temp'),'subs')
-if not os.path.exists(subsfolder):os.mkdir(subsfolder)
-
 subscene = "http://subscene.com"
 sys.path.append(libpath)
 import urlfetch
@@ -34,7 +31,7 @@ def make_request(url):
 		strip_unicode = re.compile("([^-_a-zA-Z0-9!@#%&=,/'\";:~`\$\^\*\(\)\+\[\]\.\{\}\|\?<>\\]+|[^\s]+)")
 		body = strip_unicode.sub('', body)
 		response.close()
-	except:body=''
+	except:body=None
 	return body
 	
 def find_movie(title,film_year):
@@ -159,13 +156,10 @@ def download(link,img):
 			response=urlfetch.post(match.group(1))
 			if response.status==302:downloadlink=response.headers['location']
 	else:
-		pattern='<a href="(.+?)" rel="nofollow" onclick="DownloadSubtitle.+">';print link
-		#body=make_request(link);print len(body)
-		try:match = re.search(pattern,urlfetch.get(link).body)
-		except:match=''
+		pattern='<a href="(.+?)" rel="nofollow" onclick="DownloadSubtitle.+">'
+		match = re.search(pattern,make_request(link))
 		if match:downloadlink=subscene + match.group(1)
 	if not downloadlink:mess(u'Không tìm được maxspeed link sub');return
-	print downloadlink
 		
 	typeid="srt"
 	if os.path.exists(tempath):
@@ -189,7 +183,6 @@ def download(link,img):
 	if typeid in "rar-zip":
 		xbmc.sleep(500)
 		xbmc.executebuiltin(('XBMC.Extract("%s","%s")' % (tempfile, tempath,)).encode('utf-8'), True)
-		xbmc.executebuiltin(('XBMC.Extract("%s","%s")' % (tempfile, subsfolder,)).encode('utf-8'), True)
 
 	exts = [".srt", ".sub", ".txt", ".smi", ".ssa", ".ass"]
 	for root, dirs, files in os.walk(tempath):

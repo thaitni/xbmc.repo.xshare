@@ -1,7 +1,3 @@
-[B]Version 3.2.22[/B] <01/11/2015>:
- Ra mắt bản thử nghiệm vaphim mới, gở bỏ phimfshare.com
- Fix goole search và một số lỗi nhỏ
- 
 [B]Version 3.2.21[/B] <27/10/2015>:
  Update Xshare search, hayhaytv
  Fix vuahd và một số lỗi nhỏ
