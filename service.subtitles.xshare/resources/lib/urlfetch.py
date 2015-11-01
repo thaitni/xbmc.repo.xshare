@@ -6,11 +6,11 @@ urlfetch
 
 An easy to use HTTP client based on httplib.
 
-:copyright: (c) 2011-2014 by Yue Du.
+:copyright: (c) 2011-2015 by Yue Du.
 :license: BSD 2-clause License, see LICENSE for more details.
 """
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 __author__ = 'Yue Du <ifduyue@gmail.com>'
 __url__ = 'https://github.com/ifduyue/urlfetch'
 __license__ = 'BSD 2-Clause License'
@@ -832,13 +832,13 @@ def mb_code(s, coding=None, errors='replace'):
     return unicode(s, errors=errors)
 
 
-def random_useragent(filename=None):
+def random_useragent(filename=True):
     """Returns a User-Agent string randomly from file.
 
     :arg string filename: (Optional) Path to the file from which a random
-        useragent is generated. By default it's ``None``, a file shiped
+        useragent is generated. By default it's ``True``, a file shipped
         with this module will be used.
-    :returns: A User-Agent string.
+    :returns: An user-agent string.
     """
     import random
 
@@ -847,13 +847,8 @@ def random_useragent(filename=None):
     else:
         filenames = []
 
-    if filename:
-        filenames.extend([
-            os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                         'urlfetch.useragents.list'),
-            os.path.join(sys.prefix, 'share', 'urlfetch',
-                         'urlfetch.useragents.list'),
-        ])
+    if filename and HAS_UAFILE:
+        filenames.append(UAFILE_PATH)
 
     for filename in filenames:
         try:
@@ -1019,3 +1014,6 @@ PROXY_IGNORE_HOSTS = ('127.0.0.1', 'localhost')
 PROXIES = get_proxies_from_environ()
 writer = codecs.lookup('utf-8')[3]
 BOUNDARY_PREFIX = None
+UAFILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           'urlfetch.useragents.list')
+HAS_UAFILE = os.path.isfile(UAFILE_PATH)
