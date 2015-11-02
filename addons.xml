@@ -36,7 +36,7 @@
     </extension>
 </addon>
 
-<addon id="service.subtitles.xshare" name="xshare subtitles" version="1.1.2" provider-name="thaitni">
+<addon id="service.subtitles.xshare" name="xshare subtitles" version="1.1.3" provider-name="thaitni">
     <requires><import addon="xbmc.python" version="2.1.0"/></requires>
     <extension point="xbmc.subtitle.module" library="xsharesub.py"/>
     <extension point="xbmc.addon.metadata">
