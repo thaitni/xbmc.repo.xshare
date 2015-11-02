@@ -843,22 +843,21 @@ def google_search(url,query,mode,page,items=[]):
 	return ''
 
 def google_search_web(url,start,query,items):
-	num='20';google = 'https://www.google.com.vn/search?hl=vi&ie=utf-8&oe=utf-8&num=%s&'%num
+	#num='20';google = 'https://www.google.com.vn/search?hl=vi&ie=utf-8&oe=utf-8&num=%s&'%num
+	num='20';google = 'https://www.google.com.vn/search?hl=vi&num=%s&'%num
 	string_search = urllib.quote_plus('"%s"'%query);srv=url.split('.')[0]
 	if 'xshare' in start:start=start.replace('xshare','');xshare='yes'
 	else:xshare=''
 	href=google+'start=%s&q=site:%s+%s'%(start,url.lower(),string_search);print href
-	body=make_request(href,hd)
+	body=make_request(href)
 	if '<TITLE>302 Moved</TITLE>' in body:
 		mess(u'Google từ chối dịch vụ do bạn đã truy cập quá nhiều!','google_search_web');return items,'end'
 	links=re.findall('<a href="(.{,300})" onmousedown=".{,200}">(.{,200})</a></h3>',body)
 	for link,name in links:
-		print 'aaa '+link
 		if 'tenlua.vn' in link and not re.search('\w{14,20}/(.*)\Z',link):continue
 		elif not name or 'Forum' in name or 'server-nuoc-ngoai' in link:continue
 		elif 'chuyenlink.php' in link:continue
 		items.append((unescape(name),link))
-		print '---bbb '+link
 	start=str(int(start)+int(num))
 	if 'start=%s'%start not in body:start='end'
 	elif 'xshare':start=start+'xshare'
