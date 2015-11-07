@@ -1,3 +1,7 @@
+[B]Version 3.2.25[/B] <07/11/2015>:
+ Ra mắt bản thử nghiệm Download rar file
+ Fix goole search, GET maxspeed link Fshare
+ 
 [B]Version 3.2.22-24[/B] <01/11/2015>:
  Ra mắt bản thử nghiệm vaphim mới, gở bỏ phimfshare.com
  Fix goole search và một số lỗi nhỏ
