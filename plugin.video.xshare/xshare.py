@@ -1912,7 +1912,9 @@ def download_subs(directlink):
 		filelength=int(response.headers.get('content-length'))
 	except:return 'no'
 	filename=xsearch('filename=(.+?)\Z',response.headers.get('content-disposition',''),1).replace('"','')
-	if not filename:filename=remove_tag(name)
+	if not filename:
+		filename=os.path.basename(urllib.unquote(directlink))
+		if not filename:filename=remove_tag(name)
 
 	if myaddon.getSetting('autodel_sub')=='true':delete_folder(subsfolder)
 	temp_path=joinpath(tempfolder,'temp');mediafile=False

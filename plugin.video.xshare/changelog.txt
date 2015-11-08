@@ -1,3 +1,6 @@
+[B]Version 3.2.26[/B] <08/11/2015>:
+ Fix HDViet auto download sub
+ 
 [B]Version 3.2.25[/B] <07/11/2015>:
  Ra mắt bản thử nghiệm Download rar file
  Fix goole search, GET maxspeed link Fshare
