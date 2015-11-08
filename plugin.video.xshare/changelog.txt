@@ -1,4 +1,7 @@
-[B]Version 3.2.26[/B] <08/11/2015>:
+[B]Version 3.2.27[/B] <08/11/2015>:
+ Bổ sung phiên bản thử nghiệm: Mục chia sẻ nhac của HDVN
+ 
+ B]Version 3.2.26[/B] <08/11/2015>:
  Fix HDViet auto download sub
  
 [B]Version 3.2.25[/B] <07/11/2015>:

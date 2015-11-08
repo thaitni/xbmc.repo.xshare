@@ -85,6 +85,7 @@
 <a server="HDV" category="get_room_id" mode="08" color="lime" icon="hdvietnam.png">Get room HDVietnam theo ID</a>
 <a server="HDV" category="UPD" mode="08" color="crimson" icon="hdvietnam.png">[COLOR lime]Cập nhật data[/COLOR] từ tất cả [COLOR blue]RSS hôm nay[COLOR crimson]của hdvietnam.com</a>
 <a server="HDV" category="MCS" mode="08" color="crimson" icon="hdvietnam.png">[COLOR blue]Mục CHIA SẺ PHIM[/COLOR] của hdvietnam.com</a>
+<a server="HDV" category="CSN" mode="08" color="crimson" icon="hdvietnam.png">[COLOR green]Mục CHIA SẺ NHẠC[/COLOR] của hdvietnam.com</a>
 <a server="HDV" category="000" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay của hdvietnam.com</a>
 <a server="HDV" category="33" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [COLOR gold]Fshare.vn[/COLOR]</a>
 <a server="HDV" category="146" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [COLOR blue]4share.vn[/COLOR]</a>

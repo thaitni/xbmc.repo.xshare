@@ -46,7 +46,7 @@ def clean_string(string):
 def remove_tag(string):
 	if '::' in string:string=string.split('::')[1]
 	string=re.sub('\t|\n|\r|\f|\v|vn|Fshare|fshare|4share|4Share|TenLua|tenlua|List xml',' ',string)
-	string=re.sub('\[/?COLOR.*?\]|\[\s*\]|\(.*?\)|\{.*?\}|<.*?>|\"|\'|-|:|\||,|&\w*;|/|br|\.',' ',string)
+	string=re.sub('\[/?COLOR.*?\]|\[\s*\]|\(.*?\)|\{.*?\}|<.*?>|\"|\'|-|\||,|&\w*;|/|br|\.',' ',string)
 	return ' '.join(i for i in u2s(unescape(string)).split())
 
 def joinpath(p1,p2):
@@ -503,15 +503,18 @@ def tenlua_get_detail_and_starting(id,headers={'User-Agent':'Mozilla/5.0 Chrome/
 
 def fshare_resolve(url,xml):
 	def get_pass_file():return get_input(u'Hãy nhập: Mật khẩu tập tin')
-	hd['Cookie']=loginfshare();loops=range(6);file_pass=direct_link=pass_file=accfree=''
+	hd['Cookie']=loginfshare();loops=range(6);direct_link=pass_file=error404=''
 	if not hd['Cookie']:return 'fail'#login fail
 	for loop in loops:
 		if loop>0:mess(u'Get link lần thứ %d'%(loop+1),'fshare.vn');xbmc.sleep(3000)
 		response=make_request(url,hd,resp='o')
 		if not response:continue
 		elif response.status==302:direct_link=response.headers['location'];break
-		else:
-			if re.search('<i class="fa fa-star">',response.body):xbmc.sleep(1000);mess('Your Fshare acc is FREE')
+		elif response.status==200:
+			if 'Lỗi 404' in xsearch('<title>(.+?)</title>',response.body,1):
+				error404='Y';mess(u'Tập tin quý khách yêu cầu không tồn tại!','fshare.vn');xbmc.sleep(3000);break
+			elif re.search('<i class="fa fa-star">',response.body):
+				xbmc.sleep(1000);mess('Your Fshare acc is FREE')
 			if not pass_file and xsearch('(class="fa fa-lock")',response.body,1):pass_file=get_pass_file()
 			fs_csrf=xsearch('value="(.+?)" name="fs_csrf',response.body,1)
 			data={'fs_csrf':fs_csrf,'DownloadForm[pwd]':pass_file,
@@ -524,8 +527,11 @@ def fshare_resolve(url,xml):
 					try:mess(response.get('DownloadForm_pwd')[0])
 					except:mess(u'Mật khẩu chưa chính xác')
 					xbmc.sleep(5000);break
+		else:print  'response.status: %d'%response.status
 	logout_site(hd['Cookie'],url)
-	if not direct_link and not accfree:mess('Sorry! Potay.com','fshare.vn');return 'fail'
+	if not direct_link:
+		if not error404:mess('Sorry! Potay.com','fshare.vn')
+		return 'fail'
 	elif xml:return direct_link
 	elif not check_media_ext(direct_link):return 'fail'
 	else:xbmcsetResolvedUrl(direct_link);return ''
@@ -1674,17 +1680,20 @@ def hdvietnam(name,url,img,fanart,mode,page,query):
 			if label:label=label[0]
 			elif re.split('\d{4}',label)[0] in name:label=remove_tag(name)
 			else:label=remove_tag(xsearch('<font size=.+?>(.+?)</font>',content,1,re.DOTALL))
+			label1=remove_tag(xsearch('id="post_message_.{,100}<b>(.+?)</b>',content,1))
+			label2=remove_tag(xsearch('<b>(.{20,80})</b>',content,1));label2='%s - '%label2 if label2 else ''
 			img=xsearch('img src="(.+?)"',content,1)
 			if not img:img=xsearch('img src="(.+?\.jpg)"',content,1)
 			for href,title in re.findall(pattern1,content):
 				if [s for s in ['fshare.vn','4share.vn','tenlua.vn','subscene.com'] if s in title]:
-					items.append((0,label,href,img))
-				elif not [s for s in ['fshare.vn','4share.vn','tenlua.vn','subscene.com'] if s in title]:
+					title=label1 if label1 else label2+label;items.append((0,title,href,img))
+				elif [s for s in ['fshare.vn','4share.vn','tenlua.vn','subscene.com'] if s not in title]:
 					items.append((0,remove_tag(title),href,img))
 				elif 'showthread.php' in href:items.append((1,remove_tag(title),href,img))
 			for links in re.findall(pattern2,content):
+				title=label1 if label1 else label2+label
 				for link in [s for s in links if s and '...' not in s]:
-					if link not in str(items):items.append((0,label,link,img))
+					if link not in str(items):items.append((0,title,link,img))
 		items=[(s[1],s[2].replace('amp;',''),s[3]) for s in sorted(items)]
 		#CÁC CHỦ ĐỀ CÙNG CHUYÊN MỤC
 		content=xsearch('<div class="morethread">(.+?)"postfoot_container"',body,1)
@@ -1776,6 +1785,10 @@ def hdvietnam(name,url,img,fanart,mode,page,query):
 			addir_info(title,href,img,query='get_link_post',menu=menu)
 	elif query=='MCS':
 		body=make_request('http://www.hdvietnam.com/diendan/34-chia-se-phim/?styleid=25')
+		for href,name in re.findall('<h3><a href="(.+?)">(.+?)</a></h3>',body):
+			addir_info(namecolor(name),urlhome+href.split('&')[0],img,query='PL1')
+	elif query=='CSN':
+		body=make_request('http://www.hdvietnam.com/diendan/148-chia-se-nhac/?styleid=25')
 		for href,name in re.findall('<h3><a href="(.+?)">(.+?)</a></h3>',body):
 			addir_info(namecolor(name),urlhome+href.split('&')[0],img,query='PL1')
 	elif query=='PL1':
@@ -1920,25 +1933,27 @@ def download_subs(directlink):
 	temp_path=joinpath(tempfolder,'temp');mediafile=False
 	if not os.path.exists(temp_path):os.mkdir(temp_path)
 	else:delete_folder(temp_path)
-	tempfile=joinpath(temp_path,filename);endfile=True;print tempfile
-
+	tempfile=joinpath(temp_path,'tempfile.%s'%os.path.splitext(filename)[1][1:])
+	
 	if filelength<1024**2:content=makerequest(tempfile,response.body,"wb")
 	elif filelength<2*1024**3:
-		line1='Sẽ mất nhiều thời gian tải file ZIP vào "[B]Thư Mục Cục Bộ[/B]"!';content=''
-		if filelength<100*1024**2 or  mess_yesno(line1=line1, line2='Bạn có đồng ý không?',no='Không',yes='Đồng Ý'):
+		if filelength>1024**3:size='%d.%d GB'%(filelength/(1024**3),(filelength%(1024**3))/10**7)
+		else:size='%d.%d MB'%(filelength/(1024**2),(filelength%(1024**2))/10**4)
+		line1='[COLOR green]File: %s - %s[/COLOR]'%(filename,size)
+		line2='Sẽ mất nhiều thời gian tải file vào "[B]Thư Mục Cục Bộ[/B]"!';content=''
+		if filelength<100*1024**2 or  mess_yesno('xshare cảnh báo',line1,line2,'No - Không tải','Yes - Đồng Ý tải'):
 			losslessfolder=joinpath(myfolder,'Lossless')
 			if not os.path.exists(losslessfolder):os.mkdir(losslessfolder)
 			if filelength>100*1024**2:endxbmc()
-			f=open(tempfile,'wb');i=0;mess(u'Start Background downloading...',timeShown=50000);i=j=t=0;fn=''
+			f=open(tempfile,'wb');i=0;mess(u'Started Background download...',timeShown=50000);i=j=t=0;fn=''
 			for chunk in response:
 				f.write(chunk);i+=len(chunk)
 				if i*10/filelength>j:j+=1;mess(u'Đã download được %d%%'%(j*10),timeShown=20000)
 			f.close();mess(u'Đang Unzip...',timeShown=10000)
 			xbmc.sleep(1000);xbmc.executebuiltin('XBMC.Extract("%s","%s")'%(tempfile,u2s(losslessfolder)),True)
 			for filefullpath in folders(losslessfolder):
-				if not checkmedia(filefullpath):os.remove(filefullpath)
-				else:
-					if os.path.getmtime(filefullpath)>t:fn=filefullpath;t=os.path.getmtime(fn)
+				if not checkmedia(filefullpath) and 'nrg' not in filefullpath:os.remove(filefullpath)
+				elif os.path.getmtime(filefullpath)>t:fn=filefullpath;t=os.path.getmtime(fn)
 			if fn and filelength<100*1024**2:
 				xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xbmcgui.ListItem(path=fn))
 			mess(u'Đã download xong. Hãy mở Thư Mục Cục Bộ và thưởng thức tiếp nhé',timeShown=20000)
@@ -1965,7 +1980,7 @@ def download_subs(directlink):
 					mess(u'Đã download sub vào Subsfolder','Subs Downloader') 
 	elif rename_file(tempfile,joinpath(subsfolder,'Vie.%s'%filename)):
 		mess(u'Đã download sub vào Subsfolder','Subs Downloader')
-	return 'ok'
+	return 'no'
 
 def xshare_trans(sourcefile):
 	tempfile = os.path.join(tempfolder, "trans"+os.path.splitext(sourcefile)[1])
@@ -3659,7 +3674,7 @@ def addir_info(name,url,img,fanart='',mode=0,page=0,query='',isFolder=False,info
 		elif 'vaphim.com/' in url:name='%s%s[/COLOR]'%(color['vaphim'],name);mode=1
 		#elif 'vaphim.com/' in url:name='%s%s[/COLOR]'%(color['vaphim'],name);mode=25
 		elif 'phimfshare.com/' in url:name='%s%s[/COLOR]'%(color['vaphim'],name);mode=6
-		elif 'hdvietnam.com' in url:name='%sHDVietnam[/COLOR] %s'%(color['hdvietnam'],name);mode=8
+		elif 'hdvietnam.com' in url:name='%sHDVN[/COLOR] %s'%(color['hdvietnam'],name);mode=8
 		return u2s(name),url,mode,isfolder
 	def get_menu(menu,url):
 		lists=list()
