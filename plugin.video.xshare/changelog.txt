@@ -1,3 +1,6 @@
+[B]Version 3.2.28[/B] <10/11/2015>:
+ Fix HDViet, hayhaytv, download sub
+ 
 [B]Version 3.2.27[/B] <08/11/2015>:
  Bổ sung phiên bản thử nghiệm: Mục chia sẻ nhac của HDVN
  

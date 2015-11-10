@@ -11,11 +11,11 @@ except:rows=30
 tempfolder=xbmc.translatePath('special://temp')
 xbmcplugin.setContent(int(sys.argv[1]), 'movies');homnay=datetime.date.today().strftime("%d/%m/%Y")
 
-media_ext=['aif','iff','m3u','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp','asf','asx','avi','flv','mov','mp4','mpg','mkv','m4v','rm','swf','vob','wmv','bin','cue','dmg','iso','mdf','toast','vcd','ts','flac','m2ts','dtshd','nrg']
+media_ext=['aif','iff','m3u','m3u8','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp','asf','asx','avi','flv','mov','mp4','mpg','mkv','m4v','rm','swf','vob','wmv','bin','cue','dmg','iso','mdf','toast','vcd','ts','flac','m2ts','dtshd','nrg']
 color={'fshare':'[COLOR gold]','vaphim':'[COLOR gold]','phimfshare':'[COLOR khaki]','4share':'[COLOR blue]','tenlua':'[COLOR fuchsia]','fptplay':'[COLOR orange]','trangtiep':'[COLOR lime]','search':'[COLOR lime]','ifile':'[COLOR blue]','hdvietnam':'[COLOR red]','xshare':'[COLOR blue]','subscene':'[COLOR green]','megabox':'[COLOR orangered]','dangcaphd':'[COLOR yellow]','hayhaytv':'[COLOR tomato]'};icon={}
 for hd in ['xshare','4share','dangcaphd','downsub','favorite','fptplay','fshare','gsearch','hdvietnam','icon','id','ifiletv','ifile','isearch','khophim','maxspeed','megabox','movie','msearch','myfolder','myfshare','phimfshare','serverphimkhac','setting','tenlua','vaphim','hayhaytv']:
 	icon.setdefault(hd,os.path.join(iconpath,'%s.png'%hd))
-hd={'User-Agent' : 'Mozilla/5.0 ;Windows NT 6.1; WOW64; Trident/7.0; rv:11.0; like Gecko; Chrome/39.0.2171.71; Firefox/33.0; Version/8.0 Mobile/12B440 Safari/600.1.4'}
+hd={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:41.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/600.1.4 Gecko/20100101 Firefox/41.0'}
 
 def mess(message='',title='',timeShown=5000):
 	if not message:xbmc.executebuiltin("Dialog.Close(all, true)")
@@ -174,7 +174,7 @@ def addirs(name,href,img='',fanart='',query=''):
 		addir(name,href,img,fanart,mode=97,query=query,isFolder=True)
 	elif query=='file':addir(name,href,img=icon['icon'],mode=96,query=query,isFolder=True)
 	elif 'www.fshare.vn/file' in href:
-		if s2u('phụ đề việt') in s2u(name).lower():
+		if 'phụ đề việt' in u2s(name).lower():
 			name=color['fshare']+'Phụ đề Việt[/COLOR]-%s'%name
 			addir(name,href,img,fanart,mode=3,query=query,isFolder=True)
 		else:addir(color['fshare']+'Fshare[/COLOR]-%s'%name,href,img,fanart,mode=3,query=query)
@@ -527,63 +527,129 @@ def fshare_resolve(url,xml):
 					try:mess(response.get('DownloadForm_pwd')[0])
 					except:mess(u'Mật khẩu chưa chính xác')
 					xbmc.sleep(5000);break
-		else:print  'response.status: %d'%response.status
+		else:print 'response.status: %d'%response.status
 	logout_site(hd['Cookie'],url)
-	if not direct_link:
-		if not error404:mess('Sorry! Potay.com','fshare.vn')
-		return 'fail'
+	if not direct_link and not error404:mess('Sorry! Potay.com','fshare.vn');return 'fail'
+	elif not direct_link:return 'fail'
 	elif xml:return direct_link
-	elif not check_media_ext(direct_link):return 'fail'
-	else:xbmcsetResolvedUrl(direct_link);return ''
+	else:return xshare_resolve(direct_link,os.path.splitext(direct_link)[1][1:].lower())
 
 def resolve_url(url,xml=False):
-	if 'fshare.vn' in url.lower():
-		return fshare_resolve('https://www.%s'%xsearch('(fshare.vn.+?)\Z',url,1),xml)
-	elif '4share.vn' in url.lower():hd['Cookie']=login4share();srv='4share.vn'
-	elif 'tenlua.vn' in url.lower():
-		hd['Cookie'] = logintenlua();srv='tenlua.vn'
-		idf=xsearch('\w{14,20}',url,0)
-		if not idf:idf=url.split('/download/')[1].split('/')[0]
-		download_info=tenlua_get_detail_and_starting(idf,hd)
-		if 'n' in download_info and os.path.splitext(download_info['n'])[1][1:].lower() not in media_ext:
-			mess('sorry! this is not a media file','resolve_url');return 'fail'
-		if 'dlink' in download_info:url=download_info['dlink']
-		elif 'url' in download_info:url=download_info['url'];mess(u'Slowly direct link!','resolve_url')
-		else:mess(u'Không get được max speed link!','resolve_url');return 'fail'
-	cookie = hd['Cookie']
-	response=make_request(url,headers=hd,resp='o')
-	if not response:xbmc.sleep(500);logout_site(cookie,url);return 'fail'
-	if response.status==302:direct_link=response.headers['location']
-	elif response.status==200 and '4share.vn' in url.lower():
-		FileDownload=re.search("Link Download.+?href='(.+?4share.vn.+?)'> <h4>(.+?)</h4>",response.body)
-		if FileDownload:direct_link=FileDownload.group(1);srv=FileDownload.group(2)
-		elif xsearch("<a style='text-decoration:none' href='(.+?)'>",response.body,1):
-			direct_link=xsearch("<a style='text-decoration:none' href='(.+?)'>",response.body,1);srv='4share.vn'
-		else:direct_link='fail'
-	else:direct_link='fail'
-	logout_site(cookie,url)
-	if direct_link=='fail':
-		if 'fshare.vn' not in url.lower():
-			if 'Error: FileLink da bi xoa' in  response.body:mess(u'Error: FileLink đã bị xóa!','resolve_url')
-			else:mess(u'Không get được max speed direct link!','resolve_url')
-		return 'fail'
-	if xml:return direct_link
-	if direct_link!='fail' and not check_media_ext(direct_link):return 'fail'
-	xbmcsetResolvedUrl(direct_link);return ''
+	urltemp=url.lower()
+	if 'fshare.vn' in urltemp:result=fshare_resolve('https://www.%s'%xsearch('(fshare.vn.+?)\Z',url,1),xml)
+	elif '4share.vn' in urltemp:result=fourshare_resolve(url)
+	elif 'tenlua.vn' in urltemp:result=tenlua_resolve(url,xml)
+	return result
 
-def check_media_ext(direct_link):
-	check=True;sub_ext=['rar','zip','srt','sub','txt','smi','ssa','ass','nfo']
-	if 'fshare.vn' in direct_link or '4share.vn' in direct_link:
-		if 'fshare.vn' in direct_link:file_ext=os.path.splitext(direct_link)[1][1:].lower()
-		else:
-			response=make_request(direct_link,resp='o')
-			file_ext=os.path.splitext(xsearch('filename="(.+?)"',str(response.headers),1))[1].replace('.','')
-		if file_ext not in media_ext:
-			if file_ext in sub_ext:download_subs(direct_link)
-			elif file_ext in 'xml XML':doc_list_xml(direct_link,'list_xml')
-			else:mess('sorry! this is not a media file','Check media extention')
-			check=False
-	return check
+def fourshare_resolve(url):
+	hd['Cookie']=login4share()
+	if not hd['Cookie']:return 'fail'#login fail
+	response=make_request(url,hd,resp='o');logout_site(hd['Cookie'],url)
+	if not response or response.status!=200:xbmc.sleep(2000);return 'fail'
+	direct_link=xsearch("<a style='text-decoration:none' href='(.+?)'>",response.body,1)
+	if not direct_link:
+		direct_link=xsearch("Link Download.+?href='(.+?4share.vn.+?)'>",response.body)
+		if not direct_link:
+			mess(u'Không get được maxspeed link!','resolve_url');return 'fail'
+	ext=os.path.splitext(xsearch('<title>(.+?)</title>',response.body,1))[1][1:].lower()
+	return xshare_resolve(direct_link,ext)
+
+def tenlua_resolve(url,xml):
+	hd['Cookie']=logintenlua();id=xsearch('\w{14,20}',url,0);direct_link=''
+	if not id:id=url.split('/download/')[1].split('/')[0]
+	download_info=tenlua_get_detail_and_starting(id,hd);print download_info
+	filename=u2s(download_info.get('n',''))
+	ext=os.path.splitext(filename)[1][1:].lower()
+	size=int(download_info.get('real_size','0'))
+	dlink=download_info.get('dlink','')
+	if not dlink:
+		dlink=download_info.get('url','');mess(u'Slowly direct link!','resolve_url')
+		if not dlink:mess(u'Không get được max speed link!','resolve_url');return 'fail'
+	response=make_request(dlink,hd,resp='o',maxr=2);logout_site(hd['Cookie'],url)
+	if response.history[1].status==302:return xshare_resolve(response.history[1].headers['location'],ext)
+	else:mess(u'Không get được max speed link!','resolve_url');return 'fail'
+
+def xshare_resolve(direct_link,ext='',filmlabel=''):
+	def get_detail_maxlink(direct_link):
+		response=make_request(direct_link,{'User-Agent':'xshare'},resp='o')
+		if not response:return 'fail'
+		detail=response.headers
+		size=int(detail.get('content-length',0))
+		filename=detail.get('content-disposition','').split('=')
+		if len(filename)>1:filename=filename[1].replace('"','').replace("'","")
+		else:filename=os.path.basename(direct_link)
+		ext=os.path.splitext(filename)[1][1:].lower()
+		return response,size,filename,ext
+	
+	if ext in media_ext:xbmcsetResolvedUrl(direct_link,filmlabel);return ''
+	#elif ext in ['srt','sub','txt','smi','ssa','ass','nfo']:xbmcsetResolvedUrl(direct_link,filmlabel);return ''
+	
+	response,size,filename,ext=get_detail_maxlink(direct_link)
+	if not ext:mess('sorry! this is not a media file','Check media extention');result='fail'
+	elif ext in 'xml':result=doc_list_xml(direct_link,'list_xml')
+	elif ext in media_ext:xbmcsetResolvedUrl(direct_link,filmlabel);result=''
+	elif ext in ['rar','zip','srt','sub','txt','smi','ssa','ass','nfo']:
+		result=xshare_download(response,size,filename,ext)
+	else:mess('sorry! this is not a media file','xshare resolve');result='fail'
+	return result
+
+def xshare_download(response,size,filename,ext):
+	def checkmedia(file):
+		return os.path.isfile(file) and os.path.getsize(file)>1024**2 and os.path.splitext(file)[1][1:] in media_ext
+	
+	temp_path=joinpath(tempfolder,'temp');mediafile=False
+	if not os.path.exists(temp_path):os.mkdir(temp_path)
+	else:delete_folder(temp_path)
+	tempfile=joinpath(temp_path,'tempfile.%s'%ext)
+	
+	if size<1024**2:#sub file
+		if myaddon.getSetting('autodel_sub')=='true':delete_folder(subsfolder)
+		content=makerequest(tempfile,response.body,"wb")
+	elif size<2*1024**3:
+		if size>1024**3:size_str='%d.%d GB'%(size/(1024**3),(size%(1024**3))/10**7)
+		else:size_str='%d.%d MB'%(size/(1024**2),(size%(1024**2))/10**4)
+		line1='[COLOR green]File: %s - %s[/COLOR]'%(filename,size_str)
+		line2='Sẽ mất nhiều thời gian tải file vào "[B]Thư Mục Cục Bộ[/B]"!';content=''
+		if size<100*1024**2 or  mess_yesno('xshare cảnh báo',line1,line2,'No - Không tải','Yes - Đồng Ý tải'):
+			losslessfolder=joinpath(myfolder,'Lossless')
+			if not os.path.exists(losslessfolder):os.mkdir(losslessfolder)
+			if size>100*1024**2:endxbmc()
+			f=open(tempfile,'wb');i=0;mess(u'Started Background download...',timeShown=50000);i=j=t=0;fn=''
+			for chunk in response:
+				f.write(chunk);i+=len(chunk)
+				if i*10/size>j:j+=1;mess(u'Đã download được %d%%'%(j*10),timeShown=20000)
+			f.close();mess(u'Đang Unzip...',timeShown=10000)
+			xbmc.sleep(1000);xbmc.executebuiltin('XBMC.Extract("%s","%s")'%(tempfile,u2s(losslessfolder)),True)
+			for filefullpath in folders(losslessfolder):
+				if not checkmedia(filefullpath) and 'nrg' not in filefullpath:os.remove(filefullpath)
+				elif os.path.getmtime(filefullpath)>t:fn=filefullpath;t=os.path.getmtime(fn)
+			if fn and size<100*1024**2:#File nhỏ, gọi play
+				xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xbmcgui.ListItem(path=fn))
+			mess(u'Đã download xong. Hãy mở Thư Mục Cục Bộ và thưởng thức tiếp nhé',timeShown=20000)
+	else:mess(u'Sorry! Dung lượng file quá lớn. Chưa xử lý');content=''
+	if not content:return 'no'
+	sub_ext = [".srt", ".sub", ".txt", ".smi", ".ssa", ".ass"];sub_list=[];p=',|"|\''
+	if content[0] in 'R-P':
+		xbmc.sleep(1000);xbmc.executebuiltin('XBMC.Extract("%s")'%tempfile,True)
+		for filefullpath in folders(temp_path):
+			file=os.path.basename(filefullpath)
+			if os.path.isfile(filefullpath) and os.path.splitext(filefullpath)[1] in sub_ext:
+				if re.search('english|eng\.|\.eng',filename.lower()) and myaddon.getSetting('autotrans_sub')=='true':
+					mess(u'Google đang dịch sub từ tiếng Anh sang tiếng Việt','Subs Downloader',timeShown=20000)
+					filetemp=xshare_trans(filefullpath)
+					if rename_file(filetemp,joinpath(subsfolder,'Vie.%s'%re.sub(p,'',file))):
+						mess(u'Đã dịch xong sub từ tiếng Anh sang tiếng Việt','Subs Downloader')
+					elif rename_file(filefullpath,joinpath(subsfolder,'Eng.%s'%re.sub(p,'',file))):
+						mess(u'Không dịch được sub. Giữ nguyên bản tiếng Anh!','Subs Downloader') 
+				elif re.search('english|eng\.|\.eng',filename.lower()) and rename_file(filefullpath,joinpath(subsfolder,'Eng.%s'%re.sub(p,'',file))):
+					mess(u'Đã download sub vào Subsfolder','Subs Downloader') 
+				elif re.search('vietnam|vie\.|\.vie',filename.lower()) and rename_file(filefullpath,joinpath(subsfolder,'Vie.%s'%re.sub(p,'',file))):
+					mess(u'Đã download sub vào Subsfolder','Subs Downloader') 
+				elif rename_file(filefullpath,joinpath(subsfolder,re.sub(',|"|\'','',file))):
+					mess(u'Đã download sub vào Subsfolder','Subs Downloader') 
+	elif rename_file(tempfile,joinpath(subsfolder,'Vie.%s'%filename)):
+		mess(u'Đã download sub vào Subsfolder','Subs Downloader')
+	return 'no'
 
 def logout_site(cookie,url):
 	def logout(cookie,url,site):
@@ -1188,15 +1254,14 @@ def doc_thumuccucbo(name,url,img,fanart,mode,query):
 
 def play_maxspeed_link(url):
 	if not url or url=='Maxlink':
-		query=get_input('Hãy nhập max speed link của Fshare, 4share hoặc tênlửa')
-		if query is None or query=='':return 'no'
-		url=query.replace(' ','')
+		maxlink=get_input('Hãy nhập max speed link của Fshare, 4share hoặc tênlửa')
+		if not maxlink or not maxlink.strip():return 'no'
+		url=maxlink.replace(' ','')
 	elif len(url)<13:
 		fsend=getFsend(url)
 		if fsend:url=fsend[0][1]
-		else:mess(u'Lỗi get Fsend!','play_maxspeed_link');return
-	if check_media_ext(url):xbmcsetResolvedUrl(url,'Maxlink')
-	return ''
+		else:mess(u'Lỗi get Fsend!','play_maxspeed_link');return 'no'
+	return xshare_resolve(url,filmlabel='Maxlink')
 
 def getFsend(id):
 	response=make_request('http://fsend.vn/'+id,hd,'o')#http://fsend.vn/2LJL4GPVZ48L file XXOA5LADP6FC folder
@@ -1915,73 +1980,6 @@ def xshare_postks(body,hd,token):
 			my_dict[post_id]='Y';json_rw('xshare.json',my_dict);break
 	return body,token,hd['Cookie']
 
-def download_subs(directlink):
-	def checkmedia(file):
-		return os.path.isfile(file) and os.path.getsize(file)>1024**2 and os.path.splitext(file)[1][1:] in media_ext
-	
-	response=make_request(directlink,resp='o');print directlink
-	if not response or response.status!=200:return 'no'
-	try:
-		filelength=int(response.headers.get('content-length'))
-	except:return 'no'
-	filename=xsearch('filename=(.+?)\Z',response.headers.get('content-disposition',''),1).replace('"','')
-	if not filename:
-		filename=os.path.basename(urllib.unquote(directlink))
-		if not filename:filename=remove_tag(name)
-
-	if myaddon.getSetting('autodel_sub')=='true':delete_folder(subsfolder)
-	temp_path=joinpath(tempfolder,'temp');mediafile=False
-	if not os.path.exists(temp_path):os.mkdir(temp_path)
-	else:delete_folder(temp_path)
-	tempfile=joinpath(temp_path,'tempfile.%s'%os.path.splitext(filename)[1][1:])
-	
-	if filelength<1024**2:content=makerequest(tempfile,response.body,"wb")
-	elif filelength<2*1024**3:
-		if filelength>1024**3:size='%d.%d GB'%(filelength/(1024**3),(filelength%(1024**3))/10**7)
-		else:size='%d.%d MB'%(filelength/(1024**2),(filelength%(1024**2))/10**4)
-		line1='[COLOR green]File: %s - %s[/COLOR]'%(filename,size)
-		line2='Sẽ mất nhiều thời gian tải file vào "[B]Thư Mục Cục Bộ[/B]"!';content=''
-		if filelength<100*1024**2 or  mess_yesno('xshare cảnh báo',line1,line2,'No - Không tải','Yes - Đồng Ý tải'):
-			losslessfolder=joinpath(myfolder,'Lossless')
-			if not os.path.exists(losslessfolder):os.mkdir(losslessfolder)
-			if filelength>100*1024**2:endxbmc()
-			f=open(tempfile,'wb');i=0;mess(u'Started Background download...',timeShown=50000);i=j=t=0;fn=''
-			for chunk in response:
-				f.write(chunk);i+=len(chunk)
-				if i*10/filelength>j:j+=1;mess(u'Đã download được %d%%'%(j*10),timeShown=20000)
-			f.close();mess(u'Đang Unzip...',timeShown=10000)
-			xbmc.sleep(1000);xbmc.executebuiltin('XBMC.Extract("%s","%s")'%(tempfile,u2s(losslessfolder)),True)
-			for filefullpath in folders(losslessfolder):
-				if not checkmedia(filefullpath) and 'nrg' not in filefullpath:os.remove(filefullpath)
-				elif os.path.getmtime(filefullpath)>t:fn=filefullpath;t=os.path.getmtime(fn)
-			if fn and filelength<100*1024**2:
-				xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xbmcgui.ListItem(path=fn))
-			mess(u'Đã download xong. Hãy mở Thư Mục Cục Bộ và thưởng thức tiếp nhé',timeShown=20000)
-	else:mess(u'Sorry! Dung lượng file quá lớn. Chưa xử lý');content=''
-	if not content:return 'no'
-	exts = [".srt", ".sub", ".txt", ".smi", ".ssa", ".ass"];sub_list=[];p=',|"|\''
-	if content[0] in 'R-P':
-		xbmc.sleep(1000);xbmc.executebuiltin('XBMC.Extract("%s")'%tempfile,True)
-		for filefullpath in folders(temp_path):
-			file=os.path.basename(filefullpath)
-			if os.path.isfile(filefullpath) and os.path.splitext(filefullpath)[1] in exts:
-				if re.search('english|eng\.|\.eng',filename.lower()) and myaddon.getSetting('autotrans_sub')=='true':
-					mess(u'Google đang dịch sub từ tiếng Anh sang tiếng Việt','Subs Downloader',timeShown=20000)
-					filetemp=xshare_trans(filefullpath)
-					if rename_file(filetemp,joinpath(subsfolder,'Vie.%s'%re.sub(p,'',file))):
-						mess(u'Đã dịch xong sub từ tiếng Anh sang tiếng Việt','Subs Downloader')
-					elif rename_file(filefullpath,joinpath(subsfolder,'Eng.%s'%re.sub(p,'',file))):
-						mess(u'Không dịch được sub. Giữ nguyên bản tiếng Anh!','Subs Downloader') 
-				elif re.search('english|eng\.|\.eng',filename.lower()) and rename_file(filefullpath,joinpath(subsfolder,'Eng.%s'%re.sub(p,'',file))):
-					mess(u'Đã download sub vào Subsfolder','Subs Downloader') 
-				elif re.search('vietname|vie\.|\.vie',filename.lower()) and rename_file(filefullpath,joinpath(subsfolder,'Vie.%s'%re.sub(p,'',file))):
-					mess(u'Đã download sub vào Subsfolder','Subs Downloader') 
-				elif rename_file(filefullpath,joinpath(subsfolder,'Vie.%s'%re.sub(',|"|\'','',file))):
-					mess(u'Đã download sub vào Subsfolder','Subs Downloader') 
-	elif rename_file(tempfile,joinpath(subsfolder,'Vie.%s'%filename)):
-		mess(u'Đã download sub vào Subsfolder','Subs Downloader')
-	return 'no'
-
 def xshare_trans(sourcefile):
 	tempfile = os.path.join(tempfolder, "trans"+os.path.splitext(sourcefile)[1])
 	fs=open(sourcefile);ft=open(tempfile,'w');lineslist=[];substring=''
@@ -2042,7 +2040,7 @@ def subscene(name,url,query):
 	pattern='<a href="(.+?)" rel="nofollow" onclick="DownloadSubtitle.+">'
 	downloadlink='http://subscene.com' + xsearch(pattern,make_request(href),1)
 	if len(downloadlink)<20:mess(u'Không tìm được maxspeed link sub!')
-	else:download_subs(downloadlink)
+	else:xshare_resolve(downloadlink)
 	return 'ok'
 
 def fptplay(name,url,img,mode,page,query):
@@ -2812,6 +2810,7 @@ def pubvn(name,url,img,mode,page,query):
 def hdviet(name,url,img,mode,page,query):
 	color['hdviet']='[COLOR darkorange]';icon['hdviet']=os.path.join(iconpath,'hdviet.png')
 	homepage='http://movies.hdviet.com/'
+	if os.path.isfile(joinpath(datapath,'hdviet.cookie')):os.remove(joinpath(datapath,'hdviet.cookie'))
 	direct_link='https://api-v2.hdviet.com/movie/play?accesstokenkey=%s&movieid=%s'
 	def namecolor(name):return '%s%s[/COLOR]'%(color['hdviet'],name)
 	def getcookie():
@@ -2821,6 +2820,7 @@ def hdviet(name,url,img,mode,page,query):
 		return response.cookiestring
 	def login_hdviet():
 		u=myaddon.getSetting('userhdviet');p=myaddon.getSetting('passhdviet')
+		'''
 		url='https://id.hdviet.com/authentication/login'
 		response=make_post(url,data='email=%s&password=%s'%(u,p),resp='j')
 		if response and response.get('error')==0:
@@ -2832,22 +2832,23 @@ def hdviet(name,url,img,mode,page,query):
 		elif response and response.get('error') in (25,22):
 			mess(response.get('message'),'hdviet.com');response=dict()
 		else:
-			import hashlib;data=urllib.urlencode({'email':u,'password':hashlib.md5(p).hexdigest()})
-			response=make_post('http://movies.hdviet.com/dang-nhap.html',hd,data)
-			try:resp=response.json
-			except:resp={u'r': u'Lỗi đăng nhập hdviet.com', u'e': 3}
-			if resp.get('e')==0:
-				mess(resp.get('r'),'hdviet.com');hd['Cookie']=response.cookiestring
-				response=make_request('http://movies.hdviet.com/dieu-khoan-su-dung.html',headers=hd)
-				import base64;token=base64.b64decode(xsearch('<a class="userinfo".+?token=(.+?)"',response,1))
-				response={'Cookie':hd['Cookie'],'access_token':token};json_rw('hdviet.cookie',response)
-			else:response=dict();mess(resp.get('r'),'hdviet.com')
+		'''
+		import hashlib;data=urllib.urlencode({'email':u,'password':hashlib.md5(p).hexdigest()})
+		response=make_post('http://movies.hdviet.com/dang-nhap.html',hd,data)
+		try:resp=response.json
+		except:resp={u'r': u'Lỗi đăng nhập hdviet.com', u'e': 3}
+		if resp.get('e')==0:
+			mess(resp.get('r'),'hdviet.com');hd['Cookie']=response.cookiestring
+			response=make_request('http://movies.hdviet.com/dieu-khoan-su-dung.html',headers=hd)
+			import base64;token=base64.b64decode(xsearch('<a class="userinfo".+?token=(.+?)"',response,1))
+			response={'Cookie':hd['Cookie'],'access_token':token};json_rw('hdviet.cookie',response)
+		else:response=dict();mess(resp.get('r'),'hdviet.com')
 		url='http://movies.hdviet.com/dang-xuat.html?accesstokenkey=%s'
 		make_post(url%response.get('access_token')).body
 		return response
 	def getResolvedUrl(id_film,loop=0):#Phim le/phim chieu/ke doi dau thien ac
 		def getlinkhdviet(token,id_film):
-			id_film=id_film.replace('_e','&ep=')
+			id_film=id_film.replace('_e','&ep=');print direct_link%(token,id_film)
 			response=make_request(direct_link%(token,id_film),resp='j')
 			try:links=response['r'];link=response['r']['LinkPlay']
 			except:links=dict()
@@ -2855,26 +2856,25 @@ def hdviet(name,url,img,mode,page,query):
 		data=json_rw('hdviet.cookie')
 		links=getlinkhdviet(data.get('access_token'),id_film)
 		if not links:return '',''
-		link=links.get('LinkPlay')#;print links
+		link=links.get('LinkPlay');print 'bbb   33333',links
 		if '0000000000000000000000' in link:
 			data=login_hdviet();links=getlinkhdviet(data.get('access_token'),id_film);link=links.get('LinkPlay')
 		if links:
-			max_resolution='_1920_' if myaddon.getSetting('hdvietresolution')=='1080' else '_1280_'
-			resolutions=['_1920_','_1885_','_1876_','_1866_','_1792_','_1280_','_1024_','_800_','_640_','_480_']
+			#max_resolution='_1920_' if myaddon.getSetting('hdvietresolution')=='1080' else '_1280_'
+			#resolutions=['_1920_','_1885_','_1876_','_1866_','_1792_','_1280_','_1024_','_800_','_640_','_480_']
 			if '_e' in id_film:link=re.sub('%s_e\d{1,3}_'%id_film.split('_')[0],'%s_'%id_film,link)
-			href=link
-			for resolution in resolutions:
-				if resolution in link:link=link.replace(resolution,max_resolution);break
-			extm3u=make_request(link);link=''
-			if not extm3u:extm3u=make_request(href)
-			for resolution in resolutions:
-				if resolution in extm3u:link=xsearch('(http://.+%s.+m3u8)'%resolution,extm3u,1)
-				if link:break
+			#href=link
+			#for resolution in resolutions:
+			#	if resolution in link:link=link.replace(resolution,max_resolution);break
+			#link=re.findall('(.+m3u8)',make_request(link))
+			#if not link:link=re.findall('(.+m3u8)',make_request(href))
+			#if link:link=link[len(link)-1]
 		if  not link and loop==0:
 			response=make_request(link,resp='o')
 			if response and 'filename' not in response.headers.get('content-disposition',''):
 				data=login_hdviet();return getResolvedUrl(id_film,1)
 		if not link:return '',''
+
 		audio=links.get('AudioExt',list());audioindex=-1;linksub=''
 		if len(audio)>1:
 			audio_choice=myaddon.getSetting('hdvietaudio')
@@ -2890,7 +2890,8 @@ def hdviet(name,url,img,mode,page,query):
 			for source in ['Subtitle','SubtitleExt','SubtitleExtSe']:
 				try:linksub=links[source]['VIE']['Source']
 				except:linksub=''
-				if linksub and download_subs(linksub):break
+				if linksub:break
+		print link,linksub
 		return link,linksub
 	def additems(body):
 		pattern='<li class="mov-item".+?href="(.+?)".+?src="(.+?)".+?title="Phim (.+?)".+?<span(.+?) data-id="(.+?)">'
@@ -2972,13 +2973,13 @@ def hdviet(name,url,img,mode,page,query):
 			title='Tập %s/%s-%s'%(format(eps,'0%dd'%len(response['Episode'])),str(response['Episode']),re.sub('\[.?COLOR.{,12}\]','',name))
 			addir(title,'%s_e%d'%(url,eps),img,fanart,mode,page,'hdvietplay',False)
 	elif query=='hdvietplay':
-		link,sub=getResolvedUrl(url)
+		link,sub=getResolvedUrl(url)#;print link,sub
 		if not link:mess(u'Get link thất bại!','hdviet.com')
 		else:
 			if sub:
-				mess(u'Phụ đề của HDViet.com','hdviet.com')
+				mess(u'Phụ đề của HDViet.com','hdviet.com');xshare_resolve(sub)
 				sub=urllib.unquote(os.path.splitext(os.path.basename(sub))[0])
-			xbmcsetResolvedUrl(link+'|'+urllib.urlencode(hd),sub)
+			xbmcsetResolvedUrl(link,sub)
 	elif query=='Themmucyeuthich':
 		hd['Cookie']=getcookie()
 		body=make_post('http://movies.hdviet.com/them-phim-yeu-thich.html',hd,urllib.urlencode({"MovieID":"%s"%url}))
@@ -3053,10 +3054,12 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 			elif file=='hayhayclips.html':body=makerequest(joinpath(xsharefolder,'hayhayclips.html'))
 		if attr=='w' or not body:
 			if  file=='hayhaytv.html':
-				body=xsearch('"sub_menu_nav"(.+?)"hh_movie_hot_block-M"',make_request(urlhome),1,re.DOTALL)
+				a=make_request(urlhome)
+				body=xsearch('"sub_menu_nav"(.+?)"hh_movie_hot_block-M"',a,1,re.DOTALL)
 			else:
 				pattern='(<a href="http://clips.hayhaytv.vn/category/.+?">.+?</a>)'
 				body='\n'.join(sets(re.findall(pattern,make_request('http://clips.hayhaytv.vn/'))))
+		print len(body)
 		return body
 	def hh_addir(name,url,img,fanart='',mode=mode,page=1):
 		if xsearch('-Tap-',url,0):addir_info(namecolor(name),url,img,fanart,mode,page,'hh_read_foldef',True)
@@ -3066,7 +3069,7 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 			id_film=xsearch("Main.error_send\('(.+?)'\)",make_request(url),1)
 			if '/xem-phim/' in url:url='http://www.hayhaytv.vn/loadepisode?film=%s&type=next&id='%id_film
 			else:url='http://www.hayhaytv.vn/loadepisodeshow?film=%s&type=next&id='%id_film
-		return url,make_post(url+str((page-1)*8),{'X-Requested-With':'XMLHttpRequest'},resp='j').get('dulieu')
+		return url,make_post(url+str((page-1)*8),{'X-Requested-With':'XMLHttpRequest'},resp='j').get('dulieu','')
 	def getlink(url):
 		def get_tap(s):
 			if isinstance(s,dict):tap=xsearch('(\d{1,4})',s.get('name'),1);tap=int(tap) if tap else 0
@@ -3079,8 +3082,10 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 				for i in range(len(r)):
 					for j in d.get(k):
 						if r[i] in j.get('resolution','xshare'):
-							if make_request(j.get('mp3u8_link'),resp='s')==200:result=j.get('mp3u8_link');break
-							elif make_request(j.get('bk_link'),resp='s')==200:result=j.get('bk_link');break
+							m3u8=j.get('mp3u8_link','').replace('///','//')
+							bk=j.get('bk_link','').replace('///','//')
+							if make_request(m3u8,resp='s')==200:result=m3u8;break
+							elif make_request(bk,resp='s')==200:result=bk;break
 							mess('')#Delete mess cua make_request
 					if result:break
 			return result
@@ -3100,7 +3105,7 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 		elif not data.get('data'):return '',data.get('message')+'!' 
 		else:data=data.get('data')
 		episodes=data.get('list_episode',list())
-		#print data,episodes
+		#print 'data,episodes: %s %s'%(data,episodes)
 		href=sub=''
 		if loai=='show':
 			if not episodes:
@@ -3115,10 +3120,10 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 					sub=episode[0].get('vn_subtitle')
 				else:href=sub=''
 		else:
-			if not episodes:href=api+'getlink/movie';sub=get_dict(data,['data','vn_subtitle'],result='')
+			if not episodes:href=api+'getlink/movie';sub=data.get('vn_subtitle','')
 			else:
 				episode=[s for s in episodes if s.get('id','id')==ep_id]
-				if episode:movie_id=ep_id;sub=episode[0].get('vn_subtitle');href=api+'getlink/movie_episode'
+				if episode:movie_id=ep_id;sub=episode[0].get('vn_subtitle','');href=api+'getlink/movie_episode'
 				else:href=sub=''
 			if href:
 				data2["request"]='{"data":[{"type":"facebook","email":"%s"}]}'%myaddon.getSetting('userhayhay')
@@ -3126,26 +3131,25 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 				if data:
 					token=get_dict(data,['data','token_app'],result='');user_id=get_dict(data,['data','user_id'],result='')
 					data2['request']='{"token":"%s","user_id":"%s","movie_id":"%s"}'%(token,user_id,movie_id)
-					data=make_post(href,data1,data2,'j');print 'qqqqq',data
+					data=make_post(href,data1,data2,'j')
 					if not data:href='';sub=u'Get max link thất bại...'
 					elif not data.get('data'):href='';sub=data.get('message')+'!' 
 					else:
 						data=data.get('data')
 						href=get_linkplay(data,'link_play')
 						if not href:href=get_linkplay(data,'link_play_vip')
-						sub=data.get('vn_subtitle')
+						if not sub:sub=data.get('vn_subtitle','')
 				#print movie_id,data1,data2,data
 		return href,sub
 	#=============================================================================================
 	if query=='hayhaytv.vn':
 		body=hh_html('hayhaytv.html','r');name=color['search']+"Search trên hayhaytv.vn[/COLOR]"
-		addir_info(name,urlhome+'tim-kiem/',ico,'',mode,1,'hh_search',True)
+		addir_info(name,urlhome+'tim-kiem/',ico,'',mode,1,'makeitemsearch',True)
 		for id,href,title in re.findall('<li><a class="([1-9]{1,2}).*" href="(.+?)">(.+?)</a></li>',body):
 			addir_info(namecolor(title),href,ico,'',mode,1,'main_menu',True)
 		addir_info(namecolor('CLIP'),'http://clips.hayhaytv.vn',ico,'',mode,1,'clips',True)
 		#-----------------------------------------------------------------------------------------
 		add_sep_item('DS phim HayHaytv đề nghị')
-		#addir_info('[COLOR lime]-----DS phim HayHaytv đề nghị-----[/COLOR]','',ico,'',mode,1,'no')
 		content=xsearch('"item active"(.+?)"left carousel-control"',body,1,re.DOTALL)
 		items=re.findall('<a href="(.+?)".+?original="(.+?)".+?<p.+?>(.+?)</p>.+?<p.+?>(.+?)</p>',content,re.DOTALL)
 		for href,fanart,eng,vie in items:hh_addir(vie+' - '+eng,href,fanart,fanart)
@@ -3156,12 +3160,17 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 		if checkupdate('hayhaytv.html',1,xsharefolder):
 			endxbmc();body=hh_html('hayhaytv.html','w')
 			if body:
-				makerequest(joinpath(xsharefolder,'hayhaytv.html'),body,'w');xbmc.executebuiltin("Container.Refresh")
-	elif query=='hh_search':make_mySearch('','hayhaytv.vn','','',mode,'get')
-	elif query=="INP":hayhaytv_search(make_mySearch('',url,'','','','Input'))
-	elif url=='hayhaytv.vn':
+				makerequest(joinpath(xsharefolder,'hayhaytv.html'),body,'w')
+				xbmc.executebuiltin("Container.Refresh")
+			return ''
+	elif query=='makeitemsearch':search_get_items('hayhaytv.vn',mode)
+	elif query=='getstringsearch' or query=='dosearch':
+		if query=='dosearch':string=name
+		else:
+			string=search_input_string('hayhaytv.vn')
+			if not string:return 'no'
 		page=1 if 'Trang tiếp theo' not in name else page
-		response=make_post('http://www.hayhaytv.vn/search/autocomplete?object='+urllib.quote_plus(query),resp='j')
+		response=make_post('http://www.hayhaytv.vn/search/autocomplete?object='+urllib.quote_plus(string),resp='j')
 		for d in response.get('FILM',list()):
 			hh_addir(u2s(d.get('extension')+' - '+d.get('name')),d.get('link'),d.get('image'))
 	elif query=='hh_read_foldef':
@@ -3176,8 +3185,8 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 	elif query=='hh_play':
 		href,sub=getlink(url)
 		if href:
-			if sub and download_subs(sub):
-				mess(u'Phụ đề của hayhaytv.vn','hayhaytv.vn')
+			if sub:
+				xshare_resolve(sub);mess(u'Phụ đề của hayhaytv.vn','hayhaytv.vn')
 				xbmcsetResolvedUrl(href,urllib.unquote(os.path.splitext(os.path.basename(sub))[0]))
 			else:xbmcsetResolvedUrl(href)
 		else:mess(sub,'hayhaytv.vn')
@@ -3192,15 +3201,15 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 		elif 'thieu-nhi' in url:load='Film';type='kids';type_film='';sort=2
 		elif 'sap-chieu' in url:load='Film';type='upcoming';type_film='';sort=2
 		print href%(load,type,type_film,sort,page)
-		body=make_post(href%(load,type,type_film,sort,page),hd,resp='b')
-		pattern='<span(.+?)title=.(.+?)Quốc gia.+?<a class="btn_view_now" href="(.+?)"(.+?)lockup.+?original="(.+?)"'
-		items=re.findall(pattern,body,re.DOTALL)
-		if not items:items=re.findall(pattern,make_post(href%(load,type,type_film,0,page),hd,resp='b'),re.DOTALL)
-		for detail1,title,href,detail2,img in items:
-			eps=xsearch('"mask-num-film">(.+?)</strong></span>',detail1,1).replace('<strong>','')
-			if not eps:eps=xsearch('"mask-num-film">(.+?)</strong></span>',detail2,1).replace('<strong>','')
-			title=remove_tag(title)+ (' [COLOR green](%s)[/COLOR]'%eps if eps else '');hh_addir(title,href,img)
-		if len(items)>30:
+		body=make_post(href%(load,type,type_film,sort,page),hd,resp='b');count=0
+		for content in re.findall('<li class="">(.+?)</li>',body,re.DOTALL):
+			eps=xsearch('"mask-num-film">(.+?)</strong></span>',content,1).replace('<strong>','')
+			href=xsearch('<a href="(.+?)"',content,1)
+			img=xsearch('data-original="(.+?)"',content,1)
+			title=' '.join(s for s in re.findall('target="_blank">(.+?)</a>',content))
+			title=remove_tag(title)+ (' [COLOR green](%s)[/COLOR]'%eps if eps else '')
+			hh_addir(title,href,img);count+=1
+		if count>30:
 			name=re.sub('\[.+?\]','',name.split('-')[0].strip())
 			name='%s%s - Trang tiếp theo: trang %d[/COLOR]'%(color['trangtiep'],name,page+1)
 			addir_info(name,url,ico,'',mode,page+1,query,True)
@@ -3641,11 +3650,6 @@ def vaphim(name,url,img,fanart,mode,page,query):
 			for href,img,title in items:
 				title=namecolor('Vaphim - '+remove_tag(title))
 				addir_info(title,href,img,'',mode,1,'vp_getsubpage',True)
-	elif query=='vp_getpage1':
-		temp=list();items=vp_2fshare(url)
-		if not items:mess(u'Sorry! Không get được nội dung này trên vaphim.com','vaphim.com');return 'no'
-		for id,title,href,img,fanart,category in items:
-			if href not in temp:temp.append(href);addirs(title,href,img,fanart)
 	return ''
 
 def addir_info(name,url,img,fanart='',mode=0,page=0,query='',isFolder=False,info=dict(),art=dict(),menu=dict()):
@@ -3668,8 +3672,7 @@ def addir_info(name,url,img,fanart='',mode=0,page=0,query='',isFolder=False,info
 				url='https://tenlua.vn/download/%s'%id
 				name='%sTenlua[/COLOR] %s'%(color['tenlua'],name);mode=3;isfolder=False
 		elif '4share.vn/d/' in url:name='%s4share %s[/COLOR]'%(color['4share'],name);mode=38
-		elif '4share.vn/f/' in url:name='%s4share[/COLOR] %s'%(color['4share'],name);mode=3
-		elif '4share.vn/f/' in url:name='%s4share[/COLOR] %s'%(color['4share'],name);mode=3
+		elif '4share.vn/f/' in url:name='%s4share[/COLOR] %s'%(color['4share'],name);mode=3;isfolder=False
 		elif 'subscene.com/' in url:name='%ssubscene[/COLOR] %s'%(color['subscene'],name);mode=94
 		elif 'vaphim.com/' in url:name='%s%s[/COLOR]'%(color['vaphim'],name);mode=1
 		#elif 'vaphim.com/' in url:name='%s%s[/COLOR]'%(color['vaphim'],name);mode=25
