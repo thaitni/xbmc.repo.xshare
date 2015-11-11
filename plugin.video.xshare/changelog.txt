@@ -1,3 +1,6 @@
+[B]Version 3.2.29[/B] <11/11/2015>:
+ Fix phimmoi.net, Muc chia se phim cua hdvietnam
+ 
 [B]Version 3.2.28[/B] <10/11/2015>:
  Fix HDViet, hayhaytv, download sub
  

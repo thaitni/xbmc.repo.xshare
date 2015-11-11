@@ -664,8 +664,7 @@ def logout_site(cookie,url):
 def loginfshare(headers={'User-Agent':'Mozilla/5.0 Chrome/39.0.2171.71 Firefox/33.0'}):
 	response=make_request("https://www.fshare.vn/login",resp='o');result=''
 	if not response:mess(u'Lỗi kết nối Fshare.vn!','fshare.vn');return result
-	fs_csrf=xsearch('value="(.+?)".*name="fs_csrf',response.body,1)
-	headers['Cookie']=response.cookiestring
+	fs_csrf=xsearch('value="(.+?)".*name="fs_csrf',response.body,1);headers['Cookie']=response.cookiestring
 	username=myaddon.getSetting('usernamef');password=myaddon.getSetting('passwordf')
 	form_fields = {"LoginForm[email]":username,"LoginForm[password]":password,"fs_csrf":fs_csrf}
 	response=make_post("https://www.fshare.vn/login",headers,form_fields)
@@ -1858,8 +1857,9 @@ def hdvietnam(name,url,img,fanart,mode,page,query):
 			addir_info(namecolor(name),urlhome+href.split('&')[0],img,query='PL1')
 	elif query=='PL1':
 		parent_path='http://www.hdvietnam.com/diendan/'
-		if '&styleid=9&sort=dateline' not in url and 'f=150' in url:url=url+'&styleid=9'
-		elif '&styleid=9&sort=dateline' not in url:url=url+'&styleid=9&sort=dateline'
+		#if '&styleid=9&sort=dateline' not in url and 'f=150' in url:url=url+'&styleid=9'
+		#elif '&styleid=9&sort=dateline' not in url:url=url+'&styleid=9&sort=dateline'
+		if '&styleid=9' not in url:url=url+'&styleid=9'
 		body=make_request(url,hd,maxr=2)
 		if page<2:#Phụ Mục
 			for href,title in re.findall('<h2 class="forumtitle"><a href="(.+?)&.+?>(.+?)</a></h2>',body):
@@ -3400,6 +3400,12 @@ def phimmoi(name,url,img,mode,page,query):
 		language=xsearch("currentEpisode.language='(.+?)'",body,1)
 		label='[COLOR gold]S0 %s[/COLOR]: '%get_language(language)+name
 		if link:addir_info(label,link,img,art,mode,page,'pmplay_ple')
+		
+		content=xsearch('<div class="list-server">(.+?)</div>',body,1,re.DOTALL).replace('\n','')
+		for label,subcontent in re.findall('class="server-title">(.+?)</h3>(.+?)</ul>',content):
+			for href,title in re.findall('href="(.+?)">(.+?)</a>',subcontent):
+				addir_info('%s %s'%(label,title),urlhome+href,img,art,mode,page,'pmplay_pbo')
+			
 		episodeJson=xsearch("episodeJson='(.+?)'",body,1)
 		try:episodeJson=eval(episodeJson)
 		except:return

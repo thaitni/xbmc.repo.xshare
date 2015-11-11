@@ -6,7 +6,7 @@ myaddon = xbmcaddon.Addon(id="plugin.video.xshare.tiny")
 home = myaddon.getAddonInfo('path')
 resource = xbmc.translatePath(os.path.join(home,'resources/'))
 sys.path.append(xbmc.translatePath(os.path.join(home, 'resources', 'lib')))
-import urlfetch
+from urlfetch import get,post
 datapath = xbmc.translatePath(os.path.join( xbmc.translatePath(myaddon.getAddonInfo('profile')),'data/'))
 if not os.path.exists(xbmc.translatePath(myaddon.getAddonInfo('profile'))):
 	os.mkdir(xbmc.translatePath(myaddon.getAddonInfo('profile')))
@@ -14,15 +14,24 @@ if not os.path.exists(datapath):os.mkdir(datapath)
 language = myaddon.getLocalizedString
 logoutf=myaddon.getSetting('logoutf')
 hd={'User-Agent':'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.81'}
-media_ext=['aif','iff','m3u','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp','asf','asx','avi','flv','mov','mp4','mpg','mkv','m4v','rm','swf','vob','wmv','bin','cue','dmg','iso','mdf','toast','vcd','ts','flac','m2ts']
+media_ext=['aif','iff','m3u','m3u8','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp','asf','asx','avi','flv','mov','mp4','mpg','mkv','m4v','rm','swf','vob','wmv','bin','cue','dmg','iso','mdf','toast','vcd','ts','flac','m2ts','dtshd','nrg']
 icon={'icon':resource+'icon.png','fshare':resource+'fshare.png'}
 
-def mess(message, timeShown=5000):
-	notification=u'XBMC.Notification(%s,%s,%s,%s)'%('Xshare',message,timeShown,icon['icon'])
-	xbmc.executebuiltin(notification.encode("utf-8"))
+def mess(message='',title='',timeShown=5000):
+	if not message:xbmc.executebuiltin("Dialog.Close(all, true)")
+	else:
+		title=': [COLOR blue]%s[/COLOR]'%title if title else ''
+		s0='[COLOR green][B]Xshare[/B][/COLOR]'+title
+		s1='[COLOR red]%s[/COLOR]'%message if '!' in message else u'[COLOR gold]%s[/COLOR]'%message
+		xbmc.executebuiltin((u'XBMC.Notification(%s,%s,%s,%s)'%(s0,s1,timeShown,icon['icon'])).encode("utf-8"))
 
-def xshare_group(object,group):
-	return object.group(group) if object else ''
+def xsearch(pattern,string,group,flags=0):
+	research=re.search(pattern,string,flags)
+	if research:
+		try:result=research.group(group)
+		except:result=''
+	else:result=''
+	return result
 
 def get_input(title=u"", default=u""):
 	result = ''
@@ -32,18 +41,37 @@ def get_input(title=u"", default=u""):
 		result = keyboard.getText()
 	return result
 	
-def make_request(url,headers={'User-Agent':'Mozilla/5.0 Chrome/39.0.2171.71 Firefox/33.0'},resp='b'):
+def make_request(url,headers=hd,resp='b',maxr=0):
 	try:
-		response = urlfetch.get(url,headers=headers)
+		if maxr==0:response=get(url,headers=headers,timeout=10)
+		else:response=get(url,headers=headers,max_redirects=maxr,timeout=10)
 		if resp=='o':resp=response
 		else:
 			if resp=='j':resp=response.json
 			elif resp=='s':resp=response.status
+			elif resp=='u':resp=response.text
+			elif resp=='c':resp=response.cookiestring
 			else:resp=response.body
 			response.close()
-		return resp
-	except: mess('Make Request Error')
-	return resp
+	except:
+		if resp=='j':resp=dict()
+		elif resp=='s':resp=500
+		else:resp=''
+		if 'vaphim.com' not in url:
+			mess(u'Lỗi kết nối tới: %s!'%xsearch('//(.{5,20}\.\w{2,3})',s2u(url),1),'make_request')
+		print 'Lỗi kết nối tới: %s!'%u2s(url);
+	return resp#unicode:body=response.text
+
+def make_post(url,headers=hd,data='',resp='o'):
+	try:
+		if data:response=post(url=url,headers=headers,data=data,timeout=100)
+		else:response=post(url=url,headers=headers,timeout=100)
+		if resp=='b':response=response.body
+		elif resp=='j':response=response.json
+	except:
+		mess(u'Post link error');print 'Post link error: %s'%url
+		response={} if resp=='j' else ''
+	return response
 
 def makerequest(file,string='',attr='r'):
 	if attr=='r':
@@ -54,20 +82,16 @@ def makerequest(file,string='',attr='r'):
 		except:mess(u'Lỗi ghi file: %s'%os.path.basename(file));body=''
 	return body
 
-def loginfshare():
-	url = "https://www.fshare.vn/login";response=make_request(url,resp='o')
-	if not response:mess(u'Lỗi kết nối Fshare.vn');return ''
-	fs_csrf=xshare_group(re.search('value="(.+?)".*name="fs_csrf',response.body),1)
-	hd['Cookie']=response.cookiestring;response.close()
-	form_fields = {
-		"LoginForm[email]": myaddon.getSetting('username'), 
-		"LoginForm[password]": myaddon.getSetting('password'),"LoginForm[rememberMe]": "0",
-		"fs_csrf":fs_csrf}
-	response=urlfetch.post(url=url,headers=hd,data=urllib.urlencode(form_fields))
-	if response and response.status==302:
-		f=response.cookiestring;mess(u'[COLOR gold]Login Fshare.vn thành công[/COLOR]',timeShown=100)
-	else:mess(u'[COLOR red]Login Fshare.vn thất bại[/COLOR]');f=''
-	return f
+def loginfshare(headers={'User-Agent':'Mozilla/5.0 Chrome/39.0.2171.71 Firefox/33.0'}):
+	response=make_request("https://www.fshare.vn/login",resp='o');result=''
+	if not response:mess(u'Lỗi kết nối Fshare.vn!','fshare.vn');return result
+	fs_csrf=xsearch('value="(.+?)".*name="fs_csrf',response.body,1);headers['Cookie']=response.cookiestring
+	username=myaddon.getSetting('username');password=myaddon.getSetting('password')
+	form_fields = {"LoginForm[email]":username,"LoginForm[password]":password,"fs_csrf":fs_csrf}
+	response=make_post("https://www.fshare.vn/login",headers,form_fields)
+	if response.status==302:mess(u'Login thành công','Fshare.vn');result=response.cookiestring
+	else:mess(u'Login không thành công!','Fshare.vn')
+	return result
 	
 def check_id_fshare(id):
 	url='https://www.fshare.vn/folder/%s'%os.path.basename(id).upper()
@@ -78,7 +102,7 @@ def check_id_fshare(id):
 def main(url='',query=''):#mode=1
 	datafile=datapath+'xshare.xml'
 	if query=='':
-		addir('[COLOR gold]Nhập Fshare ID mới[/COLOR]','',icon['icon'],mode=1,query='new',isFolder=True)
+		addir('[COLOR gold]Nhập Fshare [B]ID[/B] mới[/COLOR]','',icon['icon'],mode=1,query='new',isFolder=True)
 		if not os.path.isfile(datafile):makerequest(datafile,'<?xml version="1.0" encoding="utf-8">\n','w')
 		for href,name in re.findall('<a href="(.+?)">(.+?)</a>',makerequest(datafile)): 
 			if '/file/' in href:addir(name,href,icon['fshare'],mode=2,query='ContextMenu')
@@ -88,7 +112,7 @@ def main(url='',query=''):#mode=1
 		if not id:return 'no'
 		if len(id)<10:mess(u'Bạn nhập ID link chưa đúng: '+id);return 'no'
 		url,body=check_id_fshare(id)
-		name=xshare_group(re.search('<title>Fshare - (.+?)</title>',body),1)
+		name=xsearch('<title>Fshare - (.+?)</title>',body,1)
 		if not name:name=url
 		makerequest(datafile,'<a href="%s">%s</a>\n'%(url,name),'a')
 		if '/file/' in url:addir(name,url,icon['fshare'],mode=2)
@@ -106,35 +130,43 @@ def main(url='',query=''):#mode=1
 	return ''
 	
 def play_url(url):
-	hd['Cookie']=loginfshare();response=make_request(url,hd,'o')
-	if response.status==302:direct_link=response.headers['location']
-	elif response.status==200:
-		fs_csrf=xshare_group(re.search('value="(.+?)" name="fs_csrf"',response.body),1);pw=''
-		if re.search('id="DownloadForm_pwd" type="password"',response.body):
-			pw=get_input(u'Hãy nhập: Mật khẩu tập tin')
-			if pw is None or pw=='':mess(u'Bạn đã không nhập password!');return 'fail'
-		data={'fs_csrf':fs_csrf,'DownloadForm[pwd]':pw,'ajax':'download-form'};hd['referer']=url
-		resp=urlfetch.post(url='https://www.fshare.vn/download/get',headers=hd,data=urllib.urlencode(data))
-		try:
-			if 'url' in resp.json.keys():direct_link=resp.json['url'].encode('utf-8')
-			else:
-				retry=1;direct_link='fail'
-				while retry<4:
-					mess(u'[COLOR red]Đang cố gắng get link lại lần %d[/COLOR]'%retry)
-					xbmc.sleep(2000);response=make_request(url,hd,'o')
-					if response.status==302:direct_link=response.headers['location']
-					else:retry+=1
-				string=resp.json.items()[0][1] if len(resp.json.items()[0][1])>1 else resp.json.items()[0][1][0]
-				if direct_link=='fail':mess(string)
-		except:mess("Get link that bai");direct_link='fail'
-	else:mess(u'[COLOR red]Get link that bai[/COLOR]');direct_link='fail'
-	if myaddon.getSetting('logoutf')=="true":make_request("https://www.fshare.vn/logout",hd)
-	if direct_link=='fail':return 'fail'
-	if os.path.splitext(direct_link)[1][1:].lower() not in media_ext:mess('sorry! this is not a media file');return 'fail'
+	def get_pass_file():return get_input(u'Hãy nhập: Mật khẩu tập tin')
+	hd['Cookie']=loginfshare();loops=range(6);direct_link=pass_file=error404=''
+	if not hd['Cookie']:return 'fail'#login fail
+	for loop in loops:
+		if loop>0:mess(u'Get link lần thứ %d'%(loop+1),'fshare.vn');xbmc.sleep(3000)
+		response=make_request(url,hd,resp='o')
+		if not response:continue
+		elif response.status==302:direct_link=response.headers['location'];break
+		elif response.status==200:
+			if 'Lỗi 404' in xsearch('<title>(.+?)</title>',response.body,1):
+				error404='Y';mess(u'Tập tin quý khách yêu cầu không tồn tại!','fshare.vn');xbmc.sleep(3000);break
+			elif re.search('<i class="fa fa-star">',response.body):
+				xbmc.sleep(1000);mess('Your Fshare acc is FREE')
+			if not pass_file and xsearch('(class="fa fa-lock")',response.body,1):pass_file=get_pass_file()
+			fs_csrf=xsearch('value="(.+?)" name="fs_csrf',response.body,1)
+			data={'fs_csrf':fs_csrf,'DownloadForm[pwd]':pass_file,
+				'ajax':'download-form','DownloadForm[linkcode]':os.path.basename(url)}
+			if fs_csrf:
+				hd['referer']=url
+				response=make_post('https://www.fshare.vn/download/get',hd,data,resp='j');hd.pop('referer')
+				if response.get('url'):direct_link=response.get('url');break
+				elif response.get('DownloadForm_pwd'):
+					try:mess(response.get('DownloadForm_pwd')[0])
+					except:mess(u'Mật khẩu chưa chính xác')
+					xbmc.sleep(5000);break
+		else:print 'response.status: %d'%response.status
+	if myaddon.getSetting('logoutf')=="true":
+		url="https://www.fshare.vn/logout"
+		mess(u'Logout Fshare.vn %sthành công'%('' if make_request(url,hd,resp='s')==302 else u'không '))
+	if not direct_link and not error404:mess('Sorry! Potay.com','fshare.vn');return 'fail'
+	elif not direct_link:return 'fail'
+	elif os.path.splitext(direct_link)[1][1:].lower() not in media_ext:
+		mess('sorry! this is not a media file');return 'fail'
 	item = xbmcgui.ListItem(path=direct_link)
 	xbmcplugin.setResolvedUrl(int(sys.argv[1]),True,item)
 	return ''
-	
+
 def addir(name,link,img='',mode=0,query='',isFolder=False):
 	ok=True
 	item = xbmcgui.ListItem(name,iconImage=img,thumbnailImage=img)

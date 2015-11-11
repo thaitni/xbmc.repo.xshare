@@ -1,3 +1,6 @@
+[B]Version 1.0.6[/B] <11/11/2015>:
+ Fix GET maxspeedlink Fshare
+ 
 [B]Version 1.0.5[/B] <31/07/2015>:
  Fix lỗi hệ thống Fshare
  
