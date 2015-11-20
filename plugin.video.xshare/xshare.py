@@ -2423,8 +2423,8 @@ def megabox(name,url,img,fanart,mode,page,query):
 		url='/'.join((os.path.dirname(url),urllib.quote(os.path.basename(url))))
 		body=make_request(url,resp='o',maxr=5);link=xsearch("changeStreamUrl\('(.+?)'\)",body.body,1)
 		if not link:play_youtube(xsearch("\'(https://www.youtube.com/watch\?v=.+?)\'",body.body,1));return
-		hd['Cookie']=body.cookiestring
-		maxspeedlink=make_post('http://phim.megabox.vn/content/get_link_video_lab',data={"link":"%s"%link},resp='j')
+		hd['Cookie']=body.cookiestring;href='http://phim.megabox.vn/content/get_link_video_lab'
+		maxspeedlink=make_post(href,{'Referer':url},data={"link":"%s"%link},resp='j')
 		if maxspeedlink.get('link'):
 			name=re.sub(' \[COLOR.+?/COLOR\]','',name)
 			xbmcsetResolvedUrl(maxspeedlink.get('link')+'|'+urllib.urlencode(hd),name+'Maxlink')

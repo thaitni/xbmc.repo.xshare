@@ -1,3 +1,6 @@
+[B]Version 3.2.30[/B] <20/11/2015>:
+ Fix megabox.vn
+ 
 [B]Version 3.2.29[/B] <11/11/2015>:
  Fix phimmoi.net, Muc chia se phim cua hdvietnam
  
