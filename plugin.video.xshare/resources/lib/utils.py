@@ -21,13 +21,10 @@ def get_input(title=u"", default=u""):
 		result = keyboard.getText()
 	return result.strip()
 
-def xsearch(pattern,string,group,flags=0):
-	research=re.search(pattern,string,flags)
-	if research:
-		try:result=research.group(group)
-		except:result=''
-	else:result=''
-	return result
+def xsearch(pattern,string,group=1,flags=0,result=''):
+	try:s=re.search(pattern,string,flags).group(group)
+	except:s=result
+	return s
 
 def s2u(s):return s.decode('utf-8') if isinstance(s,str) else s
 def u2s(s):return s.encode('utf-8') if isinstance(s,unicode) else s

@@ -22,6 +22,10 @@
 		<setting id="pass_fptplay" type="text" option="hidden" label="Password [COLOR orange]fptplay.net[/COLOR]"/>
 		<setting id="userphimmoi" type="text" label="User name [COLOR ghostwhite]phimmoi.net[/COLOR]"/>
 		<setting id="passphimmoi" type="text" option="hidden" label="Password [COLOR ghostwhite]phimmoi.net[/COLOR]"/>
+		<setting id="csn_u" type="text" label="User name [COLOR green]chiasenhac.com[/COLOR]"/>
+		<setting id="csn_p" type="text" option="hidden" label="Password [COLOR green]chiasenhac.com[/COLOR]"/>
+		<setting id="p3s_u" type="text" label="User name [COLOR lightgray]phim3s.net[/COLOR]"/>
+		<setting id="p3s_p" type="text" option="hidden" label="Password [COLOR lightgray]phim3s.net[/COLOR]"/>
 	</category>
 	<category label="Thông tin khác">
 		<setting id="thumucrieng" type="text" label="[COLOR blue]Mục chia sẻ của tôi trên Fshare[/COLOR] ([COLOR gold]ID MyFshare[/COLOR])" default="RDA4FHXVE2UU"/>
@@ -32,6 +36,7 @@
 		<setting id="uploaders" type="text" label='[COLOR blue]DS uploaders yêu thích[/COLOR] (cách nhau: "-")' default="xemaydinh-hungdaita-truoduc-ledung123-cocongidau-invisible9x-love_yejin-coduocgidau-HDCP-linhlee0709-Coti-henryduc96-luanthieugia"/>
 		<setting id="cookie" type="text" label="cookiestring" default="" visible="false"/>
 		<setting id="pagethanked" type="text" label="Trang cuối đã get thank cho xshare" default="0-0-0-0" visible="false"/>
+		<setting id="my_nas_url" type="text" label="[COLOR blue]My NAS url[/COLOR]" default="http://buffalonas.com/"/>
 	</category>
 	<category label="Các tùy chọn riêng">
 		<setting id="copyxml" type="bool" label="[COLOR green]Tự động Copy list phim xml vào [COLOR gold]MyFolder[/COLOR][/COLOR] (y/n)" default="false"/>
