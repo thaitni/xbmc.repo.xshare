@@ -1,3 +1,6 @@
+[B]Version 3.3.2[/B] <20/02/2016>:
+ Fix hayhaytv,fptplay,phim3s,get link ID Fshare
+  
 [B]Version 3.3.1[/B] <17/02/2016>:
  Fix hdviet,fptplay. Cải thiện tốc độ get link Fshare
  Bổ sung:hdonline.vn, phim3s.net, kenh88.com, phimdata.com, phimsot.com, phim47.com
