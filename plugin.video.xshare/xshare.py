@@ -1195,7 +1195,7 @@ def tenlua_getlink(href):
 		for item in response['content']:
 			tenlua_getlink(item['link'])
 
-def id_2url(url,name='',mode=0,page=0,query=''):
+def id_2url(name,url,img,mode,page,query):
 	def check_id_tenlua(id):
 		response=tenlua_get_detail_and_starting(id);title='';img=icon['tenlua']
 		if response["type"]=="file":title=response['n'];href="https://www.tenlua.vn/download/"+id
@@ -4955,7 +4955,7 @@ elif mode==10:open_category(query)
 elif mode==11:make_myFshare(name,url,img,fanart,mode,query)
 elif mode==12:make_mylist(name,url,img,fanart,mode,query)
 elif mode==13:end=xshare_search(name,url,query,mode,page)
-elif mode==15:end=id_2url(url,name,mode,page,query)
+elif mode==15:end=id_2url(name,url,img,mode,page,query)
 elif mode==16:end=play_maxspeed_link(url)
 elif mode==17:end=megabox(name,url,img,fanart,mode,page,query)
 elif mode==18:dangcaphd(name,url,img,mode,page,query)

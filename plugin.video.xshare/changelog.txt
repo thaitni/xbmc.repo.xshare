@@ -1,3 +1,6 @@
+[B]Version 3.3.3[/B] <20/02/2016>:
+ Fix My Fshare
+  
 [B]Version 3.3.2[/B] <20/02/2016>:
  Fix hayhaytv,fptplay,phim3s,get link ID Fshare
   
