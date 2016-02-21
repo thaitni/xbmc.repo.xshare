@@ -2,7 +2,7 @@
 <addons>
 <addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR]-[COLOR green]XBMC[/COLOR] [COLOR blue]HD Video[/B][/COLOR]" version="3.3.3" provider-name="thaitni">
     <requires>
-        <import addon="xbmc.python" version="2.1.0" optional="true" />
+        <import addon="xbmc.python" version="2.1.0" optional="true"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="xshare.py">
         <provides>video</provides>
