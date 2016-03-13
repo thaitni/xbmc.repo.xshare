@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import xbmc, xbmcaddon, addon, re
+import xbmc, xbmcaddon, addon, re, os
 
 my_addon=addon.addon()
-
+tempfolder=xbmc.translatePath('special://temp')
+xsharefolder=os.path.join(tempfolder,'xshare')
 def mess(message='',title='',timeShown=5000):
 	if not message:xbmc.executebuiltin("Dialog.Close(all, true)")
 	else:
@@ -12,6 +13,16 @@ def mess(message='',title='',timeShown=5000):
 		s1='[COLOR red]%s[/COLOR]'%message if '!' in message else u'[COLOR gold]%s[/COLOR]'%message
 		icon=my_addon.icon
 		xbmc.executebuiltin((u'XBMC.Notification(%s,%s,%s,%s)'%(s0,s1,timeShown,icon)).encode("utf-8"))
+
+def xshare_read(fn):
+	try:f=open(os.path.join(xsharefolder,fn));content=f.read();f.close()
+	except:content=''
+	return content
+
+def xshare_write(fn,content):
+	if not content:return
+	try:f=open(os.path.join(xsharefolder,fn),'w');f.write(content);f.close()
+	except:pass
 
 def get_input(title=u"", default=u""):
 	result = ''

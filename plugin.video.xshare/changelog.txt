@@ -1,3 +1,23 @@
+[B]Version 3.3.4[/B] <13/03/2016>:
+ Fix:
+- Fshare.vn: cải thiện tốc độ get link Fshare.
+- Cải tốc độ get vaphim.com page
+- Fix search on vaphim.com
+- Fix Google search trên Fshare, vaphim.
+- Cải tốc độ Goolge Web search for Fshare.vn (Thanks to datnt75)
+- Fix HDViet play HD
+- Fix tạm phimmoi.net (Vì server chưa ổn định)
+- Fix hayhaytv
+
+Bổ sung:
+- Fshare.vn: get cả 2 chế độ "trực tiếp/gián tiếp", cải thiện tốc đọ get link Fshare.
+- Thêm mục "Phim yêu thích trên HDOnline.vn
+- Thêm mục "Phim yêu thích trên FPTplay.vn
+- CSN: Phân lọa search theo Tên bài hát/Ca sĩ, Ca sĩ, Sáng tác, Tên Album, Lời bài hát; Bảng xếp hạng
+- NAS login
+- kphim.tv
+- phimnhanh.com
+  
 [B]Version 3.3.3[/B] <20/02/2016>:
  Fix My Fshare
   

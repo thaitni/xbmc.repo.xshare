@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import xbmc,xbmcplugin,xbmcgui,xbmcaddon,urllib,re,os,unicodedata,datetime,random,json
+import xbmc,xbmcplugin,xbmcgui,xbmcaddon,urllib,urllib2,re,os,unicodedata,datetime,time,random,json
 
 myaddon=xbmcaddon.Addon()
 home=xbmc.translatePath(myaddon.getAddonInfo('path'));datapath=xbmc.translatePath(myaddon.getAddonInfo('profile'))
@@ -12,8 +12,8 @@ tempfolder=xbmc.translatePath('special://temp');phim18=myaddon.getSetting('phim1
 xbmcplugin.setContent(int(sys.argv[1]), 'movies');homnay=datetime.date.today().strftime("%d/%m/%Y")
 
 media_ext=['aif','iff','m3u','m3u8','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp','asf','asx','avi','flv','mov','mp4','mpg','mkv','m4v','rm','swf','vob','wmv','bin','cue','dmg','iso','mdf','toast','vcd','ts','flac','m2ts','dtshd','nrg'];icon={}
-color={'fshare':'[COLOR gold]','vaphim':'[COLOR gold]','phimfshare':'[COLOR khaki]','4share':'[COLOR blue]','tenlua':'[COLOR fuchsia]','fptplay':'[COLOR orange]','trangtiep':'[COLOR lime]','search':'[COLOR lime]','ifile':'[COLOR blue]','hdvietnam':'[COLOR red]','xshare':'[COLOR blue]','subscene':'[COLOR green]','chiasenhac':'[COLOR orange]','megabox':'[COLOR orangered]','dangcaphd':'[COLOR yellow]','hayhaytv':'[COLOR tomato]','kenh88':'[COLOR cyan]','phimdata':'[COLOR magenta]','phim47':'[COLOR springgreen]','phimsot':'[COLOR orangered]','hdonline':'[COLOR turquoise]','phim3s':'[COLOR lightgray]'}
-for hd in ['xshare','4share','dangcaphd','downsub','favorite','fptplay','fshare','gsearch','hdvietnam','icon','id','ifiletv','ifile','isearch','khophim','maxspeed','megabox','movie','msearch','myfolder','myfshare','phimfshare','serverphimkhac','setting','tenlua','vaphim','hayhaytv','chiasenhac','kenh88','phimdata','phim47','phimsot','hdonline','phim3s']:
+color={'fshare':'[COLOR gold]','vaphim':'[COLOR gold]','phimfshare':'[COLOR khaki]','4share':'[COLOR blue]','tenlua':'[COLOR fuchsia]','fptplay':'[COLOR orange]','trangtiep':'[COLOR lime]','search':'[COLOR lime]','ifile':'[COLOR blue]','hdvietnam':'[COLOR red]','xshare':'[COLOR blue]','subscene':'[COLOR green]','chiasenhac':'[COLOR orange]','megabox':'[COLOR orangered]','dangcaphd':'[COLOR yellow]','hayhaytv':'[COLOR tomato]','kenh88':'[COLOR cyan]','phimdata':'[COLOR magenta]','phim47':'[COLOR springgreen]','phimsot':'[COLOR orangered]','hdonline':'[COLOR turquoise]','phim3s':'[COLOR lightgray]','kphim':'[COLOR lightgreen]','phimnhanh':'[COLOR chartreuse]'}
+for hd in ['xshare','4share','dangcaphd','downsub','favorite','fptplay','fshare','gsearch','hdvietnam','icon','id','ifiletv','ifile','isearch','khophim','maxspeed','megabox','movie','msearch','myfolder','myfshare','phimfshare','serverphimkhac','setting','tenlua','vaphim','hayhaytv','chiasenhac','kenh88','phimdata','phim47','phimsot','hdonline','phim3s','kphim','phimnhanh']:
 	icon.setdefault(hd,os.path.join(iconpath,'%s.png'%hd))
 hd={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:41.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/600.1.4 Gecko/20100101 Firefox/41.0'}
 
@@ -321,8 +321,15 @@ def make_mySearch(name,url,img,fanart,mode,query):
 		else:query=''
 	elif query=='get':
 		srv=url.split('.')[0];site='Google ' if mode==2 else ''
-		name='%s%sSearch[/COLOR] trên %s%s[/COLOR] Nhập chuỗi tìm kiếm mới'%(color['search'],site,color[srv],url)
-		addir_info(name,url,icon[srv],'',mode,1,'INP',True)
+		if url=='chiasenhac.com':
+			menu={'MyPlaylist':{'action':'Search','server':['chiasenhac.com']}}
+			name='%s%sSearch[/COLOR] trên %s%s[/COLOR] Nhập chuỗi tìm kiếm mới - '+myaddon.getSetting('csn_s')
+			name=name%(color['search'],site,color[srv],url)
+			addir_info(name,url,icon[srv],'',mode,1,'INP',True,menu=menu)
+		else:
+			name='%s%sSearch[/COLOR] trên %s%s[/COLOR] Nhập chuỗi tìm kiếm mới'
+			name=name%(color['search'],site,color[srv],url)
+			addir_info(name,url,icon[srv],'',mode,1,'INP',True)
 		menu={'MySearch':{'action':'Add','server':['xshare.vn']}}
 		if myaddon.getSetting('history')=='true':
 			#for s in re.findall('<a>(.+?)</a>',body):addir(s,url,icon[srv],'',mode,4,'Search?'+s,True)
@@ -427,8 +434,8 @@ def make_mylist(name,url,img,fanart,mode,query):
 
 def make_request(url,headers=hd,resp='b',maxr=0):
 	try:
-		if maxr==0:response=get(url,headers=headers,timeout=10)
-		else:response=get(url,headers=headers,max_redirects=maxr,timeout=10)
+		if maxr==0:response=get(url,headers=headers)#,timeout=2)
+		else:response=get(url,headers=headers,max_redirects=maxr)#,timeout=2)
 		if resp=='o':resp=response
 		else:
 			if resp=='j':resp=response.json
@@ -442,6 +449,8 @@ def make_request(url,headers=hd,resp='b',maxr=0):
 		elif resp=='s':resp=500
 		else:resp=''
 		if 'vaphim.com' not in url:
+			link=xsearch('//(.{5,20}\.\w{2,3})',s2u(url))
+			if not link:link=url
 			mess(u'Lỗi kết nối tới: %s!'%xsearch('//(.{5,20}\.\w{2,3})',s2u(url)),'make_request')
 		print 'Lỗi kết nối tới: %s!'%u2s(url);
 	return resp#unicode:body=response.text
@@ -492,7 +501,7 @@ def resolve_url(url,xml=False):
 def fshare_resolve(url,xml):
 	from resources.lib.servers import fshare;sleep=3000
 	fs=fshare(myaddon.getSetting('usernamef'),myaddon.getSetting('passwordf'))
-	if fs.logged is None:return
+	if fs.logged is None:return 'fail'
 	for loop in range(6):
 		if loop>0:mess(u'Get link lần thứ %d'%(loop+1),'fshare.vn');xbmc.sleep(sleep);sleep+=1000
 		direct_link=fs.get_maxlink(url)
@@ -548,12 +557,13 @@ def xshare_resolve(direct_link,ext='',filmlabel=''):
 	#elif ext in ['srt','sub','txt','smi','ssa','ass','nfo']:xbmcsetResolvedUrl(direct_link,filmlabel);return ''
 	
 	response,size,filename,ext=get_detail_maxlink(direct_link)
-	if not ext:mess('sorry! this is not a media file','Check media extention');result='fail'
-	elif ext in 'xml':result=doc_list_xml(direct_link,'list_xml')
-	elif ext in media_ext:xbmcsetResolvedUrl(direct_link,filmlabel);result=''
+	if ext in 'xml':result=doc_list_xml(direct_link,'list_xml')
+	elif ext in media_ext or filmlabel:xbmcsetResolvedUrl(direct_link,filmlabel);result=''
 	elif ext in ['rar','zip','srt','sub','txt','smi','ssa','ass','nfo']:
 		result=xshare_download(response,size,filename,ext)
-	else:xbmcsetResolvedUrl(direct_link);result=''#mess('sorry! this is not a media file','xshare resolve');result='fail'
+	elif not ext:mess('sorry! this is not a media file','Check media extention');result='fail'
+	else:xbmcsetResolvedUrl(direct_link);result=''
+	#mess('sorry! this is not a media file','xshare resolve');result='fail'
 	return result
 
 def xshare_download(response,size,filename,ext):
@@ -798,7 +808,7 @@ def google_search(url,query,mode,page,items=[]):
 	if not items and start=='end':mess(u'Không tìm thấy dữ liệu yêu cầu!','google_search');return 'no'
 	for name,link in set(items):
 		if url=='hdvietnam.com':addir_info(name,link,icon[srv],query='get_link_post')
-		elif url=='vaphim.com':addir_info(name,link,icon[srv],query='vp_getpage')
+		elif url=='vaphim.com':addir_info(name,link,icon[srv],query='vp_getsubpage')
 		else:addir_info(name,link,icon[srv])
 	if start!='end':
 		name=color['trangtiep']+'Trang tiep theo...trang %s[/COLOR]'%str(page-2)
@@ -812,18 +822,32 @@ def google_search_web(url,start,query,items):
 	if 'xshare' in start:start=start.replace('xshare','');xshare='yes'
 	else:xshare=''
 	href=google+'start=%s&q=site:%s+%s'%(start,url.lower(),string_search);print href
-	body=make_request(href,hd)#;a=makerequest(r'd:\xoa.html',body,'w')
+	hd['Cookie']=makerequest(joinpath(xsharefolder,'google.cookie'))
+	response=make_request(href,hd,resp='o')#;a=makerequest(r'd:\xoa.html',body,'w')
+	if response and response.status==200:
+		if checkupdate('google.cookie',hours=240,folder=xsharefolder):
+			makerequest(joinpath(xsharefolder,'google.cookie'),response.cookiestring,'w')
+		body=response.body
+	else:body=''
 	if '<TITLE>302 Moved</TITLE>' in body and myaddon.getSetting('googlesearch')=='Web':
 		mess(u'Google: nghi ngờ lạm dụng Dịch vụ. Tự động chuyển sang API search!','google_search_web')
 		return google_search_api(url,start,query,items)
-		#return items,'end'
-	#links=re.findall('<a href="(.{,300})" onmousedown=".{,200}">(.{,200})</a></h3>',body);print len(links)
-	links=re.findall('<a href=".*?(http.+?)["|&].+?>(.+?)</a></h3>',body)
-	for link,name in links:
-		if 'tenlua.vn' in link and not re.search('\w{14,20}/(.*)\Z',link):continue
-		elif not name or 'Forum' in name or 'server-nuoc-ngoai' in link:continue
-		elif 'chuyenlink.php' in link:continue
-		items.append((remove_tag(unescape(name)),link))
+
+	if url=='fshare.vn':
+		links=re.findall('<h3 class="r"><a href="(http.?://www.fshare.vn/.+?)".+?>(.+?)</a>',body)
+		for link,name in links:
+			items.append((remove_tag(unescape(name)),link.replace('http:','https:')))
+	elif url=='vaphim.com':
+		links=re.findall('<h3 class="r"><a href="(http://vaphim.com/.+?)".+?>(.+?)</a>',body)
+		for link,name in links:
+			items.append((remove_tag(unescape(name)),link.replace('http:','https:')))
+	else:
+		links=re.findall('<a href=".*?(http.+?)["|&].+?>(.+?)</a></h3>',body)
+		for link,name in links:
+			if 'tenlua.vn' in link and not re.search('\w{14,20}/(.*)\Z',link):continue
+			elif not name or 'Forum' in name or 'server-nuoc-ngoai' in link:continue
+			elif 'chuyenlink.php' in link:continue
+			items.append((remove_tag(unescape(name)),link))
 	start=str(int(start)+int(num))
 	if 'start=%s'%start not in body:start='end'
 	elif 'xshare':start=start+'xshare'
@@ -852,18 +876,27 @@ def update_xml(items_new,items_old,filename): #update vaphim,ifiletv xml
 	return
 
 def vp_page(url,body=''):#id,name,href,img,category
+	hd['Cookie']=makerequest(joinpath(xsharefolder,'vaphim.cookie'))
 	pattern='<li class="post-(\d{4,6})(.+?)">.+?src="(.+?)".+?<h3 class="entry-title">'
 	pattern+='<a href="(.+?)" rel="bookmark" >(.+?)</a>';items=[]
-	if not body:body=make_request(url)
+	if not body:
+		response=make_request(url,hd,resp='o')
+		if response:
+			if response.cookiestring and response.cookiestring!=hd['Cookie']:
+				makerequest(joinpath(xsharefolder,'vaphim.cookie'),response.cookiestring,'w')
+			body=response.body
+		else:body=''
 	for id,category,img,href,name in re.findall(pattern,body,re.DOTALL):
 		category=' '.join(s.replace('category-','') for s in category.split() if 'category-' in s)
 		if [s for s in ['game','video-clip','phn-mm','ebooks'] if s in category]:continue
-		name=' '.join(s for s in re.sub('<.+?>|&.+?; ?','',name).split());items.append((id,name,href,img,category))
+		name=' '.join(s for s in re.sub('<.+?>|&.+?; ?','',name).split())
+		items.append((id,name,href,img,category))
 	return items
 
 def vp_2fshare(url):#id,title,href,img,fanart,category
+	hd['Cookie']=makerequest(joinpath(xsharefolder,'vaphim.cookie'))
 	response=make_request(url,hd,resp='o')
-	if not response or response.status!=200:xbmc.sleep(15000);response=make_request(url,hd,resp='o')
+	if not response or response.status!=200:xbmc.sleep(5000);response=make_request(url,hd,resp='o')
 	if not response or response.status!=200:return list()
 	body=response.body
 	items=list();id=xsearch("href='http://vaphim.com/\?p=(.+?)'",body)
@@ -987,12 +1020,18 @@ def vp_chonloc():
 		else:ne=' '.join(s for s in name[1].split());vp_addir([s for s in items_xml if nv in s[6] or ne in s[6]])
 
 def vp_make_datanew():
-	body=make_request('http://vaphim.com/request/')
+	hd['Cookie']=makerequest(joinpath(xsharefolder,'vaphim.cookie'))
+	response=make_request('http://vaphim.com/huong-dan-lay-rss-cua-vaphim-com/',hd,resp='o')
+	if response:
+		body=response.body
+		if response.cookiestring and hd['Cookie']!=response.cookiestring:
+			makerequest(joinpath(xsharefolder,'vaphim.cookie'),response.cookiestring,'w')
+	else:body=''
 	names=re.findall('<li><a href=".+?" title=".+?">(.+?)<',body)
 	if names:makerequest(joinpath(datapath,'vp_xemnhieu.txt'),str(names),'w')
 	items=re.findall('<li><a href="/category.+?/([\w-]+?)/">(.+?)</a></li>',body)
 	if items:makerequest(joinpath(datapath,"vp_menu.txt"),str(items),'w')
-	body=make_request('http://vaphim.com/')
+	body=make_request('http://vaphim.com/',hd)
 	items=re.findall('"post-(\d{4,6})(.+?)"',body);items_new=[]
 	for id,category in items:
 		category=' '.join(s.replace('category-','') for s in category.split() if 'category-' in s)
@@ -1256,7 +1295,7 @@ def id_2url(name,url,img,mode,page,query):
 		if title:make_mySearch(title,href,img,'',mode,'Add');addirs(title,href,img)
 		else:mess(u'Không tìm được link có ID: %s!'%idf);return 'no'
 	elif page == 4:#Mở thư mục chia sẻ trên Fshare
-		title=color['4share']+"Mục Link yêu thích của tôi trên Fshare (My fshare favorite)[/COLOR]"
+		title=color['search']+"Mục Link yêu thích của tôi trên Fshare (My fshare favorite)[/COLOR]"
 		addir(title,"https://www.fshare.vn/files/favorite",img,fanart,mode=90,query='favorite',isFolder=True)
 		doc_TrangFshare(name,query,iconpath+'fshare.png','')
 	return ''
@@ -1361,9 +1400,9 @@ def xshare_search(name,url,query,mode,page,items=[]):#13
 	query=no_accent(query)
 	
 	if url=='vaphim.com':#print_dict(mp('http://vaphim.com/fast-search.php',data='term=hur+jun',resp='j'))
-		query,trang,p=trang_search(query)
+		query,trang,p=trang_search(query);hd['Cookie']=makerequest(joinpath(xsharefolder,'vaphim.cookie'))
 		url_search='http://vaphim.com/page/%s/?s=%s'%(trang,urllib.quote_plus(query))
-		body=make_request(url_search)
+		body=make_request(url_search,hd)
 		items=vp_page(url_search,body)#id,name,href,img,category
 		if not items:mess(u'Không tìm được tên phim phù hợp!','vaphim.com search');return 'no'
 		for id,name,href,img,category in items:
@@ -2059,7 +2098,7 @@ def megabox(name,url,img,fanart,mode,page,query):
 			if not body:return homehtml(True)
 		return body
 
-	if query=='MGB1':
+	if url=='megabox.vn':
 		label=labelsearch("Search trên megabox.vn")
 		addir_info(label,homepage,ico,'',mode,1,'makeitemsearch',True)
 		body=homehtml()
@@ -2210,21 +2249,29 @@ def megabox(name,url,img,fanart,mode,page,query):
 		addir(name,url,icon['megabox'],'',mode,1,'mainmenu',True)
 	return ''
 
-def get_home_page(fn,url=''):
-	content='';fullfn=joinpath(xsharefolder,fn)
-	if not url and os.path.isfile(fullfn):content=makerequest(joinpath(xsharefolder,fn))
-	elif not url:
-		body=make_request(url)
-		if body:content=makerequest(fullfn,body,'w')
-	elif checkupdate(fn,folder=xsharefolder):
-		endxbmc();response=make_request(url,resp='o');result=response and response.status in [200,302]
-		if result:content=makerequest(fullfn,response.body,'w')
-	return content
+def get_home_page(fn,url='',update=False):
+	def make_cookie_file(url,cookie):
+		if 'vaphim.com' in url:makerequest(joinpath(xsharefolder,'vaphim.cookie'),cookie,'w')
+		elif fn=='hayhaytv.html':makerequest(joinpath(xsharefolder,'hayhaytv.cookie'),cookie,'w')
+			
+	fullfilename=joinpath(xsharefolder,fn);body=''
+	if not update and os.path.isfile(fullfilename):body=makerequest(joinpath(xsharefolder,fn))
+	elif not update and url:
+		response=make_request(url,hd,resp='o')
+		if response:
+			body=response.body;content=makerequest(fullfilename,body,'w')
+			if response.cookiestring:make_cookie_file(url,response.cookiestring)
+	elif update and url and checkupdate(fn,folder=xsharefolder):
+		response=make_request(url,hd,resp='o')
+		if response:
+			endxbmc();body=response.body;content=makerequest(fullfilename,body,'w')
+			if response.cookiestring:make_cookie_file(url,response.cookiestring)
+	return body
 
 def fptplay(name,url,img,mode,page,query):
 	hd={'User-Agent':'android Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.71 Safari/537.36','x-requested-with':'XMLHttpRequest','referer':url};ico=icon['fptplay']
 	def fpt2s(string):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',s),s) for s in string.split())
-	def namecolor(name):return '%s%s[/COLOR]'%(color['fptplay'],name)
+	def namecolor(name):return '%s%s[/COLOR]'%(color['fptplay'],fpt2s(name))
 	def name2(name):
 		name=re.sub('.huyết .inh','[COLOR green]Thuyết Minh[/COLOR]',name)
 		name=re.sub('.hụ ..?ề','[COLOR gold]Phụ Đề[/COLOR]',name)
@@ -2240,7 +2287,7 @@ def fptplay(name,url,img,mode,page,query):
 			response=make_request('https://fptplay.net/tai-khoan',hd,resp='o')
 			f=f+':'+xsearch('name="_token".+?content="(.+?)"',response.body)
 			makerequest(joinpath(xsharefolder,'fptplay.cookie'),f,'w')
-		else:mess(u'Login không thành công!','fptplay.net');f=''
+		else:mess(u'Login không thành công!','fptplay.net');f=': '
 		return f
 	
 	def dir_confirm(hrefs):
@@ -2261,8 +2308,8 @@ def fptplay(name,url,img,mode,page,query):
 	
 	def fpt_adddir(items):#href,img,title
 		for href,img,title in items:
-			if '/livetv/' not in href:addir_info(name2(title),href,img,img,mode,1,"ftp_read_eps",True)
-			else:href=os.path.basename(href);addir_info(name2(title),href,img,img,mode,1,"ftp_play")
+			if '/livetv/' not in href:addir_info(name2(title),href,img,img,mode,1,"ftp_read_eps",True,menu=menu)
+			else:href=os.path.basename(href);addir_info(name2(title),href,img,img,mode,1,"ftp_play",menu=menu)
 
 	def fpt_adddir1(items):#href,img,title
 		dirs=dir_confirm([s[0] for s in items])
@@ -2273,17 +2320,33 @@ def fptplay(name,url,img,mode,page,query):
 				title='%s%s[/COLOR]'%(color['fptplay'],fpt2s(title))
 				addir_info(title,href,img,img,mode,1,"ftp_read_eps",True)
 			elif loai=='l':addir_info(fpt2s(title),id,img,img,mode,1,'ftp_play')
+	
+	xshare_favourite_id=myaddon.getSetting('xshare_favourite')
+	if not xshare_favourite_id:
+		from resources.lib.servers import fshare;lib_imported=True
+		fs=fshare(myaddon.getSetting('usernamef'),myaddon.getSetting('passwordf'))
+		xshare_favourite_id=fs.add_folder(folder_name='xshare_favourite',in_dir_id='0')
+		if xshare_favourite_id:myaddon.setSetting('xshare_favourite',xshare_favourite_id)
+		else:mess(u'Get favourite_id bị lỗi !','Fshare.vn')
+		fs.logout()
 
 	cookie=makerequest(joinpath(xsharefolder,'fptplay.cookie'))
 	if ':' not in cookie:cookie=login()
 	hd['Cookie'],hd['x-csrf-token']=cookie.split(':')
+	
+	menu={'xshare':{'action':'Add'}}
+
 	if query=="fptplay.net":
-		body=get_home_page('fptplay.html')
+		body=get_home_page('fptplay.html','https://fptplay.net')
 		title=color['search']+"Search trên fptplay.net[/COLOR]"
 		addir_info(title,'fptplay.net',ico,'',mode,1,'search',True)
+		title=color['search']+"Mục theo dõi trên fptplay.net[/COLOR]"
+		addir_info(title,'favourite',ico,'',mode,1,'favourite',True)
+		
 		subbody=xsearch('(<ul class="top_menu">.+?</ul>)',body,1,re.DOTALL)
 		for href,title in re.findall('<a href="(https://fptplay.net/.+?)">(.+?)</a>',subbody):
 			addir_info(namecolor(title),href,ico,'',mode,1,"ftp_read_page",True)
+		
 		for S in re.findall('(<section>.+?</section>)',body,re.DOTALL):
 			N=['"pull-left">Sự Kiện Nổi Bật','"pull-left">Phim Chiếu TV','"pull-left">Thể Thao']
 			if [n for n in N if n in S]:continue
@@ -2294,7 +2357,8 @@ def fptplay(name,url,img,mode,page,query):
 				title=color['trangtiep']+fpt2s(title)+':[/COLOR]'
 				addir_info(title,href,ico,'',mode,1,"ftp_read_page",True)
 			fpt_adddir(items)
-		if get_home_page('fptplay.html','https://fptplay.net'):xbmc.executebuiltin("Container.Refresh")
+		
+		if get_home_page('fptplay.html','https://fptplay.net',True):xbmc.executebuiltin("Container.Refresh")
 		if checkupdate('fptplay.cookie',folder=xsharefolder):hd['Cookie'],hd['x-csrf-token']=login().split(':')
 		
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
@@ -2302,12 +2366,68 @@ def fptplay(name,url,img,mode,page,query):
 		query=make_mySearch('',url,'','','','Input')
 		if query:return fptplay(name,url,img,mode,page,query)
 		else:return 'no'
-	
 	elif url=="fptplay.net":
 		search_string = urllib.quote(query)
 		url='https://fptplay.net/tim-kiem/%s'%search_string
 		return fptplay(name,url,img,mode,1,query='ftp_read_page')
 	
+	elif query=='Add':
+		from resources.lib.servers import fshare
+		fs=fshare(myaddon.getSetting('usernamef'),myaddon.getSetting('passwordf'))
+		name=re.sub('\[.+?\]','',name)
+		folder_encode=urllib2.base64.urlsafe_b64encode(name+','+url+','+img)
+		loop=True;prefix='fptplay%d'%int(time.time());count=0
+		while loop:
+			folder_name='%s%d'%(prefix,count)+folder_encode[:230]
+			if len(folder_encode)>230:folder_encode=folder_encode[230:];count+=1
+			else:loop=False
+			result=fs.add_folder(folder_name,in_dir_id=xshare_favourite_id)
+		fs.logout()
+	
+	elif query=='Remove':
+		from resources.lib.servers import fshare
+		fs=fshare(myaddon.getSetting('usernamef'),myaddon.getSetting('passwordf'))
+		favourite=fs.get_myFolder(folder_name='xshare_favourite');folder_id=''
+		favourites=[s for s in favourite if 'fptplay' in s[0] and re.search('\d{11}',s[0])]
+		favourites.sort();prefixs=dict();fshare_urls=dict()
+		
+		for title,fshare_url in favourites:
+			prefixs[title[:17]]=prefixs.get(title[:17],'')+title[18:]
+			if fshare_urls.get(title[:17],''):
+				fshare_urls[title[:17]]=fshare_urls.get(title[:17],'')+'-'+fshare_url
+			else:fshare_urls[title[:17]]=fshare_url
+		
+		fshare_url='';result=True
+		for d in prefixs:
+			try:
+				if url in urllib2.base64.urlsafe_b64decode(prefixs[d]):
+					fshare_url=fshare_urls[d];break
+			except:continue
+		
+		for href in fshare_url.split('-'):
+			if not fs.remove_folder('xshare_favourite',os.path.basename(href)):result=False
+			
+		if not fshare_url or not result:mess(u'Xóa mục bị lỗi !','Fptplay.vn')
+		else:xbmc.executebuiltin("Container.Refresh")
+		fs.logout()
+	
+	elif query=='favourite':
+		menu={'xshare':{'action':'Remove'}}
+		from resources.lib.servers import fshare;lib_imported=True
+		fs=fshare(myaddon.getSetting('usernamef'),myaddon.getSetting('passwordf'))
+		favourite=fs.get_myFolder(folder_name='xshare_favourite')
+		titles=[s[0] for s in favourite if 'fptplay' in s[0] and re.search('\d{11}',s[0])]
+		titles.sort();items=dict()
+		for title in titles:items[title[:17]]=items.get(title[:17],'')+title[18:]
+		
+		for d in sorted(items,reverse=True):
+			try:
+				name,href,img=urllib2.base64.urlsafe_b64decode(items[d]).split(',')
+				if '/livetv/' not in href:addir_info(name2(name),href,img,img,mode,1,"ftp_read_eps",True,menu=menu)
+				else:href=os.path.basename(href);addir_info(name2(name),href,img,img,mode,1,"ftp_play",menu=menu)
+			except:continue
+		fs.logout()
+		
 	elif query=='ftp_read_eps':
 		href='https://fptplay.net/show/episode'
 		episode=make_post(href,hd,{'film_id':xsearch('(\w{20,30})',url),'page':'%d'%page})
@@ -2695,6 +2815,243 @@ def pubvn(name,url,img,mode,page,query):
 	elif query=='play':pubvn_play(url)
 
 def hdviet(name,url,img,mode,page,query):
+	color['hdviet']='[COLOR darkorange]';ico=icon['hdviet']=os.path.join(iconpath,'hdviet.png')
+	urlhome='http://movies.hdviet.com/'
+	if os.path.isfile(joinpath(datapath,'hdviet.cookie')):os.remove(joinpath(datapath,'hdviet.cookie'))
+	direct_link='https://api-v2.hdviet.com/movie/play?accesstokenkey=%s&movieid=%s'
+	def namecolor(name):return '%s%s[/COLOR]'%(color['hdviet'],name)
+	def getcookie():
+		u=myaddon.getSetting('userhdviet');p=myaddon.getSetting('passhdviet')
+		import hashlib;data=urllib.urlencode({'email':u,'password':hashlib.md5(p).hexdigest()})
+		response=make_post('http://movies.hdviet.com/dang-nhap.html',hd,data)
+		return response.cookiestring
+	def login_hdviet():
+		u=myaddon.getSetting('userhdviet');p=myaddon.getSetting('passhdviet')
+		'''
+		url='https://id.hdviet.com/authentication/login'
+		response=make_post(url,data='email=%s&password=%s'%(u,p),resp='j')
+		if response and response.get('error')==0:
+			response=response.get('data')
+			mess(u'Login thành công','hdviet.com')
+			json_rw('hdviet.cookie',response)
+		elif response and response.get('error')==27:
+			mess(u'Acc bị khóa tạm thời. Vào web để login nhé!','hdviet.com');response=dict()
+		elif response and response.get('error') in (25,22):
+			mess(response.get('message'),'hdviet.com');response=dict()
+		else:
+		'''
+		import hashlib;data=urllib.urlencode({'email':u,'password':hashlib.md5(p).hexdigest()})
+		response=make_post('http://movies.hdviet.com/dang-nhap.html',hd,data)
+		try:resp=response.json#;print resp
+		except:resp={u'r': u'Lỗi đăng nhập hdviet.com', u'e': 3}
+		if resp.get('e')==0:
+			mess(resp.get('r'),'hdviet.com');hd['Cookie']=response.cookiestring
+			response=make_request('http://movies.hdviet.com/dieu-khoan-su-dung.html',headers=hd)
+			import base64;token=base64.b64decode(xsearch('<a class="userinfo".+?token=(.+?)"',response))
+			response={'Cookie':hd['Cookie'],'access_token':token};json_rw('hdviet.cookie',response)
+		else:response=dict();mess(resp.get('r'),'hdviet.com')
+		url='http://movies.hdviet.com/dang-xuat.html?accesstokenkey=%s'
+		make_post(url%response.get('access_token')).body
+		return response
+	def getResolvedUrl(id_film,loop=0):#Phim le/phim chieu/ke doi dau thien ac
+		def getlinkhdviet(token,id_film):
+			id_film=id_film.replace('_e','&ep=')
+			response=make_request(direct_link%(token,id_film),resp='j')
+			try:links=response['r']
+			except:links=dict()
+			#try:print json.dumps(links,indent=2,ensure_ascii=True)
+			#except:pass
+			return links
+		
+		data=json_rw('hdviet.cookie')
+		links=getlinkhdviet(data.get('access_token'),id_film);link=links.get('LinkPlay')
+		if not link:return '',''
+		elif '0000000000000000000000' in link:
+			data=login_hdviet();links=getlinkhdviet(data.get('access_token'),id_film);link=links.get('LinkPlay')
+		
+		if link:
+			max_resolution='_1920_' if myaddon.getSetting('hdvietresolution')=='1080' else '_1280_'
+			resolutions=['_1920_','_1885_','_1876_','_1866_','_1792_','_1280_','_1024_','_800_','_640_','_480_']
+			if '_e' in id_film:link=re.sub('%s_e\d{1,3}_'%id_film.split('_')[0],'%s_'%id_film,link)
+			
+			r=''.join([s for s in resolutions if s in link]);response=''
+			if r:
+				href=link[:link.rfind(r)]+link[link.rfind(r):].replace(r,'%s')
+				for i in resolutions:
+					if i>max_resolution:continue
+					response=make_request(href%i)
+					if len(response)>0:link=href%i;break
+			else:
+				href=link.replace('playlist.m3u8','playlist_h.m3u8')
+				response=make_request(href)
+				if not response or '#EXT' not in response:
+					for s in range(1,6):
+						#print re.sub('http://n0\d.vn-hd.com','http://n0%d.vn-hd.com'%s,href)
+						if 'http://n0%d'%s in href:continue
+						elif re.search('http://n0\d.vn-hd.com',href):
+							response=make_request(re.sub('http://n0\d.vn-hd.com','http://n0%d.vn-hd.com'%s,href))
+						if response and  '#EXT' in response:break
+				if not response:response=make_request(link)
+			
+			if response and '#EXT' in response:
+				items=re.findall('RESOLUTION=(\d+?)x.*\s(.+m3u8)',response)
+				if items:
+					res=0;hr=''
+					for r,h in items:
+						#print r,h
+						if int(r)>res:res=int(r);hr=h
+					if hr and 'http://' in hr:link=hr
+					else:link=os.path.dirname(link)+'/'+hr
+				else:
+					items=re.findall('(.+m3u8)',response)
+					if items and 'http://' in items[0]:link=items[len(items)-1]#;print items[0]
+					elif items:link=os.path.dirname(link)+'/'+items[0]
+				
+				
+				#if href and 'http://' in href[0]:link=href[len(href)-1];print href[0]
+				#elif href:
+				#	items=re.findall('RESOLUTION=(\d{1,4})x(\d{1,4})\s(.+m3u8)',response);print href[0]
+				#	if items:
+				#		r=0;hr=''
+				#		for r1,r2,h in items:
+				#			if int(r1)*int(r2)>r:r=int(r1)*int(r2);hr=h
+				#		if hr:link=os.path.dirname(link)+'/'+hr
+				#	else:link=os.path.dirname(link)+'/'+href[0]
+			else:link=''
+		#if  not link and loop==0:
+		#	response=make_request(link,resp='o')
+		#	if response and 'filename' not in response.headers.get('content-disposition',''):
+		#		data=login_hdviet();return getResolvedUrl(id_film,1)
+		if not link:return '',''
+		audio=links.get('AudioExt',list());audioindex=-1;linksub=''
+		if not audio:pass
+		elif len(audio)>1:
+			audio_choice=myaddon.getSetting('hdvietaudio')
+			if audio_choice=='Hỏi khi xem':
+				title=u'[COLOR green]Chọn Audio[/COLOR]';line1= u'[COLOR yellow]Vui lòng chọn Audio[/COLOR]'
+				audioindex=mess_yesno(title,line1,'',audio[0].get("Label",'0'),audio[1].get("Label",'1'))
+			else:audioindex=0 if u2s(audio[0].get("Label")) in audio_choice else 1
+			if 'Thuyết' not in u2s(audio[audioindex].get("Label")):linksub='yes'#bật cờ download sub
+			try:link=link+'?audioindex=%d'%(int(audio[audioindex].get("Index",'0'))-1)
+			except:pass
+		elif u2s(audio[0].get("Label"))=='Thuyết Minh':audioindex=0
+		if audioindex<0 or linksub:
+			for source in ['Subtitle','SubtitleExt','SubtitleExtSe']:
+				try:linksub=links[source]['VIE']['Source']
+				except:linksub=''
+				if linksub:break
+		#print 'getResolvedUrl: %s - %s'%(link,linksub)
+		return link,linksub
+
+	def additems(body):
+		pattern='<li class="mov-item".+?href="(.+?)".+?src="(.+?)".+?title="Phim (.+?)".+?<span(.+?) data-id="(.+?)">'
+		data=re.findall(pattern,body,re.DOTALL);listitems=list()
+		for href,img,title,detail,id_film in data:
+			epi=xsearch('"labelchap2">(\d{1,3})</span>',detail);title=unescape(title)
+			res=xsearch('id="fillprofile" class="icon-(.+?)11">',detail)
+			res='[COLOR gold]SD[/COLOR]' if 'SD' in res else '[COLOR gold]HD[/COLOR]%s'%res
+			phim18=xsearch('class="children11".+?>(.+?)</label></span>',detail)
+			TM=xsearch('id="fillaudio" class="icon-(.+?)">',detail)
+			TM='%s[COLOR green]%s[/COLOR][COLOR red]%s[/COLOR]'%(res,TM,phim18)
+			plot=xsearch('<span class="cot1">(.+?)</span>',detail)
+			year=xsearch('<span class="chil-date".+?>(.*?)</label></span>',detail)
+			act=', '.join(s for s in re.findall('<a href="http://movies.hdviet.com/dien-vien/.+?">(.+?)</a>',detail))
+			drt=', '.join(s for s in re.findall('<a href="http://movies.hdviet.com/dao-dien/.+?">(.+?)</a>',detail))
+			rat=xsearch('<span class="fl-left">.+?<span>(.+?)</span>',detail)
+			upl=xsearch('<span class="fl-right">.+?<span>(.+?)</span>',detail)
+			if not epi:title=TM+' '+title;query='hdvietplay'
+			elif epi=='1':query='hdvietfolder'
+			else:title=TM+' '+namecolor(title)+' [COLOR green](%s)[/COLOR]'%epi;query='hdvietfolder'
+			listItem = xbmcgui.ListItem(label=title,iconImage=img,thumbnailImage=img)
+			if rat:rat='[COLOR tomato]IMDb:[/COLOR] %s, '%rat
+			if upl:upl='[COLOR tomato]Uploader:[/COLOR] %s, '%upl
+			if act:act='[COLOR tomato]Diễnviên:[/COLOR] %s, '%act
+			if drt:drt='[COLOR tomato]Đạodiễn:[/COLOR] %s, '%drt
+			plot=rat+upl+act+drt+'\n'+plot
+			info={'title':title,'year':year,'rating':xsearch('(\d\.\d{1,2})',rat),'plot':plot,'episode':epi,'director':drt,'writer':act}
+			listItem.setInfo(type="Video", infoLabels=info)
+			listItem.setArt({"thumb":img,"poster":img,"fanart":img})
+			if query=='hdvietplay':listItem.setProperty('IsPlayable', 'true')
+			u=sys.argv[0]+"?url="+id_film+"&img="+urllib.quote_plus(img)+"&fanart="+urllib.quote_plus(img)+"&mode="+str(mode)+"&page="+str(page)+"&query="+query+"&name="+urllib.quote_plus(title)
+			listitems.append((u,listItem,False if query=='hdvietplay' else True))
+		xbmcplugin.addDirectoryItems(int(sys.argv[1]),listitems,totalItems=len(listitems))
+	def hdviet_search(string):
+		url='http://movies.hdviet.com/tim-kiem.html?keyword=%s'%urllib.quote_plus(string)
+		hdviet(name,url,img,mode,page,query='timkiem')
+	
+	if query=='hdviet.com':
+		body=get_home_page('hdviet.html',urlhome)
+		name=color['search']+"Search trên hdviet.com[/COLOR] (Hãy chọn độ phân giải trên settings nhé)"
+		addir(name,'http://movies.hdviet.com/tim-kiem.html',ico,fanart,mode,1,'search',True)
+		href='http://movies.hdviet.com/phim-yeu-thich.html'
+		title=color['search']+'Phim yêu thích của tôi trên hdviet[/COLOR]'
+		addir_info(title,href,icon['icon'],fanart,mode,1,'yeu-thich',True)
+		
+		
+		items=re.findall('class="mainmenulist.+?href="(.+?)".+?title=.+?>(.+?)</a>',body,re.DOTALL)
+		for href,name in items:
+			addir_info(namecolor(name),href,ico,fanart,mode,1,'mainmenulist',True)
+		
+		items=re.findall('<div class="h2-ttl cf">.+?<a href="(.+?)" title=".+?" >(.+?)</a>.+?</div>(.+?)</ul>',body,re.DOTALL)
+		for href,name,subbody in items:
+			addir('-----%s%s-----[/COLOR]'%(color['search'],name),href,icon['hdviet'],fanart,mode,page,'1',True)
+			additems(subbody)
+		if get_home_page('hdviet.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
+	elif query=='search':make_mySearch('','hdviet.com','','',mode,'get')
+	elif query=="INP":hdviet_search(make_mySearch('',url,'','','','Input'))
+	elif url=='hdviet.com':page=1 if 'Trang tiếp theo' not in name else page;hdviet_search(query)
+	elif query=='the-loai-phim':
+		for href,name in re.findall('<p><a href="(.+?)" title=".+?">(.+?)</a></p>',makerequest(joinpath(datapath,'hdviet.html'))):
+			addir(namecolor(name),href,icon['hdviet'],fanart,mode,page,'theloai',True)
+	elif query=='3' and url==urlhome:#Phim lẻ
+		items=re.findall('<a href="(.+?)" .?menuid="(.+?)" .?title=".+?" >(.+?)</a>',makerequest(joinpath(datapath,'hdviet.html')))
+		for href,id,name in items:
+			addir(namecolor(name),href,icon['hdviet'],fanart,mode,page,id,True)
+	elif query=='10' and url==urlhome:#Phim bộ
+		body=makerequest(joinpath(datapath,'hdviet.html'))
+		items=re.findall('<a href="(.+?)" menuid="(.+?)" title=".+?">(.+?)</a>',body)
+		items+=re.findall('<a class="childparentlib" menuid="(.+?)" href="(.+?)" title=".+?">(\s.*.+?)</a>',body)
+		for href,id,name in items:
+			if 'au-my' in href:name='Phim bộ Âu Mỹ %s'%name.strip()
+			elif 'hong-kong' in href:name='Phim bộ Hồng Kông %s'%name.strip()
+			elif 'trung-quoc' in href:name='Phim bộ Trung Quốc %s'%name.strip()
+			else:name='Phim bộ %s'%name.strip()
+			if href in '38-39-40':temp=href;href=id;id=temp
+			addir(namecolor(name),href,icon['hdviet'],fanart,mode,page,id,True)
+	elif query=='hdvietfolder':
+		href='http://movies.hdviet.com/lay-danh-sach-tap-phim.html?id=%s'%url
+		response=make_request(href,resp='j')
+		if not response:return
+		for eps in range(1,int(response["Sequence"])+1):
+			name=re.sub(' \[COLOR green\]\(\d{1,4}\)\[/COLOR\]','',name)
+			title='Tập %s/%s-%s'%(format(eps,'0%dd'%len(response['Episode'])),str(response['Episode']),re.sub('\[.?COLOR.{,12}\]','',name))
+			addir(title,'%s_e%d'%(url,eps),img,fanart,mode,page,'hdvietplay',False)
+	elif query=='hdvietplay':
+		link,sub=getResolvedUrl(url)#;print link,sub
+		if not link:mess(u'Get link thất bại!','hdviet.com')
+		else:
+			if sub:
+				mess(u'Phụ đề của HDViet.com','hdviet.com');xshare_resolve(sub)
+				sub=urllib.unquote(os.path.splitext(os.path.basename(sub))[0])
+			xbmcsetResolvedUrl(link,sub)
+	elif query=='Themmucyeuthich':
+		hd['Cookie']=getcookie()
+		body=make_post('http://movies.hdviet.com/them-phim-yeu-thich.html',hd,urllib.urlencode({"MovieID":"%s"%url}))
+		try:mess(body.json['r'],'hdviet.com')
+		except:mess(u'Lỗi thêm phim yêu thích!','hdviet.com')
+	else:
+		if query=='yeu-thich':hd['Cookie']=getcookie();body=make_request(url,hd)
+		else:body=make_request(url)
+		body=sub_body(body,'class="homesection"','class="h2-ttl cf"')
+		additems(body)
+		pages=re.findall('<li class=""><a href="(.+?)">(.+?)</a></li>',sub_body(body,'class="active"',''))
+		if pages:
+			pagenext=pages[0][1];pageend=pages[len(pages)-1][1]
+			name='%sTrang tiếp theo: trang %s/%s[/COLOR]'%(color['trangtiep'],pagenext,pageend)
+			addir(name,pages[0][0],img,fanart,mode,page,query,True)
+		xbmc.executebuiltin('Container.SetViewMode(504)')
+
+def hdviet1(name,url,img,mode,page,query):
 	color['hdviet']='[COLOR darkorange]';icon['hdviet']=os.path.join(iconpath,'hdviet.png')
 	homepage='http://movies.hdviet.com/'
 	if os.path.isfile(joinpath(datapath,'hdviet.cookie')):os.remove(joinpath(datapath,'hdviet.cookie'))
@@ -2981,7 +3338,10 @@ def play_youtube(href):#https://www.youtube.com/get_video_info?video_id=xhNy0jnA
 def hayhaytv(name,url,img,fanart,mode,page,query):
 	ico=os.path.join(iconpath,'hayhaytv.png');clr='[COLOR tomato]';urlhome='http://www.hayhaytv.vn/'
 	api='http://api.hayhaytv.vn/'
+	hd={'User-Agent':'Mozilla/5.0 Gecko/20100101 Firefox/44.0'}
+	hd['Cookie']=makerequest(joinpath(xsharefolder,'hayhaytv.cookie'))
 	def namecolor(name):return '%s%s[/COLOR]'%(clr,name)
+	
 	def hh_html(file,attr='r'):
 		body=''
 		if attr=='r':
@@ -2996,15 +3356,18 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 				body='\n'.join(sets(re.findall(pattern,make_request('http://clips.hayhaytv.vn/'))))
 		print len(body)
 		return body
+	
 	def hh_addir(name,url,img,fanart='',mode=mode,page=1):
 		if xsearch('-Tap-',url,0):addir_info(namecolor(name),url,img,fanart,mode,page,'hh_read_foldef',True)
 		else:addir_info(name,url,img,fanart,mode,page,'hh_play')
+	
 	def hh_check_series(url,page=1):
 		if page==1:
 			id_film=xsearch("Main.error_send\('(.+?)'\)",make_request(url))
 			if '/xem-phim/' in url:url='http://www.hayhaytv.vn/loadepisode?film=%s&type=next&id='%id_film
 			else:url='http://www.hayhaytv.vn/loadepisodeshow?film=%s&type=next&id='%id_film
 		return url,make_post(url+str((page-1)*8),{'X-Requested-With':'XMLHttpRequest'},resp='j').get('dulieu','')
+	
 	def getlink(url):
 		def get_tap(s):
 			try:tap=int(xsearch('(\d{1,4})',s.get('name')))
@@ -3033,7 +3396,7 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 			s=xsearch(pattern,make_request('https://www.fshare.vn/folder/5VNFUPO32P6F')).split('-')
 			if s:xshare_dict['hh_headers']=s;json_rw('xshare.json',xshare_dict)
 		if s:data1={s[0]:'%s %s'%(s[1],s[2])}
-		print 'Kiem tra data1: ',data1
+		
 		loai='movie' if '/xem-phim/' in url else 'show'
 		data2={"secure_token":"1.0","request":'{"%s_id":"%s"}'%(loai,movie_id)}
 		data=make_post(api+'%s/%s_detail'%(loai,loai),data1,data2,'j')
@@ -3092,7 +3455,7 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 		return href,sub
 	#=============================================================================================
 	if query=='hayhaytv.vn':
-		body=get_home_page('hayhaytv.html')
+		body=get_home_page('hayhaytv.html',urlhome)
 		title=color['search']+"Search trên hayhaytv.vn[/COLOR]"
 		addir_info(title,'hayhaytv.vn',ico,'',mode,1,'search',True)
 		#name=color['search']+"Search trên hayhaytv.vn[/COLOR]"
@@ -3108,7 +3471,7 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 		for href,img,title in re.findall('id="_fade_\d.+?href="([^#]+?)".+?data-original="(.+?)".+?alt="(.+?)"',body):
 			if '-Tap-' in  href:addir_info(namecolor(title),href,img,img,mode,1,'hh_read_foldef',True)
 			else:addir_info(title,href,img,img,mode,1,'hh_play')
-		if get_home_page('hayhaytv.html',urlhome):xbmc.executebuiltin("Container.Refresh")
+		if get_home_page('hayhaytv.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
 
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
 	elif query=="INP":
@@ -3122,6 +3485,7 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 		response=make_post('http://www.hayhaytv.vn/search/autocomplete?object='+urllib.quote_plus(string),resp='j')
 		for d in response.get('FILM',list()):
 			hh_addir(u2s(d.get('extension')+' - '+d.get('name')),d.get('link'),d.get('image'))
+	
 	elif query=='get_content_folder':
 		def get_film_detail(s):
 			id=xsearch('id="showFilmInfo(.+?)"',s)
@@ -3153,7 +3517,24 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 		if len(items)>7:
 			name='%s%s - Trang:%d[/COLOR]'%(color['trangtiep'],name,page+1)
 			addir_info(name,url,ico,'',mode,page+1,query,True)
+	
 	elif query=='hh_play':
+		href=xsearch('adsXMLURL= "(.+?)"',make_request(url,hd));print 'qq',href,'ee'
+		xmlURL=make_request(href,hd)
+		link=xsearch("file:'(.+?)'",urllib.unquote(xsearch("<link>(.+?)</link>",xmlURL)));print 'aa',link,'bb'
+		if 'googleusercontent.com' in link:
+			response=make_request(link,resp='o')
+			if response.status==302:	xbmcsetResolvedUrl(response.headers.get('location'))
+		else:xbmcsetResolvedUrl(link)
+		
+		#if href:
+		#	if sub:
+		#		xshare_resolve(sub);mess(u'Phụ đề của hayhaytv.vn','hayhaytv.vn')
+		#		xbmcsetResolvedUrl(href,urllib.unquote(os.path.splitext(os.path.basename(sub))[0]))
+		#	else:xbmcsetResolvedUrl(href)
+		#else:mess(sub,'hayhaytv.vn')
+	
+	elif query=='hh_play1':
 		href,sub=getlink(url)
 		if href:
 			if sub:
@@ -3161,6 +3542,7 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 				xbmcsetResolvedUrl(href,urllib.unquote(os.path.splitext(os.path.basename(sub))[0]))
 			else:xbmcsetResolvedUrl(href)
 		else:mess(sub,'hayhaytv.vn')
+	
 	elif query=='main_menu':
 		href='http://www.hayhaytv.vn/load%s?type=%s&type_film=%s&sort=%d&page=%d'
 		hd={'X-Requested-With':'XMLHttpRequest'}
@@ -3184,6 +3566,7 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 			name=re.sub('\[.+?\]','',name.split('-')[0].strip())
 			name='%s%s - Trang tiếp theo: trang %d[/COLOR]'%(color['trangtiep'],name,page+1)
 			addir_info(name,url,ico,'',mode,page+1,query,True)
+	
 	elif query=='clips':
 		body=hh_html('hayhayclips.html','r');pattern='<a href="(http://clips.hayhaytv.vn/category/.+?)">(.+?)</a>'
 		for href,title in re.findall(pattern,body):
@@ -3194,6 +3577,7 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 			if body:
 				makerequest(joinpath(xsharefolder,'hayhayclips.html'),body,'w')
 				xbmc.executebuiltin("Container.Refresh")
+	
 	elif query=='clips_menu':
 		#if 'kich-hai' in url:
 		#'http://clips.hayhaytv.vn/category/hai/kich-hai/page/%d/?orderby=date'
@@ -3207,9 +3591,258 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 			name=re.sub('\[.+?\]','',name.split('-')[0].strip())
 			name='%s%s - Trang tiếp theo: trang %d[/COLOR]'%(color['trangtiep'],name,page+1)
 			addir_info(name,url,ico,'',mode,page+1,query,True)
+	
 	elif query=='hh_youtube':return play_youtube(url)
 
 def phimmoi(name,url,img,mode,page,query):
+	color['phimmoi']='[COLOR ghostwhite]';icon['phimmoi']=os.path.join(iconpath,'phimmoi.png')
+	urlhome='http://www.phimmoi.net/';refresh=False;phimmoixml=joinpath(datapath,'phimmoi.xml')
+	def namecolor(name):return '%s%s[/COLOR]'%(color['phimmoi'],name)
+	def login_pm():
+		u=myaddon.getSetting('userphimmoi');p=myaddon.getSetting('passphimmoi')
+		p=urllib2.hashlib.md5(p).hexdigest()
+		response=make_post('http://www.phimmoi.net/login/',data=urllib.urlencode({'username':u,'password_md5':p}))
+		if response.status==302 and makerequest(joinpath(datapath,'phimmoi.cookie'),response.cookiestring,'w'):
+			mess(u'Login thành công','phimmoi.net');f=response.cookiestring
+		else:mess(u'Login không thành công!','phimmoi.net');f=''
+		return f
+	
+	def get_token(hd={'User-Agent':'Mozilla/5.0 Chrome/39.0.2171.71 Firefox/33.0'}):
+		hd['Cookie']=makerequest(joinpath(datapath,'phimmoi.cookie'));url='http://www.phimmoi.net/tu-phim/'
+		body=make_request(url,headers=hd);token=xsearch("fx\.token='(.+?)'",body)
+		if not token:
+			hd['Cookie']=login_pm();body=make_request(url,headers=hd);token=xsearch("fx\.token='(.+?)'",body)
+		return body,token,hd
+	
+	def getoken():
+		_0xc3c8x48=str(int(round(time.time())))
+		_0xc3c8x49=urllib2.hashlib.md5(_0xc3c8x48+'(*Y#NFJKDHFIEY#(**%#&*^%').hexdigest()
+		return _0xc3c8x49[:11]+_0xc3c8x48+_0xc3c8x49[21:32]
+	
+	def pm_search(string):
+		url='http://www.phimmoi.net/tim-kiem/%s/'%urllib.quote_plus(string)
+		phimmoi(name,url,img,mode,page=1,query='readpage')
+	
+	def get_language(language):
+		if language=='subtitle':language='Vietsub'
+		elif language=='illustrate':language='Thuyết minh'
+		elif language=='dubbing':language='Lồng tiếng'
+		else:language=''
+		return language
+	
+	def get_epi(epi):
+		try:epi=int(epi)
+		except:epi=0
+		return epi
+	
+	def pm_get_info(title,href,img,detail):
+		eps=xsearch('Tập ?(\d{,4}/\d{,4}|\?/\d{,4}|\d{,4})',detail)
+		if not eps:
+			epi=xsearch('class="eps">Trọn bộ ?(\d{1,4}) ?tập</div>',detail)
+			if epi:eps='%s/%s'%(epi,epi)
+		else:epi=eps.split('/')[0]
+		dur=xsearch('>(\d{1,3}.?phút)',detail)
+		audio='TM' if 'Thuyết minh' in detail else ''
+		label=xsearch('(HD[\w|-]*|SD[\w|-]*|Bản đẹp[\w|-]*)',detail)
+		if 'url=' in img:img=img.split('url=')[1]
+		if eps:title='%s %s(%s)[/COLOR]'%(title,color['subscene'],eps)
+		if 'phút/tập' in detail:
+			title='%s [COLOR gold]%s[/COLOR]'%(title,xsearch('>(\d{1,3} phút/tập)<',detail))
+		elif dur:title='%s [COLOR gold]%s[/COLOR]'%(title,dur)
+		if xsearch('<span class="ribbon">Trailer</span>',detail,0):query='pmplay_trailer'
+		elif get_epi(epi)>1 or 'phút/tập' in detail or 'Phim bộ hot trong tuần' in name:
+			query='pmfolder';title=namecolor(title)
+		else:query='pm_list_url_ple'
+		if audio:title='[COLOR gold]TM[/COLOR] %s'%title
+		if label:title='%s - [COLOR green]%s[/COLOR]'%(title,label)
+		return title,urlhome+href,img,query
+	
+	def pmaddir(items,action='Add'):#title,href,img,detail
+		for title,href,img,detail in items:
+			title,href,img,query=pm_get_info(title,href,img,detail)
+			menu={'tuphim':{'action':action,'server':['phimmoi.net']}}
+			addir_info(title,href,img,'',mode,page,query,True if query!='pmplay_trailer' else False,menu=menu)
+	
+	def pm_get_maxlink(google_link):
+		href=urlhome+'player/v1.46/plugins/gkplugins_picasa2gdocs/plugins/plugins_player.php?url=%s&token=%s'
+		result=make_post(href%(google_link,getoken()),resp='j');print 'aa',href%(google_link,getoken())
+		height=0;link='';maxresolution=int(myaddon.getSetting('phimmoiresolution'))
+		for item in [s for s in result.get("content",list()) if 'video' in s.get('type')]:
+			if item.get('height',0)==maxresolution:link=item.get('url');break
+			elif item.get('height',0)>height:height=item.get('height',0);link=item.get('url')
+		return link
+
+	if query=='phimmoi.net':
+		name=color['search']+"Search trên phimmoi.net[/COLOR] (Chọn độ phân giải max trên settings nhé)"
+		addir_info(name,'http://www.phimmoi.net/tim-kiem/',icon['phimmoi'],'',mode,1,'search',True)
+		name=color['search']+'Tủ phim trên phimmoi.net của tôi[/COLOR]'
+		addir_info(name,'http://www.phimmoi.net/tu-phim/',img,'',mode,1,'readpage',True)
+		body=get_home_page('phimmoi.html',urlhome)
+		content=xsearch('<ul id=".+?"(.+?)</ul></div>',body)
+		for title in re.findall('<a>(.+?)</a>',content):
+			addir_info(namecolor(title),'',icon['phimmoi'],'',mode,1,'menubar',True)
+		for href,title in re.findall('<a href="([\w|-]+/|http://www.phimmoi.net/tags/.*?)">(.+?)</a>',content):
+			addir_info(namecolor(title),href,icon['phimmoi'],'',mode,1,'menubar',True)
+		for title in re.findall('<h2 class="right-box-header star-icon"><span>(.+?)</span>',body):
+			if title=='Phim đã đánh dấu':continue
+			addir_info(namecolor(title),'right-box',img,'',mode,1,'menubar',True)
+		for label,content in re.findall('class="title-list-index">(.+?)</span>(.+?</div></div></div>)',body):
+			add_sep_item(label)
+			#addir_info('[COLOR lime]%s[/COLOR]'%label,'',img,'',mode,1,'no')
+			pattern='<li><a href="(.+?)" title="(.+?)">.+?<img src="(.+?)".+?(<h3.+?</p>)'
+			items=re.findall(pattern,content)
+			if items:pmaddir([(s[1],s[0],s[2],s[3]) for s in items])#title,href,img,detail
+			else:
+				pattern='"movie-item m-block" title="(.+?)" href="(.+?)".+?(http.+?\.jpg).+?<div(.+?)</div></a></li>'
+				pmaddir(re.findall(pattern,content))#title,href,img,detail
+			if label=='Phim đề cử':
+				for title,content in re.findall('<h2 class="hidden">(.+?)</h2>(.+?</li></ul>)',body):
+					add_sep_item(title)
+					#addir_info('[COLOR lime]%s[/COLOR]'%title,'',img,'',mode,1,'no')
+					pattern='title="(.+?)" href="(.+?)".+?\(\'(http.+?)\'\).+?</div></a>(.+?)</div></li>'
+					pmaddir(re.findall(pattern,content))#title,href,img,detail
+		if get_home_page('phimmoi.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
+	elif query=='search':make_mySearch('','phimmoi.net','','',mode,'get')
+	elif query=="INP":pm_search(make_mySearch('',url,'','','','Input'))
+	elif url=='phimmoi.net':page=1 if 'Trang tiếp theo' not in name else page;pm_search(query)
+	
+	elif query=='menubar':
+		if any(s for s in ['kinh','rap','tags','trailer'] if s in url):
+			if 'tags' not in url:url=urlhome+url
+			return phimmoi(name,url,img,mode,page,'readpage')
+		elif url=='right-box':
+			pattern='<span>%s</span>(.+?</li></ul></div></div>)'%re.sub('\[/?COLOR.*?\]','',name).strip()
+			content=xsearch(pattern,makerequest(joinpath(xsharefolder,'phimmoi.html')))
+			pattern='title="(.+?)" href="(.+?)">.+?\(\'(.+?)\'\).+?</span>(.+?)</a></li>'
+			pmaddir(re.findall(pattern,content))#title,href,img,detail
+		else:
+			content=xsearch('<ul id=".+?"(.+?)</ul></div>',makerequest(joinpath(xsharefolder,'phimmoi.html')))
+			gen={'Thể loại':'the-loai','Quốc gia':'quoc-gia','Phim lẻ':'phim-le','Phim bộ':'phim-bo'}
+			query=gen.get(re.sub('\[/?COLOR.*?\]|\(.+?\)','',name).strip())
+			pattern='<a href="(%s/.*?)">(.+?)</a>'%query
+			for href,title in re.findall(pattern,content):
+				addir_info(namecolor(title),urlhome+href,icon['phimmoi'],'',mode,1,'readpage',True)
+	
+	elif query=='readpage':
+		if url=='http://www.phimmoi.net/tu-phim/':body,token,headers=get_token();menu='Remove'
+		else:body=make_request(url);menu='Add'
+		pattern='<li class="movie-item">.+?title="(.+?)" href="(.+?)".+?(http.+?)\)(.+?)</li>'
+		pmaddir(re.findall(pattern,body,re.DOTALL),menu)#title,href,img,detail
+		urlnext=xsearch('<li><a href="(.+?)">Trang kế.+?</a></li>',body)
+		if urlnext:
+			pagenext=xsearch('/page-(\d{1,3})\.html',urlnext)
+			name='%sTrang tiếp theo: trang %s[/COLOR]'%(color['trangtiep'],pagenext)
+			addir_info(name,urlhome+urlnext,img,fanart,mode,page,'readpage',True)
+	
+	elif 'tuphim' in query:
+		body,token,headers=get_token();data={'_fxAjax':'1','_fxResponseType':'JSON','_fxToken':'%s'%token}
+		action='add' if 'Add' in query else 'remove'
+		response=make_post('%s%s.html'%(url,action),headers,data,resp='j')
+		if response.get('_fxStatus',0)==1:
+			mess(response.get('_fxMessage','success'),'phimmoi.net')
+			if action=='remove':xbmc.executebuiltin("Container.Refresh")
+		else:
+			try:mess(response.get('_fxErrors')[0],'phimmoi.net')
+			except:mess(u'Đã phát sinh lỗi!','phimmoi.net')
+	
+	elif query=='pmfolder':
+		body=make_request(url+'xem-phim.html')
+		menu={'tuphim':{'action':'Add','server':['phimmoi.net']}}
+		eps=xsearch('(/\d{1,4})\)',name)
+		name=re.sub('\[/?COLOR.*?\]|\(.+?\)|\d{1,3} phút/tập|\d{1,3} phút','',name).strip()
+		
+		for detail in re.findall('data-serverid="pcs"(.+?)</li></ul></div>',body,re.DOTALL):
+			title=' '.join(s for s in xsearch('<h3 class="server-name">(.+?)</h3>',detail,1,re.DOTALL).split())
+			if title and 'tập phim' not in title:
+				add_sep_item(title)
+				#addir_info('[COLOR lime]%s[/COLOR]'%title,'',img,'',mode,1,'no')
+			label=name.replace('TM ','') if title and 'Thuyết minh' not in title else name
+			for title,href in re.findall('title="(.+?)".+?href="(.+?)"',detail,re.DOTALL):
+				addir_info('%s%s %s'%(title,eps,label),urlhome+href,img,'',mode,page,'pmplay_pbo',menu=menu)
+	
+	elif query=='pm_list_url_ple':
+		body=make_request(url if '.html' in url else url+'xem-phim.html')
+		
+		#Doan nay moi bo sung, chua fix doan duoi-----------------------------------------
+		b=make_request('http://www.phimmoi.net/'+xsearch('src="(episodeinfo.php.+?)"',body))
+		c=xsearch("_responseJson='(.+?)'",b);d=json.loads(c.replace('\\',''))
+		href='';height=width=0
+		
+		for i in d.get('medias'):
+			if i.get('height')>height:height=i.get('height');href=i.get('url')
+			if i.get('width')>width:width=i.get('width');href=i.get('url')
+		if href:
+			s=make_request(href,resp='o')
+			if s and s.status==302:
+				href=s.headers.get('location')
+				addir_info(name,href,img,'',mode,page,'pmplay_ple_')
+		#----------------------------------------------------------------------------------
+		
+		if xsearch("filmInfo.isSeries=\('serial'=='serial'\)",body,0):return phimmoi(name,url,img,mode,page,'pmfolder')
+		if xsearch("filmInfo.isAdult=parseInt\('1'\)",body,0) and myaddon.getSetting('phim18')=="false":
+			return mess_yesno(line1='Phim này có cảnh quay nhạy cảm và bạn đã chọn không xem!', line2='Thanks you')
+		art=xsearch("filmInfo.previewUrl='.+=(https:.+)'",body);name=name.replace('[COLOR gold]TM[/COLOR]','')
+		link=xsearch("currentEpisode.url='(.+?)'",body);server=1;parts=0
+		language=xsearch("currentEpisode.language='(.+?)'",body)
+		label='[COLOR gold]S0 %s[/COLOR]: '%get_language(language)+name
+		if link:addir_info(label,link,img,art,mode,page,'pmplay_ple')
+		
+		content=xsearch('<div class="list-server">(.+?)</div>',body,1,re.DOTALL).replace('\n','')
+		for label,subcontent in re.findall('class="server-title">(.+?)</h3>(.+?)</ul>',content):
+			for href,title in re.findall('href="(.+?)">(.+?)</a>',subcontent):
+				addir_info('%s %s'%(label,title),urlhome+href,img,art,mode,page,'pmplay_pbo')
+			
+		episodeJson=xsearch("episodeJson='(.+?)'",body)
+		try:episodeJson=eval(episodeJson)
+		except:return
+		for i in [s for s in episodeJson if s.get('url')]:
+			language=get_language(i.get('language'));part=i.get('part',0)
+			if part<parts:server+=1;parts=0
+			else:parts=part
+			numserver='S%d'%server if server%2==0 else '[COLOR green]S%d[/COLOR]'%server
+			if part==0:label='[COLOR gold]%s %s[/COLOR]: '%(numserver,language)+name;server+=1
+			else:
+				label='[COLOR gold]%s-part%d-%s[/COLOR]: '%(numserver,part,language)
+				label+=re.sub('\[COLOR gold\].{1,5}phút\[/COLOR\] - ','',name)
+			addir_info(label,i['url'].replace('\\',''),img,art,mode,page,'pmplay_ple')
+	
+	elif query=='pmplay_ple_':xbmcsetResolvedUrl(url)
+	elif query=='pmplay_ple':
+		href=pm_get_maxlink(url)
+		if href:xbmcsetResolvedUrl(href)
+		else:mess(u'Không get được maxspeedlink hoặc link bị die!','phimmoi.net')
+	
+	elif query=='pmplay_pbo':
+		
+		#Doan nay moi bo sung, chua fix doan duoi-----------------------------------------
+		b=make_request('http://www.phimmoi.net/'+xsearch('src="(episodeinfo.php.+?)"',make_request(url)))
+		c=xsearch("_responseJson='(.+?)'",b);d=json.loads(c)
+				
+		href='';height=width=0	
+		for i in d.get('medias'):
+			if i.get('height')>height:height=i.get('height');href=i.get('url').replace('\\','')
+			if i.get('width')>width:width=i.get('width');href=i.get('url').replace('\\','')
+		if href:
+			s=make_request(href,resp='o')
+			if s and s.status==302:
+				href=s.headers.get('location')
+				xbmcsetResolvedUrl(href)
+			elif d.get('notice'):
+				try:mess(d.get('notice')[0].replace(',',''),'phimmoi.net')
+				except:mess(u'Không get được maxspeedlink hoặc link bị die!','phimmoi.net')
+		else:mess(u'Không get được maxspeedlink hoặc link bị die!','phimmoi.net')
+		#----------------------------------------------------------------------------------
+		
+	elif query=='pmplay_pbo_':
+		href=pm_get_maxlink(xsearch("currentEpisode.url='(.+?)'",make_request(url)))
+		if href:xbmcsetResolvedUrl(href)
+		else:mess(u'Không get được maxspeedlink hoặc link bị die!','phimmoi.net')
+	
+	elif query=='pmplay_trailer':
+		href=xsearch("filmInfo.trailerUrl='(.+?)'",make_request(url));print href
+		return play_youtube(href)
+
+def phimmoi1(name,url,img,mode,page,query):
 	color['phimmoi']='[COLOR ghostwhite]';icon['phimmoi']=os.path.join(iconpath,'phimmoi.png')
 	urlhome='http://www.phimmoi.net/';refresh=False;phimmoixml=joinpath(datapath,'phimmoi.xml')
 	def namecolor(name):return '%s%s[/COLOR]'%(color['phimmoi'],name)
@@ -3285,7 +3918,7 @@ def phimmoi(name,url,img,mode,page,query):
 		addir_info(name,'http://www.phimmoi.net/tim-kiem/',icon['phimmoi'],'',mode,1,'search',True)
 		name=color['search']+'Tủ phim trên phimmoi.net của tôi[/COLOR]'
 		addir_info(name,'http://www.phimmoi.net/tu-phim/',img,'',mode,1,'readpage',True)
-		body=get_home_page('phimmoi.html')
+		body=get_home_page('phimmoi.html',urlhome)
 		content=xsearch('<ul id=".+?"(.+?)</ul></div>',body)
 		for title in re.findall('<a>(.+?)</a>',content):
 			addir_info(namecolor(title),'',icon['phimmoi'],'',mode,1,'menubar',True)
@@ -3309,7 +3942,7 @@ def phimmoi(name,url,img,mode,page,query):
 					#addir_info('[COLOR lime]%s[/COLOR]'%title,'',img,'',mode,1,'no')
 					pattern='title="(.+?)" href="(.+?)".+?\(\'(http.+?)\'\).+?</div></a>(.+?)</div></li>'
 					pmaddir(re.findall(pattern,content))#title,href,img,detail
-		if get_home_page('phimmoi.html',urlhome):xbmc.executebuiltin("Container.Refresh")
+		if get_home_page('phimmoi.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
 	elif query=='search':make_mySearch('','phimmoi.net','','',mode,'get')
 	elif query=="INP":pm_search(make_mySearch('',url,'','','','Input'))
 	elif url=='phimmoi.net':page=1 if 'Trang tiếp theo' not in name else page;pm_search(query)
@@ -3429,7 +4062,7 @@ def phim3s(name,url,img,mode,page,query):
 			addir_info(name,pagination.group(2),img,'',mode,page+1,'clip_items',True)
 	
 	if query=='phim3s.net':
-		body=get_home_page('phim3s.html')
+		body=get_home_page('phim3s.html',urlhome)
 		title=color['search']+"Search trên phim3s.net[/COLOR]"
 		addir_info(title,'phim3s.net',ico,'',mode,1,'search',True)
 		title=color['search']+"Hộp phim của tôi trên phim3s.net[/COLOR]"
@@ -3462,7 +4095,7 @@ def phim3s(name,url,img,mode,page,query):
 		for href,title in i:
 			addir_info(namecolor(title),urlhome+href,img,img,mode,1,"get_server",True,menu=menu)
 		
-		if get_home_page('phim3s.html',urlhome):xbmc.executebuiltin("Container.Refresh")
+		if get_home_page('phim3s.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
 		
 	elif query=="xemnhieu":
 		body=get_home_page('phim3s.html')
@@ -3498,11 +4131,11 @@ def phim3s(name,url,img,mode,page,query):
 		return phim3s(name,url,img,mode,1,query='p3s_page')
 	
 	elif query=='clip_getpage':
-		body=get_home_page('phim3s_clip.html');c='[COLOR orange]'
+		body=get_home_page('phim3s_clip.html','http://m-viet.com/');c='[COLOR orange]'
 		addir_info(c+'Clip[/COLOR]','http://m-viet.com/popular/',img,img,mode,0,"clip_items",True)
 		addir_info(c+'Danh mục[/COLOR]','http://m-viet.com/category/tin-tuc',img,img,mode,0,"clip_items",True)
 		clip_getdetail(body)
-		if get_home_page('phim3s_clip.html','http://m-viet.com/'):xbmc.executebuiltin("Container.Refresh")
+		if get_home_page('phim3s_clip.html','http://m-viet.com/',True):xbmc.executebuiltin("Container.Refresh")
 	
 	elif query=='clip_items':
 		body=make_request(url);name=xsearch('\](.+?)\[',name)
@@ -3646,7 +4279,7 @@ def kenh88(name,url,img,mode,page,query):
 		return max_link
 
 	if query=='kenh88.com':
-		body=get_home_page('kenh88.html')
+		body=get_home_page('kenh88.html',urlhome)
 		title=color['search']+"Search trên kenh88.com[/COLOR]"
 		addir_info(title,'kenh88.com',ico,'',mode,1,'search',True)
 		addir_info(namecolor('Xem nhiều nhất'),'',img,img,mode,1,"xemnhieu",True)
@@ -3662,7 +4295,7 @@ def kenh88(name,url,img,mode,page,query):
 		for S in re.findall("(<div class=''.+?/h2>)",body,re.DOTALL):
 			tap,href,title,img=get_detail(S)
 			addir_info(namecolor(title),href,img,img,mode,1,"k88_getpage",True)
-		if get_home_page('kenh88.html',urlhome):xbmc.executebuiltin("Container.Refresh")
+		if get_home_page('kenh88.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
 	elif query=="INP":
 		query=make_mySearch('',url,'','','','Input')
@@ -3766,7 +4399,7 @@ def phimdata(name,url,img,mode,page,query):
 		return max_link
 
 	if query=='phimdata.com':
-		body=get_home_page('phimdata.html')
+		body=get_home_page('phimdata.html',urlhome)
 		title=color['search']+"Search trên phimdata.com[/COLOR]"
 		addir_info(title,'phimdata.com',ico,'',mode,1,'search',True)
 		addir_info(namecolor('Xem nhiều nhất'),'',img,img,mode,1,"xemnhieu",True)
@@ -3782,7 +4415,7 @@ def phimdata(name,url,img,mode,page,query):
 		for S in re.findall("(<div class=''.+?/h2>)",body,re.DOTALL):
 			tap,href,title,img=get_detail(S)
 			addir_info(namecolor(title),href,img,img,mode,1,"pdt_getpage",True)
-		if get_home_page('phimdata.html',urlhome):xbmc.executebuiltin("Container.Refresh")
+		if get_home_page('phimdata.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
 	elif query=="INP":
 		query=make_mySearch('',url,'','','','Input')
@@ -3890,7 +4523,7 @@ def phimsot(name,url,img,mode,page,query):
 			addir_info(title,href_next,ico,'',mode,int(page_next),'ps_getpage',True)
 
 	if query=='phimsot.com':
-		body=get_home_page('phimsot.html')
+		body=get_home_page('phimsot.html',urlhome)
 		title=color['search']+"Search trên phimsot.com[/COLOR]"
 		addir_info(title,'phimsot.com',ico,'',mode,1,'search',True)
 		addir_info(namecolor('Top 1 Movie'),'http://vi.top1movie.com',img,img,mode,1,"top1movie",True)
@@ -3898,7 +4531,7 @@ def phimsot(name,url,img,mode,page,query):
 			addir_info(namecolor(title),'',img,img,mode,1,"ps_menu",True)
 		addir_info('%s%s[/COLOR]'%(color['trangtiep'],'-----------------------------'),'',img,img,mode,1,"")
 		ps_getpage(body)
-		if get_home_page('phimsot.html',urlhome):xbmc.executebuiltin("Container.Refresh")
+		if get_home_page('phimsot.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
 	elif query=="INP":
 		query=make_mySearch('',url,'','','','Input')
@@ -4034,7 +4667,7 @@ def phim47(name,url,img,mode,page,query):
 		return max_link,sub
 
 	if query=='phim47.com':
-		body=get_home_page('phim47.html')
+		body=get_home_page('phim47.html',urlhome)
 		title=color['search']+"Search trên phim47.com[/COLOR]"
 		addir_info(title,'phim47.com',ico,'',mode,1,'search',True)
 		addir_info(namecolor('Xem nhiều nhất'),'',img,img,mode,1,"xemnhieu",True)
@@ -4043,7 +4676,7 @@ def phim47(name,url,img,mode,page,query):
 			else:addir_info(namecolor(title),xsearch('href="(.+?)"',s),img,img,mode,1,"p47_getpage",True)
 		addir_info('%s%s[/COLOR]'%(color['trangtiep'],'-----------------------------'),'',img,img,mode,1,"")
 		get_items(body)
-		if get_home_page('phim47.html',urlhome):xbmc.executebuiltin("Container.Refresh")
+		if get_home_page('phim47.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
 	elif query=="INP":
 		query=make_mySearch('',url,'','','','Input')
@@ -4125,11 +4758,53 @@ def hdonline(name,url,img,mode,page,query):
 		temp=xsearch('<p>Năm sản xuất:(.+?)</p>',s)
 		if temp:title+=' [COLOR yellow]%s[/COLOR]'%temp
 		return title,href,img,lang
-		
+
+	class hdo_class(object):
+		def __init__(self):
+			self.url_login='http://id.hdonline.vn/dang-nhap.html'
+			self.url_logout='http://id.hdonline.vn/dang-xuat.html'
+			self.cookie_file=joinpath(xsharefolder,'hdonline.cookie')
+			self.hd={'User-Agent':'Mozilla/5.0 Chrome/39.0.2171.71 Firefox/33.0','Cookie':''}
+			if checkupdate('hdonline.cookie',hours=100,folder=xsharefolder):
+				self.hd['Cookie']=self.login(myaddon.getSetting('hdo_u'),myaddon.getSetting('hdo_p'))
+				#self.logout()
+			else:self.hd['Cookie']=makerequest(self.cookie_file)
+			self.userID=xsearch('userID=(.+?)\W',self.hd['Cookie']+';')
+			
+		def login(self,username='', password=''):
+			primaryKey=xsearch('value="(.+?)" id="primaryKey"',make_request(self.url_login))
+			data={'username':username,'password':password,'primaryKey':primaryKey}
+			response=make_post(self.url_login,data=data)
+			if response and response.status==302:
+				result=response.cookiestring;mess(u'Login to hdonline.vn success');self.hd['Cookie']=result
+				body=make_request('http://id.hdonline.vn/thong-tin.html',self.hd)
+				userID=xsearch('<span class="upgradeVip"><strong>(.+?)</strong>',body)
+				if not userID:mess(u'Không lấy được userID !')
+				else:userID='; userID=%s'%userID
+				makerequest(self.cookie_file,result+userID,'w')
+			else:result='';mess(u'Login to hdonline.vn Fail !')
+			return result
+			
+		def logout(self):
+			if make_request(self.url_logout,headers=hd,resp='o').status==302:
+				mess(u'Logout from hdonline.vn success')
+			else:mess(u'Logout from hdonline.vn Fail !')
+			
+		def like_film(self,id):
+			url='http://hdonline.vn/episode/like?film=%s&_=%d'%(id,int(time.time())*1000)
+			response=make_request(url,headers=self.hd,resp='j')
+			try:m=response['msg'];mess(u'%s'%m[:m.find('.')])
+			except:pass
+			
+	hdo=hdo_class();hd=hdo.hd;menu={'hdonline':{'action':'Add'}}
+	
 	if query=='hdonline.vn':
-		body=get_home_page('hdonline.html')
+		body=get_home_page('hdonline.html',urlhome)
 		title=color['search']+"Search trên hdonline.vn[/COLOR]"
 		addir_info(title,'hdonline.vn',ico,'',mode,1,'search',True)
+		title=color['search']+"Mục Yêu thích của tôi[/COLOR]"
+		href='http://hdonline.vn/frontend/user/ajax?page=1&type=like&user=%s'%hdo.userID
+		addir_info(title,href,ico,'',mode,1,'hdo_getpage',True)
 		for href,title in re.findall('<li> <a href="(.+?)">.+?</span> (.+?) </a>',body):
 			if 'dien-anh.html' in href:continue
 			if 'http://' not in href:href=urlhome+href
@@ -4144,8 +4819,8 @@ def hdonline(name,url,img,mode,page,query):
 				temp=[i for i in imgs if os.path.basename(i).split('.')[0] in fanart]
 				if temp:img=temp[0]
 			if 'Tập' in title and 'Phút' not in title:
-				addir_info(namecolor(title),url_fix(href),img,fanart,mode,1,'hdo_series',True)
-			else:addir_info(title,url_fix(href),img,fanart,mode,1,'hdo_play')
+				addir_info(namecolor(title),url_fix(href),img,fanart,mode,1,'hdo_series',True,menu=menu)
+			else:addir_info(title,url_fix(href),img,fanart,mode,1,'hdo_play',menu=menu)
 		#Detail on main page		
 		for href,title in re.findall('<h2><a href="(.+?)">(.+?)<',body):
 			if 'javascript' in href and 'Top Phim HDO' in title:
@@ -4162,10 +4837,19 @@ def hdonline(name,url,img,mode,page,query):
 			for S in items:
 				title,href,img,lang=get_details(S)
 				if 'class="bxitem-episodes"' in S:
-					addir_info(lang+namecolor(title),url_fix(href),img,img,mode,1,'hdo_series',True)
-				else:addir_info(lang+title,url_fix(href),img,img,mode,1,'hdo_play')
+					addir_info(lang+namecolor(title),url_fix(href),img,img,mode,1,'hdo_series',True,menu=menu)
+				else:addir_info(lang+title,url_fix(href),img,img,mode,1,'hdo_play',menu=menu)
 			#else:print '(<h2><a href="%s">%s.+?</section>)'%(href,title)
-		if get_home_page('hdonline.html',urlhome):xbmc.executebuiltin("Container.Refresh")
+		if get_home_page('hdonline.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
+	
+	elif query=='Add':
+		id_film=xsearch('-(\d+?)\.html',url)
+		body=make_request('http://hdonline.vn/frontend/user/ajax?page=1&type=like&user=%s'%hdo.userID,hdo.hd)
+		if xsearch('("#phim-like-%s")'%id_film,body):
+			mess(u'Phim này đã có trong Danh sách Phim yêu thích của bạn !')
+		else:hdo.like_film(id_film)
+	elif query=='Remove':hdo.like_film(xsearch('-(\d+?)\.html',url));xbmc.executebuiltin("Container.Refresh")
+	
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
 	elif query=="INP":
 		query=make_mySearch('',url,'','','','Input')
@@ -4175,6 +4859,7 @@ def hdonline(name,url,img,mode,page,query):
 		search_string = '-'.join(query.split())
 		url='http://hdonline.vn/tim-kiem/%s.html'%search_string
 		return hdonline(name,url,img,mode,1,query='hdo_getpage')
+	
 	elif query=="hdo_menu":
 		body=get_home_page('hdonline.html');name=namenocolor(name)
 		S=xsearch('(</span> %s </a>.+?</ul>)'%name,body,1,re.DOTALL)
@@ -4185,14 +4870,15 @@ def hdonline(name,url,img,mode,page,query):
 			addir_info(namecolor(title),url_fix(href),img,img,mode,1,"hdo_getpage",True)
 
 	elif query=='hdo_getpage':
-		body=make_request(url);label=namenocolor(name)
+		body=make_request(url,hdo.hd);label=namenocolor(name)
 		items=re.findall('(<div class="tn-bxitem">.+?</div>\W</div>)',body,re.DOTALL)
 		#if not items:
 		for S in items:
 			title,href,img,lang=get_details(S)
-			if 'class="bxitem-episodes"' in S:
-				addir_info(lang+namecolor(title),url_fix(href),img,img,mode,1,'hdo_series',True)
-			else:addir_info(lang+title,url_fix(href),img,img,mode,1,'hdo_play')
+			if 'type=like' in url:menu={'hdonline':{'action':'Remove'}}
+			if 'class="bxitem-episodes"' in S or '<p>Số Tập:' in S:
+				addir_info(lang+namecolor(title),url_fix(href),img,img,mode,1,'hdo_series',True,menu=menu)
+			else:addir_info(lang+title,url_fix(href),img,img,mode,1,'hdo_play',menu=menu)
 		url_next=xsearch('href="([^ ]+?)">Trang Sau</a>',body)
 		if url_next:
 			page+=1;page_last=xsearch('href="[^ ]+?-(\d+?)\.html">Trang Cuối</a>',body)
@@ -4206,7 +4892,7 @@ def hdonline(name,url,img,mode,page,query):
 		body=make_request(url);label=namenocolor(name)
 		link="http://hdonline.vn/frontend/episode/xmlplay?ep=%s&fid=%s&reloadbk=1&format=json"
 		for epi,tap in re.findall('<a href=.+?data-order="(.+?)".+?>(.+?)</a>',body):
-			addir_info('Tập %s %s'%(tap,label),link%(epi,id),img,'',mode,1,'hdo_play')
+			addir_info('Tập %s %s'%(tap,label),link%(epi,id),img,'',mode,1,'hdo_play',menu=menu)
 		page+=1
 		page_last=xsearch("onclick=\"loadEpisode\('',(\d{,4}),''\)\">Cuối</a>",body)
 		if re.search("onclick=\"loadEpisode\('',%d,''\)\""%page,body):
@@ -4218,7 +4904,7 @@ def hdonline(name,url,img,mode,page,query):
 		hd={'Referer':url};quality=0;max_link=link=sub=''
 		#href="http://hdonline.vn/frontend/episode/xmlplay?ep=1&fid=%s&format=json"%id
 		if '/episode/' not in url:
-			id=xsearch('-(\d{3,6})\.html',url)
+			id=xsearch('-(\d+?)\.html',url)
 			href="http://hdonline.vn/frontend/episode/xmlplay?ep=1&fid=%s&reloadbk=1&format=json"%id
 		else:href=url
 		xml=make_request(href,hd,resp='j')
@@ -4258,6 +4944,190 @@ def hdonline(name,url,img,mode,page,query):
 			youtube=xsearch('<iframe src=".+?file=(.+?)"',body)
 			if youtube:play_youtube(youtube)
 				
+def kphim(name,url,img,mode,page,query):
+	hd={'User-Agent':'Mozilla/5.0 (Windows NT 6.3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36'}
+	color['kphim']='[COLOR lightgreen]'
+	ico=os.path.join(iconpath,'kphim.png');urlhome='http://kphim.tv/'
+	if not os.path.isfile(ico):
+		try:makerequest(ico,get('http://kphim.tv/resources/images/logo.png').body,'wb')
+		except:pass
+		
+	def namecolor(name,c='lightgreen'):return '[COLOR %s]'%c+name+'[/COLOR]'
+	def nocolor(name):return re.sub('\[.+?\]','',name)
+	def items_home(S):
+		for s in S:
+			href=xsearch('href="(.+?)"',s)
+			img=xsearch('src="(.+?)"',s)
+			title=xsearch('>(.+?)</h4>',s)
+			t=re.search('>(.+?) <span style=".+?">(.+?)</span>',s)
+			if t: title+=' - '+t.group(1)+' '+t.group(2)
+			elif xsearch('>(.+?)</span>',s):title+=' - '+xsearch('>(.+?)</span>',s)
+			addir_info(namecolor(title,'aquamarine'),href,img,'',mode,1,'episode',True)
+	
+	if  query=='kphim.tv':
+		a=make_request(urlhome)
+		title=color['search']+"Search trên kphim.tv[/COLOR]"
+		addir_info(title,'kphim.tv',ico,'',mode,1,'search',True)
+		
+		for title in re.findall('<div class="title-tab">.*?\s(.+?)\s.*?</div>',a):
+			addir_info(namecolor(title.strip()),urlhome,ico,'',mode,1,'new',True)
+		
+		b=xsearch('(<nav id="footer-nav">.+?</ul>)',a,1,re.DOTALL)
+		for href,title in re.findall('<li><a href="(.+?)">(.+?)</a></li>',b):
+			if 'theloai' in href:addir_info(namecolor(title),href,img,'',mode,1,'theloai',True)
+			else:addir_info(namecolor(title),href,img,'',mode,1,'episode',True)
+			
+		title='PHIM TRUYỀN HÌNH HÀN QUỐC'
+		href='http://kphim.tv/theloai/phim-truyen-hinh-han-quoc-z1.html'
+		addir_info('[COLOR lime]'+title+'[/COLOR]',href,img,'',mode,1,'theloai',True)
+		items_home(re.findall('(<div class="kdrama-item.+?</div>)',a,re.DOTALL))
+		
+		title='TV SHOW, TRUYỀN HÌNH THỰC TẾ'
+		href='http://kphim.tv/theloai/truyen-hinh-thuc-te-z2.html'
+		addir_info('[COLOR lime]'+title+'[/COLOR]',href,img,'',mode,1,'theloai',True)
+		items_home(re.findall('(<div class="kshow-item.+?</div>)',a,re.DOTALL))
+
+	elif query=="search":make_mySearch('',url,'','',mode,'get')
+	elif query=="INP":
+		query=make_mySearch('',url,'','','','Input')
+		if query:return kphim(name,url,img,mode,page,query)
+		else:return 'no'
+	elif url=="kphim.tv":
+		search_string = urllib.quote_plus(query)
+		url='http://kphim.tv/search/?keyword=%s'%search_string
+		return kphim(name,url,img,mode,1,query='theloai')
+	
+	elif query=='new':
+		if 'TOP' in name:s=xsearch('(%s.+?<script>)'%nocolor(name),make_request(urlhome),1,re.DOTALL)
+		else:s=xsearch('(%s.+?</ul>)'%nocolor(name),make_request(urlhome),1,re.DOTALL)
+		for href,title,label in set(re.findall('href="(.+?)" title="(.+?)".+?> ([^>]+?)</span>',s)):
+			addir_info(namecolor(title+' - '+label),href,img,'',mode,1,'episode',True)
+
+	elif query=='theloai':
+		a=make_request(url)
+		for s in re.findall('(<li style.+?/li>)',a,re.DOTALL):
+			href=xsearch('href="(.+?)"',s)
+			img=xsearch('src="(.+?)"',s)
+			t=xsearch('>(.+?)-\d+?</span>',s)
+			title=t+' - ' if t else ''
+			title+=xsearch('"movie-name-1">(.+?)</h3>',s)+' - '+xsearch('"movie-name-2">(.+?)</h4>',s)
+			t=xsearch('<strong> (.+?)</strong></p>',s)
+			if t:title+= ' (%s)'%t
+			addir_info(namecolor(title),href,img,'',mode,1,'episode',True)
+	
+	elif query=='episode':
+		for href,title in re.findall('<a class="btn btn-default" href="(.+?)"> (.+?) </a>',make_request(url)):
+			addir_info(nocolor(name)+'- Tập '+title,href,img,'',mode,1,'play')
+	else:
+		a=make_request(url);hd['Referer']=url
+		servers=re.findall('poster.+?fid.+?title="video-(\d+?)".+?title="(.+?)">',a)
+		if servers:video_id=servers[0][0]
+		else:video_id=xsearch("fvid='(.+?)'",a)
+		server_id=xsearch('loadNewPlayer\(fsvvideo, (\d.+?),',a)
+		print 'http://kphim.tv/embed/%s/%s/'%(server_id,video_id)
+		tk=urllib2.hashlib.md5(server_id+'var').hexdigest()
+		b=make_request('http://kphim.tv/embed/%s/%s/%s'%(server_id,video_id,tk),headers=hd)
+		d=dict((s[1],s[0]) for s in re.findall('src="(.+?)".+?data-res="(.+?)"',b));print d
+		if d:
+			link=d.get(sorted(d,reverse=True)[0]) #resolution cao->thap, chon cao nhat
+			if 'googleusercontent.com' in link:
+				response=make_request(link,resp='o')
+				if response.status==302:	xbmcsetResolvedUrl(response.headers.get('location'))
+			else:xbmcsetResolvedUrl(link)
+		else:mess('File invalid or deleted!','kphim.tv') 
+
+def phimnhanh(name,url,img,mode,page,query):
+	color['phimnhanh']='[COLOR chartreuse]'
+	ico=os.path.join(iconpath,'phimnhanh.png');urlhome='http://phimnhanh.com/'
+	if not os.path.isfile(ico):
+		try:makerequest(ico,get('http://cdn.phimnhanh.com/assets/images/logo.png').body,'wb')
+		except:pass
+	def namecolor(name,c='chartreuse'):return '[COLOR %s]'%c+name+'[/COLOR]'
+	def nocolor(name):return re.sub('\[.+?\]','',name)
+	def detail(body):
+		hrefs=[]
+		for  s in re.findall('(<li  class="serial">.+?</li>)',body,re.DOTALL):
+			href=xsearch('href="(.+?)"',s)
+			if href not in hrefs:hrefs.append(href)
+			else:continue
+			title=xsearch('title="(.+?)"',s)
+			img=xsearch('data-original=="(.+?)"',s)
+			label=xsearch('<span class="m-label q">(.+?)</span>',s)
+			lang=xsearch('<span class="m-label lang">(.+?)</span>',s)
+			ep=xsearch('<span class="m-label ep">(.+?)</span>',s)
+			if lang:title=lang+' '+title
+			if label:title=label+' '+title
+			if ep:title+=' '+ep
+			addir_info(namecolor(title),href,img,'',mode,1,'series',True)
+		np=xsearch('<a href="([^>]+?)" rel="next">',body)
+		if np:
+			np=np.replace('amp;','');pn=xsearch('page=(\d+?)\Z',np)
+			ps=xsearch('<a href="[^>]+?">(\d+?)</a></li> <li><a href="[^>]+?" rel="next">',body)
+			t=color['trangtiep']+' Trang tiep theo...trang %s/%s[/COLOR]'%(pn,ps)
+			addir_info(t,np,ico,'',mode,page+1,query,True)
+	
+	if query=='phimnhanh.com':
+		title=color['search']+"Search trên phimnhanh.com[/COLOR]"
+		addir_info(title,'phimnhanh.com',ico,'',mode,1,'search',True)
+
+		body=get_home_page('phimnhanh.html',urlhome)
+		s=xsearch('(<div id="menu-fixed".+?</ul>)',body,1,re.DOTALL)
+		for h,t ,l in re.findall('href="(.+?)".+?<span class="h_">(.+?)</span>(.+?)</a>',s):
+			addir_info(namecolor(t+l),h,ico,'',mode,1,'main',True)
+		
+		for title in re.findall('<li class=".*?" data-id=".*?">.*\s.*<p>(.+?)</p>',body):
+			addir_info(namecolor(title),'',ico,'',mode,1,'submenu',True)
+		
+		add_sep_item('---------------HOT-------------------------------------------------')
+		s=xsearch('(<ul id="slide-top">.+?</ul>)',body,1,re.DOTALL)
+		for h,t,i  in re.findall('<a href="(.+?)" title="(.+?)".+?url\(\'(.+?)\'',s):
+			addir_info(namecolor(t),h,i,i,mode,1,'series',True)
+			
+		s=xsearch('(<div class="more col">.+?<section class="cat-gr full">)',body,1,re.DOTALL)
+		for h,t,i  in re.findall('<a href="(.+?)" title="(.+?)".+?src="(.+?)"',s):
+			addir_info(namecolor(t),h,i,i,mode,1,'series',True)
+		
+		add_sep_item('---------------MORE-------------------------------------------------')
+		detail(body)
+
+		if get_home_page('phimnhanh.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
+	
+	elif query=="search":make_mySearch('',url,'','',mode,'get')
+	elif query=="INP":
+		query=make_mySearch('',url,'','','','Input')
+		if query:return kphim(name,url,img,mode,page,query)
+		else:return 'no'
+	elif url=="phimnhanh.com":
+		url='http://phimnhanh.com/danh-sach-phim/?s='+urllib.quote_plus(query)
+		query='main'#xu ly pagenext
+		detail(make_request(url))
+	
+	elif query=='submenu':
+		body=get_home_page('phimnhanh.html',urlhome)
+		s=xsearch('(<p>%s</p>.+?</ul>)'%nocolor(name).strip(),body,1,re.DOTALL)
+		for h,t in re.findall('href="(.+?)" title="(.+?)"',s):
+			addir_info(namecolor(t),h,ico,'',mode,1,'main',True)
+
+	elif query=='main':detail(make_request(url))
+			
+	elif query=='series':
+		body=make_request(url);s=xsearch('(<p class="epi">.+?    </p>)',body,1,re.DOTALL)
+		for h,t in re.findall('href="(.+?)" title=".+?">(.+?)</a>',s):
+			addir_info('Tập %s '%t+nocolor(name),h,img,'',mode,1,'play')
+		
+	else:
+		a=make_request(url.replace('/phim/','/xem-phim/'))
+		link=xsearch('playlist: "(.+?)"',a);a=make_request(link)
+		
+		d=dict((s[1],s[0]) for s in re.findall('file="(.+?)".+?label="(.+?)"',a))
+		if d:
+			link=d.get(sorted(d,reverse=True)[0]) #resolution cao->thap, chon cao nhat
+			if 'googleusercontent.com' in link:
+				response=make_request(link,resp='o')
+				if response.status==302:	xbmcsetResolvedUrl(response.headers.get('location'))
+			else:xbmcsetResolvedUrl(link)
+		else:mess('File invalid or deleted!','phimnhanh.com') 
+
 def htvonline(name,url,img,fanart,mode,page,query):
 	tvurl='http://www.htvonline.com.vn/livetv';showurl='http://www.htvonline.com.vn/shows'
 	phimurl='http://www.htvonline.com.vn/phim-viet-nam';hd['X-Requested-With']='XMLHttpRequest'
@@ -4352,17 +5222,24 @@ def search_input_string(server='vaphim.com'):
 
 def vaphim(name,url,img,fanart,mode,page,query):
 	clr=color['vaphim'];ico=icon['vaphim'];urlhome='http://vaphim.com/'
+	hd['Cookie']=makerequest(joinpath(xsharefolder,'vaphim.cookie'))
 	def namecolor(name):return '%s%s[/COLOR]'%(clr,name)
-	def vp_readpage(url,loop=1):
-		body=make_request(url)
-		if not body and loop<4:
-			mess(u'Đang cố gắng get vaphim data lại lần %d!'%loop,'Vaphim.com')
-			xbmc.sleep(5000+1000*loop);loop+=1;body=vp_readpage(url,loop)
+	def vp_readpage(url,loop=1,body=''):
+		hd['Cookie']=makerequest(joinpath(xsharefolder,'vaphim.cookie'))
+		url=url.replace('https:','http:')
+		while loop<4 and not body:
+			response=make_request(url,hd,resp='o');print url
+			if not response or response.status!=200:
+				mess(u'Đang cố gắng get vaphim data lại lần %d!'%loop,'Vaphim.com')
+				xbmc.sleep(1000);loop+=1
+			else:
+				if response.cookiestring:makerequest(joinpath(xsharefolder,'vaphim.cookie'),response.cookiestring,'w')
+				body=response.body
 		if not body:mess(u'Get vaphim data bị lỗi!','Vaphim.com')
 		return body
 	#-----------------------------------------------------------------------------------------------------
 	if query=='vaphim.com':
-		body=get_home_page('vaphim.html')
+		body=get_home_page('vaphim.html',urlhome)
 		label=color['search']+"Search trên vaphim.com[/COLOR]"
 		addir_info(label,'vaphim.com',ico,'',mode,1,'search',True)
 		addir_info(namecolor('Phim lẻ-Phim bộ-Nhạc-VideoClip mới nhất-Xem nhiều nhất'),urlhome,ico,'',mode,1,'phimmoinhat',True)
@@ -4374,7 +5251,8 @@ def vaphim(name,url,img,fanart,mode,page,query):
 		pattern='<a class="featured-article" href="(.+?)".+?src="(.+?)[\?|\"].+?"bookmark">(.+?)</a>'
 		for href,img,title in re.findall(pattern,body,re.DOTALL):
 			addir_info(namecolor(remove_tag(title)),href,img,img,mode,1,'vp_getsubpage',True)
-		if get_home_page('vaphim.html',urlhome):xbmc.executebuiltin("Container.Refresh")
+		if get_home_page('vaphim.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
+	
 	elif query=='phimmoinhat':
 		add_sep_item('Xem nhiều nhất');body=get_home_page('vaphim.html')
 		for href,title in re.findall('<li><a href="(.+?)" title="(.+?)">',body):
@@ -4393,6 +5271,7 @@ def vaphim(name,url,img,fanart,mode,page,query):
 		pattern='<img.+?src="(.+?)[\?|\"].+?<a href="(.+?)".+?>(.+?)</a>'
 		for img,href,title in re.findall(pattern,xsearch('"index-news"(.+?)</ul>',body,1,re.DOTALL),re.DOTALL):
 			addir_info(namecolor(remove_tag(title)),href,img,'',mode,1,'vp_getclip',True)
+	
 	elif query=='mainmenu':
 		body=get_home_page('vaphim.html')
 		if name==namecolor('Danh Mục Phân Loại Phim'):
@@ -4409,10 +5288,13 @@ def vaphim(name,url,img,fanart,mode,page,query):
 				addir_info(namecolor(title),urlhome+href,ico,'',mode,1,'vp_getpage',True)
 		elif name==namecolor('Danh Mục Các Bộ Sưu Tập'):
 			return vaphim(name,'http://vaphim.com/category/collection/',img,fanart,mode,page,'vp_getpage')
+	
 	elif query=='vp_getpage':
-		href=url if page==1 else '%spage/%d/'%(url.split('?')[0],page)
+		href=url.split('?')[0] if page==1 else '%spage/%d/'%(url.split('?')[0],page)
 		if len(url.split('?'))>1:href=href+'?'+url.split('?')[1]
+		
 		body=vp_readpage(href)#;print href
+		f=open(r'd:\xoa.html','w');f.write(body);f.close()
 		if not body:return 'no'
 		if re.search('<div class="search-home-title">Danh sách đề xuất</div>',body):
 			mess(u'Xin lỗi! không tìm thấy kết quả dựa trên truy vấn của bạn.','Vaphim search',10000)
@@ -4425,10 +5307,11 @@ def vaphim(name,url,img,fanart,mode,page,query):
 			name=re.sub('\[.+?\]','',name.split('-')[0].strip())
 			name='%s%s - Trang tiếp theo: trang %d/%s[/COLOR]'%(color['trangtiep'],name,page+1,pagelast)
 			addir_info(name,url,ico,'',mode,page+1,query,True)
+	
 	elif query=='vp_getclip':
 		if 'youtube.com' in url:play_youtube(url)
 		else:
-			item=re.search("src='(.+?)'.+?src='([\w|:|/|\.]+youtube.com.+?)'",make_request(url))
+			item=re.search("src='(.+?)'.+?src='([\w|:|/|\.]+youtube.com.+?)'",make_request(url,hd))
 			if item:addir_info(remove_tag(name),item.group(2),item.group(1),'',mode,1,'vp_getclip')
 			else:mess(u'Sorry! Không get được nội dung này trên vaphim.com','vaphim.com');return 'no'
 
@@ -4439,7 +5322,8 @@ def vaphim(name,url,img,fanart,mode,page,query):
 		else:return 'no'
 	elif url=="vaphim.com":
 		url='http://vaphim.com/?s='+urllib.quote_plus(query);query='vp_getpage'
-		return vaphim(name,url,img,fanart,mode,1,query)
+		return vaphim(name,url,img,fanart,mode,1,'vp_getpage')
+	
 	elif query=='vp_getsubpage':
 		body=vp_readpage(url);items=list();name=remove_tag(name.replace('Vaphim ',''))
 		body=xsearch('<div id="post-(.+?)"fb-comments"',body,1,re.DOTALL)
@@ -4476,7 +5360,7 @@ def vaphim(name,url,img,fanart,mode,page,query):
 				addir_info(title,href,img,'',mode,1,'vp_getsubpage',True)
 	return ''
 
-def addir_info(name,url,img,fanart='',mode=0,page=0,query='',isFolder=False,info=dict(),art=dict(),menu=dict()):
+def addir_info(name,url,img,fanart='',mode=0,page=1,query='',isFolder=False,info=dict(),art=dict(),menu=dict()):
 	def xquote(href):return urllib.quote_plus(href)
 	def get_mode(url,name,mode,isfolder=True):
 		if 'fshare.vn/' in url:
@@ -4540,13 +5424,19 @@ def addir_info(name,url,img,fanart='',mode=0,page=0,query='',isFolder=False,info
 				lists.append(('Add to Tủ phim của tôi',{'query':'tuphim_Add'}))
 			elif inf['action']=='Remove':
 				lists.append(('Remove from Tủ phim của tôi',{'query':'tuphim_Remove'}))
-
+		
 		#menu['MyPlaylist']={'action':'Add','server':['chiasenhac.com']}}
 		#menu={'MyPlaylist':{'action':'Add','server':['chiasenhac.com']}}
 		#addir_info(label,href,img,'',mode,1,'csn_play',menu=menu)
 		if menu.has_key('MyPlaylist'):
 			inf=menu.get('MyPlaylist')
-			if [s for s in inf['server'] if s in url] and inf['action']=='Add':
+			if inf['action']=='Search':#cs:artist, sag tac:composer, ten alb:album, loi:lyric
+				lists.append(('Tìm kiếm theo: Tên bài hát/Ca sĩ',{'query':'csn_Search_None'}))
+				lists.append(('Tìm kiếm theo: Ca sĩ',{'query':'csn_Search_artist'}))
+				lists.append(('Tìm kiếm theo: Sáng tác',{'query':'csn_Search_composer'}))
+				lists.append(('Tìm kiếm theo: Tên Album',{'query':'csn_Search_album'}))
+				lists.append(('Tìm kiếm theo: Lời bài hát',{'query':'csn_Search_lyric'}))
+			elif [s for s in inf['server'] if s in url] and inf['action']=='Add':
 				lists.append(('Add to My Playlist',{'query':'playlist_Add'}))
 			elif [s for s in inf['server'] if s in url] and inf['action']=='Remove':
 				lists.append(('Remove from My Playlist',{'query':'playlist_Remove'}))
@@ -4557,6 +5447,18 @@ def addir_info(name,url,img,fanart='',mode=0,page=0,query='',isFolder=False,info
 				lists.append(('Thêm vào Hộp phim',{'query':'add_bookmark'}))
 			elif inf['action']=='Remove':
 				lists.append(('Xóa khỏi Hộp phim',{'query':'remove_bookmark'}))
+		elif menu.has_key('hdonline'):
+			inf=menu.get('hdonline')
+			if inf['action']=='Add':
+				lists.append(('Thêm vào Mục Yêu thích',{'query':'Add'}))
+			elif inf['action']=='Remove':
+				lists.append(('Xóa khỏi Mục Yêu thích',{'query':'Remove'}))
+		elif menu.has_key('xshare'):
+			inf=menu.get('xshare')
+			if inf['action']=='Add':
+				lists.append(('Thêm vào Mục Yêu thích',{'query':'Add'}))
+			elif inf['action']=='Remove':
+				lists.append(('Xóa khỏi Mục Yêu thích',{'query':'Remove'}))
 			
 		return lists
 	
@@ -4626,7 +5528,7 @@ def get_params():#print json.dumps(json["content"],indent=2,sort_keys=True)
 def chiasenhac(name,url,img,fanart,mode,page,query):
 	#from resources.lib.servers import chiasenhac;csn=chiasenhac()
 	hd={'User_Agent':'Mozilla/5.0 (Android 4.4; Mobile; rv:42.0) Gecko/41.0 Firefox/42.0','Cookie':'vq=i%3A1080%3B; mq=i%3A500%3B'}
-	ico=os.path.join(iconpath,'csn.png');urlhome='http://chiasenhac.com/'
+	ico=os.path.join(iconpath,'chiasenhac.png');urlhome='http://chiasenhac.com/'
 	if not os.path.isfile(ico):
 		try:urllib.urlretrieve('http://chiasenhac.com/templates/light2012/images/logo.jpg',ico)
 		except:pass
@@ -4692,11 +5594,17 @@ def chiasenhac(name,url,img,fanart,mode,page,query):
 		subbody=xsearch('(<th class="catLeft".+?</table>)',body,1,re.DOTALL)
 		label=xsearch('\](.+?)[\:|\[]',name).replace('BXH','').strip()
 		if subbody:
-			result=re.search('"absmiddle"> (.+?)</span>.+?<a href="(.+?)">',subbody,re.DOTALL)
-			if result:#Album mới chia sẻ
-				title='[COLOR lime]%s/%s: Xem thêm...[/COLOR]'%(label,result.group(1))
-				href=result.group(2)
+			if 'Bảng xếp hạng' in name:#Album mới chia sẻ
+				result=re.search('"absmiddle"> <a href="(.+?)">(.+?)</a>',subbody)
+				title='[COLOR lime]%s/%s: Xem thêm...[/COLOR]'%(label,result.group(2))
+				href=result.group(1)
 				if href:addir_info(title,csn_url(href),ico,'',mode,1,'get_album_page',True)
+			else:
+				result=re.search('"absmiddle"> (.+?)</span>.+?<a href="(.+?)">',subbody,re.DOTALL)
+				if result:
+					title='[COLOR lime]%s/%s: Xem thêm...[/COLOR]'%(label,result.group(1))
+					href=result.group(2)
+					if href:addir_info(title,csn_url(href),ico,'',mode,1,'get_album_page',True)
 			art=dict(re.findall('<a href="(.+?)"><img src="(.+?)"',body))
 			for s in re.findall('(<td title.+?</span></td>)',subbody,re.DOTALL):csn_get_dir(s,art,True)
 		for subbody in re.findall('(class="ht-c".+?class="t2")',body,re.DOTALL):
@@ -4714,49 +5622,94 @@ def chiasenhac(name,url,img,fanart,mode,page,query):
 					if href:addir_info(title,csn_url(href),ico,'',mode,1,'get_mp3_page',True)
 					for s in re.findall('("text2".+?</span></p>)',subbody,re.DOTALL):csn_get_dir(s)
 	
+	def csn_get_album_page(body):
+		art=dict(re.findall('<a href="(.+?)"><img src="(.+?)"',body))
+		for subbody in re.findall('(class="catLeft".+?class="xt">.+?</a>)',body,re.DOTALL):
+			result=re.search('<a href="(.+?)">(.+?)</a></span></th>',subbody)
+			if result:
+				title='[COLOR lime]%s[/COLOR]'%result.group(2)
+				addir_info(title,csn_url(result.group(1)),ico,'',mode,1,'get_album_page',True)
+			elif not result:
+				label=xsearch('"absmiddle"> (.+?)</span></th>',subbody)
+				result=re.search('<a href="(.+?)".+?class="xt">(.+?)</a>',subbody)
+				if label and result:
+					if 'Quay về' not in result.group(2):
+						title='[COLOR lime]%s: %s - %s[/COLOR]'%(xsearch('\](.+?)[\:|\[]',name),label,result.group(2))
+						addir_info(title,csn_url(result.group(1)),ico,'',mode,1,'get_album_page',True)
+					else:
+						title='[COLOR lime]%s: %s[/COLOR]'%(xsearch('\](.+?)[\:|\[]',name),label)
+						addir_info(title,'',ico,'',mode,1,'')
+			for s in re.findall('class="gen"(.+?)</span></td>',subbody,re.DOTALL):csn_get_dir(s,art,True)
+	
 	def csn_search(url,string):
-		if '?s=' not in url:url='http://search.chiasenhac.com/search.php?s=%s'%urllib.quote_plus(string)
+		if '?' not in url:
+			setting={'None':'Tên bài hát/Ca sĩ','artist':'Ca sĩ','composer':'Sáng tác','album':'Tên Album','lyric':		'Lời bài hát'}
+			search_set=myaddon.getSetting('csn_s')#&mode=lyric
+			m=''.join(s for s in setting if  setting.get(s)==search_set and s!='None')
+			url='http://search.chiasenhac.com/search.php?s=%s&mode=%s'%(urllib.quote_plus(string),m)
+		else:m=xsearch('mode=(.+?)\W',url+'&')
 		body=make_request(url)
-		imgs=dict(re.findall('<a href="(.+?)"><img src="(.+?)"',body))
-		for s in re.findall('(<tr.+?/tr>)',body,re.DOTALL):
-			href=xsearch('href="(.+?)"',s);t1=xsearch('target=".+?">(.+?)</a>',s)
-			if not href or not t1:continue
-			t2=xsearch('<p>([^<]+?)</p>\s+</div>',s)
-			d1=xsearch('<span class="gen">(.+?)<br />',s)
-			d2=xsearch('style="color: .+?">(.+?)</span>',s)
-			d3=xsearch('<td nowrap="nowrap" align="center">\s+<p>(.+?)<p>',s)
-			title='%s [COLOR yellowgreen]%s[/COLOR] [COLOR red]%s[/COLOR] [COLOR yellow]%s[/COLOR] [COLOR green]%s[/COLOR]'%(t1,t2,d2,d1,d3)
-			href=csn_url(href);img=imgs.get(href,ico)
-			addir_info(title,href,img,'',mode,1,'csn_play',menu=menu)
-			result=re.search('<p>(.*?)<a href="(.+?)" title="(.+?)">.+?alt="Listen Album"',s)
-			if result:#Playlist item
-				t1=result.group(3).replace('Nghe playlist:','Playlist:')
-				title='[COLOR green]%s[/COLOR] [COLOR yellowgreen]%s[/COLOR]'%(t1,result.group(1))
-				addir_info(title,csn_url(result.group(2)),img,'',mode,1,'get_album',True)
 		
-		subbody=xsearch('(<th colspan="3" height="25">.+?</table>)',body,1,re.DOTALL)
-		result=xsearch('<th colspan="3" height="25">(.+?)</th>',subbody)
-		if result:#Album result
-			addir_info('[COLOR gold]-----%s-----[/COLOR]'%result,'',ico,'',mode,1,'No')
-			for i in re.findall('<a href="(.+?)" title="(.+?)".+?</a>(.*?)<br />\s.*\s.*<span style.+?>(.+?)</span>',subbody):
-				img=imgs.get(i[0],ico)
-				title='[COLOR green]%s[/COLOR] [COLOR yellowgreen]%s[/COLOR] [COLOR red]%s[/COLOR]'%(i[1],i[2],i[3])
-				addir_info(title,csn_url(i[0]),img,'',mode,1,'get_album',True)
+		if m=='album':
+			csn_get_album_page(body)
+			next=xsearch('<a href="(.+?)" class="xt">Xem thêm...</a>',body)
+			if next:
+				title='[COLOR lime]Search: Xem thêm...[/COLOR]'
+				addir_info(title,next.replace('amp;',''),ico,'',mode,1,query,True)
+		else:
+			imgs=dict(re.findall('<a href="(.+?)"><img src="(.+?)"',body))
+			for s in re.findall('(<tr.+?/tr>)',body,re.DOTALL):
+				href=xsearch('href="(.+?)"',s);t1=xsearch('target=".+?">(.+?)</a>',s)
+				if not href or not t1:continue
+				t2=xsearch('<p>([^<]+?)</p>\s+</div>',s)
+				d1=xsearch('<span class="gen">(.+?)<br />',s)
+				d2=xsearch('style="color: .+?">(.+?)</span>',s)
+				d3=xsearch('<td nowrap="nowrap" align="center">\s+<p>(.+?)<p>',s)
+				title='%s [COLOR yellowgreen]%s[/COLOR] [COLOR red]%s[/COLOR] [COLOR yellow]%s[/COLOR] [COLOR green]%s[/COLOR]'%(t1,t2,d2,d1,d3)
+				href=csn_url(href);img=imgs.get(href,ico)
+				addir_info(title,href,img,'',mode,1,'csn_play',menu=menu)
+				result=re.search('<p>(.*?)<a href="(.+?)" title="(.+?)">.+?alt="Listen Album"',s)
+				if result:#Playlist item
+					t1=result.group(3).replace('Nghe playlist:','Playlist:')
+					title='[COLOR green]%s[/COLOR] [COLOR yellowgreen]%s[/COLOR]'%(t1,result.group(1))
+					addir_info(title,csn_url(result.group(2)),img,'',mode,1,'get_album',True)
+			
+			subbody=xsearch('(<th colspan="3" height="25">.+?</table>)',body,1,re.DOTALL)
+			result=xsearch('<th colspan="3" height="25">(.+?)</th>',subbody)
+			if result:#Album result
+				addir_info('[COLOR gold]-----%s-----[/COLOR]'%result,'',ico,'',mode,1,'No')
+				for i in re.findall('<a href="(.+?)" title="(.+?)".+?</a>(.*?)<br />\s.*\s.*<span style.+?>(.+?)</span>',subbody):
+					img=imgs.get(i[0],ico)
+					title='[COLOR green]%s[/COLOR] [COLOR yellowgreen]%s[/COLOR] [COLOR red]%s[/COLOR]'%(i[1],i[2],i[3])
+					addir_info(title,csn_url(i[0]),img,'',mode,1,'get_album',True)
 		
-		npage=re.search('class="active_page"><a .+?><a href="(.+?)" class="npage">(.+?)</a>',body)
-		if npage:
-			title='[COLOR lime]Search: [COLOR yellow]%s[/COLOR]- Trang %s[/COLOR]'%(string,npage.group(2))
-			addir_info(title,csn_url(npage.group(1).replace('amp;','')),img,'',mode,1,string,True)
-		
-	if query!='search':body=make_request(urlhome) if query=='Home' else make_request(url,headers=hd)
+			npage=re.search('class="active_page"><a .+?><a href="(.+?)" class="npage">(.+?)</a>',body)
+			if npage:
+				title='[COLOR lime]Search: [COLOR yellow]%s[/COLOR]- Trang %s[/COLOR]'%(string,npage.group(2))
+				addir_info(title,csn_url(npage.group(1).replace('amp;','')),img,'',mode,1,string,True)
+	
+	if query!='search' and query!='INF' and 'csn_Search_' not in query:
+		body=make_request(urlhome) if query=='Home' else make_request(url,headers=hd)
+	
 	if query=='search':make_mySearch('','chiasenhac.com','','',mode,'get')
 	elif query=="INP":csn_search(url,make_mySearch('',url,'','','','Input'))
+	
+	elif 'csn_Search_' in query:
+		query=query.replace('csn_Search_','')
+		setting={'None':'Tên bài hát/Ca sĩ','artist':'Ca sĩ','composer':'Sáng tác','album':'Tên Album','lyric':
+		'Lời bài hát'};myaddon.setSetting('csn_s',setting.get(query));xbmc.executebuiltin("Container.Refresh")
+	
 	elif 'search.php' in url or url=='chiasenhac.com':csn_search(url,query)
+	
 	elif query=='Home':
-		title='[COLOR lime]Search trên %s[/COLOR]'%urlhome
-		addir_info(title,'chiasenhac.com',ico,'',mode,1,'search',True)
+		menu={'MyPlaylist':{'action':'Search','server':['chiasenhac.com']}}
+		title='[COLOR lime]Search theo[/COLOR] - [COLOR gold]%s[/COLOR] - Phím Func tìm khác'
+		title=title%myaddon.getSetting('csn_s')
+		addir_info(title,'chiasenhac.com',ico,'',mode,1,'search',True,menu=menu)
+		
 		title='[COLOR lime]My playlist - Tên Album[/COLOR]'
 		addir_info(title,'http://chiasenhac.com/mp3/favourite',ico,'',mode,1,'myplaylist_album',True)
+		
 		title='[COLOR lime]My playlist - Tên Bài hát[/COLOR]'
 		addir_info(title,'http://chiasenhac.com/mp3/favourite',ico,'',mode,1,'myplaylist_baihat',True)
 		
@@ -4790,6 +5743,7 @@ def chiasenhac(name,url,img,fanart,mode,page,query):
 				elif 'Cảm' in title:items=re.findall('class="info"(.+?)lass="tip"',i,re.DOTALL)
 				else:items=re.findall('class="texte1x"(.+?</span></p>)',i,re.DOTALL)
 				for subbody in items:csn_get_dir(subbody)
+	
 	elif query=='submenu':
 		title=xsearch('\](.+?)\[',name)
 		subbody=xsearch('title="%s"(.+?)</ul>'%title,body,1,re.DOTALL)
@@ -4804,6 +5758,12 @@ def chiasenhac(name,url,img,fanart,mode,page,query):
 
 	elif query=='main_page':
 		if 'Video' in name:csn_video_main_page(body)
+		elif 'BXH' in name:
+			body=make_request(url)
+			for i in re.findall('(<a href=".+?" class="cattitle">(.+?)</a>)',body):
+				add_sep_item(i[1])
+				subbody=xsearch('%s(.+?)</table>'%i[0],body,1,re.DOTALL)
+				for s in re.findall('(<tr.+?/tr>)',subbody,re.DOTALL):csn_get_dir(s)
 		else:csn_mp3_main_page(body)
 				
 	elif query=='get_video_page':
@@ -4820,24 +5780,7 @@ def chiasenhac(name,url,img,fanart,mode,page,query):
 			title='[COLOR lime]%s: Xem thêm - Trang %s[/COLOR]'%(xsearch('\](.+?)[\:|\[]',name),npage.group(2))
 			addir_info(title,csn_url(npage.group(1)),ico,'',mode,1,'get_mp3_page',True)
 
-	elif query=='get_album_page':
-		art=dict(re.findall('<a href="(.+?)"><img src="(.+?)"',body))
-		for subbody in re.findall('(class="catLeft".+?class="xt">.+?</a>)',body,re.DOTALL):
-			result=re.search('<a href="(.+?)">(.+?)</a></span></th>',subbody)
-			if result:
-				title='[COLOR lime]%s[/COLOR]'%result.group(2)
-				addir_info(title,csn_url(result.group(1)),ico,'',mode,1,'get_album_page',True)
-			elif not result:
-				label=xsearch('"absmiddle"> (.+?)</span></th>',subbody)
-				result=re.search('<a href="(.+?)".+?class="xt">(.+?)</a>',subbody)
-				if label and result:
-					if 'Quay về' not in result.group(2):
-						title='[COLOR lime]%s: %s - %s[/COLOR]'%(xsearch('\](.+?)[\:|\[]',name),label,result.group(2))
-						addir_info(title,csn_url(result.group(1)),ico,'',mode,1,'get_album_page',True)
-					else:
-						title='[COLOR lime]%s: %s[/COLOR]'%(xsearch('\](.+?)[\:|\[]',name),label)
-						addir_info(title,'',ico,'',mode,1,'')
-			for s in re.findall('class="gen"(.+?)</span></td>',subbody,re.DOTALL):csn_get_dir(s,art,True)
+	elif query=='get_album_page':csn_get_album_page(body)
 	
 	elif query=='get_album':csn_get_album(body)
 	
@@ -4887,27 +5830,47 @@ def chiasenhac(name,url,img,fanart,mode,page,query):
 		xbmcsetResolvedUrl(href,img=xsearch('rel="image_src" href="(.+?)"',body))
 
 def myNAS(name,url,img,fanart,mode,page,query):
+	ico=os.path.join(iconpath,'mynas.png');urlhome=myaddon.getSetting('my_nas_url')
+	username=myaddon.getSetting('my_nas_up')
+	if not username or not username.split('/')[0].strip():username=''
+	if not os.path.isfile(ico):
+		try:urllib.urlretrieve('http://www.buffalo-asia.com/uploads/product/1299/ws5200d589.png',ico)
+		except:pass
+	
+	def nas_login():
+		if not username:return ''
+		elif '/' not in username:mess(u'Hãy set username/password đúng quy ước cho acc NAS !','My NAS');return ''
+		try:url_login=make_request(urlhome,resp='o').headers.get('location')+'rpc/login'
+		except:return ''
+		response=make_post(url_login,data={'user':user.split('/')[0],'password':user.split('/')[1]})
+		if not response or response.status>302:mess('Login to NAS fail !','My NAS');return ''
+		cookie=response.cookiestring
+		f=open(joinpath(xsharefolder,'mynas.cookie'),'w');f.write(cookie);f.close()
+		return cookie
+	
+	def nas_items(url,cookie='',loop=True):
+		if username and not cookie:hd['Cookie']=makerequest(joinpath(xsharefolder,'mynas.cookie'))
+		elif username:hd['Cookie']=cookie
+		js=make_request(url,hd,resp='j')
+		i=[s for s in js if s.get('name')!='.' and s.get('name')!='..' and s.get('name')!='/' and s.get('name')!='.webaxs']
+		if not i and loop:i=nas_items(url,nas_login(),False)
+		return i
+	
 	if query=='home':
-		ico=os.path.join(iconpath,'kenh88.png');urlhome=myaddon.getSetting('my_nas_url')
-		if not os.path.isfile(ico):
-			try:urllib.urlretrieve('http://www.buffalo-asia.com/uploads/product/1299/ws5200d589.png',ico)
-			except:pass
 		response=make_request(urlhome,resp='o')
-		if response.status!=302:return
+		if not response or response.status!=302:return
 		url=response.headers.get('location')+'rpc/ls/';query=''
+	
 	elif query=='nas_play':
 		direct_link=url.replace('/ls/','/download/')
+		if username:direct_link+='|Cookie='+makerequest(joinpath(xsharefolder,'mynas.cookie'))
 		return xshare_resolve(direct_link,os.path.splitext(direct_link)[1][1:].lower())
-		item=xbmcgui.ListItem(path=url.replace('/ls/','/download/'))
-		xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
-		return
-	js=make_request(url+urllib.quote(query),resp='j')
-	if not js:return
-	S=[s for s in js if s.get('name')!='.' and s.get('name')!='..' and s.get('name')!='/' and s.get('name')!='.webaxs']
-	for title,href,dir in  [(s.get('name'),s.get('path'),s.get('directory')) for s in S]:
+	
+	detail=nas_items(url+urllib.quote(query))
+	for title,href,dir in  [(s.get('name'),s.get('path'),s.get('directory')) for s in detail]:
 		href=u2s(href);title=u2s(title)
-		if str(dir) in 'True-true':addir('[COLOR gold]'+title+'[/COLOR]',url,'','',mode,page,href,True)
-		else:addir(title,url+urllib.quote(href),'','',mode,page,'nas_play')
+		if str(dir) in 'True-true':addir_info('[COLOR gold]'+title+'[/COLOR]',url,ico,'',mode,page,href,True)
+		else:addir_info(title,url+urllib.quote(href),ico,'',mode,page,'nas_play')
 
 try:#Container.SetViewMode(num) addir:name,link,img,fanart,mode,page,query,isFolder
 	myfolder=s2u(myaddon.getSetting('thumuccucbo'))
@@ -4939,7 +5902,7 @@ if not mode:#xbmc.executebuiltin("Dialog.Close(all, true)")
 	init_file();open_category("MMN");endxbmc()
 	if myaddon.getSetting('checkdatabase')=='true' or os.path.isfile(joinpath(data_path,'checkdatabase.txt')):
 		database_download()
-	if checkupdate('xshare_auto_update.dat',5,datapath):
+	if myaddon.getSetting('auto_update')=='true' and checkupdate('xshare_auto_update.dat',5,datapath):
 		makerequest(joinpath(datapath,"xshare_auto_update.dat"),'','w')
 		xshare_auto_update();delete_files(tempfolder)
 elif mode==1:end=vaphim(name,url,img,fanart,mode,page,query)
@@ -4973,7 +5936,9 @@ elif mode==29:phimsot(name,url,img,mode,page,query)
 elif mode==30:hdonline(name,url,img,mode,page,query)
 elif mode==31:end=ifile_update()
 elif mode==32:phim3s(name,url,img,mode,page,query)
+elif mode==33:kphim(name,url,img,mode,page,query)
 elif mode==34:ifile_home(name,url,img,mode,page,query)
+elif mode==35:phimnhanh(name,url,img,mode,page,query)
 elif mode==38:doc_Trang4share(url)#38
 elif mode==47:daklak47(name,url,img)
 elif mode==50:htvonline(name,url,img,fanart,mode,page,query)
@@ -4992,3 +5957,32 @@ elif mode==99:myaddon.openSettings();end='ok'
 if not end or end not in 'no-ok-fail':endxbmc()
 #print json.dumps(a.json,indent=2,ensure_ascii=False)
 #import urlfetch,urllib,os,re,json,time
+'''
+
+Fix:
+- Fshare.vn: cải thiện tốc độ get link Fshare.
+- Cải tốc độ get vaphim.com page
+- Fix search on vaphim.com
+- Fix Google search trên Fshare, vaphim.
+- Cải tốc độ Goolge Web search for Fshare.vn (Thanks to datnt75)
+- Fix HDViet play HD
+- Fix tạm phimmoi.net (Vì server chưa ổn định)
+- Fix hayhaytv
+
+Bổ sung:
+- Fshare.vn: get cả 2 chế độ "trực tiếp/gián tiếp", cải thiện tốc đọ get link Fshare.
+- Thêm mục "Phim yêu thích trên HDOnline.vn
+- Thêm mục "Phim yêu thích trên FPTplay.vn
+- CSN: Phân lọa search theo Tên bài hát/Ca sĩ, Ca sĩ, Sáng tác, Tên Album, Lời bài hát; Bảng xếp hạng
+- NAS login
+- kphim.tv
+- phimnhanh.com
+
+Chưa fix và bổ sung kịp:
+- Mục "Xem gì hôm nay của BuiAn" và các vấn đề liên quan đến site HDVietnam
+- MyK+, Get link 4share (Vì không có acc)
+- Favourite của một số server free.
+
+Thanks to: LUC QUYET CHIEN, HieuHienSupport, vinhdo, phithien, mandy190504, 12345qazw, bongxinhtuti, linh0983, minhjp, ... và tất cả các bạn đã quan tâm xshare.
+
+'''

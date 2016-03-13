@@ -14,31 +14,41 @@
 		<setting id="passwordp" type="text" option="hidden" label="Password [COLOR deepskyblue]pub.vn[/COLOR]"/>
 		<setting id="usernamev" type="text" label="User name [COLOR deeppink]vuahd.tv[/COLOR] (email)"/>
 		<setting id="passwordv" type="text" option="hidden" label="Password [COLOR deeppink]vuahd.tv[/COLOR]"/>
-		<setting id="userhdviet" type="text" label="User name [COLOR darkorange]hdviet.com[/COLOR] (email/Số ĐT)"/>
-		<setting id="passhdviet" type="text" option="hidden" label="Password [COLOR darkorange]hdviet.com[/COLOR]"/>
 		<setting id="userhayhay" type="text" label="User name [COLOR tomato]hayhaytv.vn[/COLOR] (email/Số ĐT)"/>
 		<setting id="passhayhay" type="text" option="hidden" label="Password [COLOR tomato]hayhaytv.vn[/COLOR]"/>
 		<setting id="mail_fptplay" type="text" label="User name [COLOR orange]fptplay.net[/COLOR] (email)"/>
 		<setting id="pass_fptplay" type="text" option="hidden" label="Password [COLOR orange]fptplay.net[/COLOR]"/>
-		<setting id="userphimmoi" type="text" label="User name [COLOR ghostwhite]phimmoi.net[/COLOR]"/>
-		<setting id="passphimmoi" type="text" option="hidden" label="Password [COLOR ghostwhite]phimmoi.net[/COLOR]"/>
+	</category>
+	<category label="Servers khác">
+		<setting id="userhdviet" type="text" label="User name [COLOR darkorange]hdviet.com[/COLOR] (email/Số ĐT)"/>
+		<setting id="passhdviet" type="text" option="hidden" label="Password [COLOR darkorange]hdviet.com[/COLOR]"/>
+		<setting id="hdvietresolution" type="labelenum" label="[COLOR darkorange]Chọn độ phân giải tối đa trên hdviet.com[/COLOR]" values="720|1080" default="720"/>
+		<setting id="hdvietaudio" type="labelenum" label="[COLOR darkorange]Chọn Audio trên hdviet.com[/COLOR]" values="Thuyết Minh (nếu có)|Tiếng Gốc|Hỏi khi xem" default="Thuyết Minh (nếu có)"/>
 		<setting id="csn_u" type="text" label="User name [COLOR green]chiasenhac.com[/COLOR]"/>
 		<setting id="csn_p" type="text" option="hidden" label="Password [COLOR green]chiasenhac.com[/COLOR]"/>
+		<setting id="csn_s" type="labelenum" label="[COLOR green]Tìm kiếm theo[/COLOR]" values="Tên bài hát/Ca sĩ|Ca sĩ|Sáng tác|Tên Album|Lời bài hát" default="Tên bài hát/Ca sĩ"/>
+		<setting id="userphimmoi" type="text" label="User name [COLOR ghostwhite]phimmoi.net[/COLOR]"/>
+		<setting id="passphimmoi" type="text" option="hidden" label="Password [COLOR ghostwhite]phimmoi.net[/COLOR]"/>
 		<setting id="p3s_u" type="text" label="User name [COLOR lightgray]phim3s.net[/COLOR]"/>
 		<setting id="p3s_p" type="text" option="hidden" label="Password [COLOR lightgray]phim3s.net[/COLOR]"/>
+		<setting id="hdo_u" type="text" label="User name [COLOR turquoise]hdonline.vn[/COLOR]"/>
+		<setting id="hdo_p" type="text" option="hidden" label="Password [COLOR turquoise]hdonline.vn[/COLOR]"/>
 	</category>
 	<category label="Thông tin khác">
 		<setting id="thumucrieng" type="text" label="[COLOR blue]Mục chia sẻ của tôi trên Fshare[/COLOR] ([COLOR gold]ID MyFshare[/COLOR])" default="RDA4FHXVE2UU"/>
-		<setting id="thumuccucbo" type="folder" label="[COLOR blue]Thư mục cục bộ[/COLOR] ([COLOR gold]MyFolder[/COLOR])" default=""/>
+		<setting id="thumuccucbo" type="folder" label="[COLOR blue]Thư mục cục bộ[/COLOR] ([COLOR gold]MyFolder[/COLOR])" default="" option="writeable"/>
 		<setting id="googlesearch" type="labelenum" label="[COLOR blue]Sử dụng phương thức Google search[/COLOR]" values="API|Web" default="API"/>
 		<setting id="phimmoiresolution" type="labelenum" label="[COLOR blue]Chọn độ phân giải tối đa trên[/COLOR] [COLOR ghostwhite]phimmoi.net[/COLOR]" values="720|1080" default="720"/>
 		<setting id="sodonghienthi" type="labelenum" label="[COLOR blue]Số dòng hiển thị cho 1 trang[/COLOR]" values="20|30|50" default="30"/>
 		<setting id="uploaders" type="text" label='[COLOR blue]DS uploaders yêu thích[/COLOR] (cách nhau: "-")' default="xemaydinh-hungdaita-truoduc-ledung123-cocongidau-invisible9x-love_yejin-coduocgidau-HDCP-linhlee0709-Coti-henryduc96-luanthieugia"/>
+		<setting id="my_nas_url" type="text" label="[COLOR blue]My NAS url[/COLOR]" default="http://buffalonas.com/"/>
+		<setting id="my_nas_up"  type="text" label="[COLOR blue]My NAS user/pass[/COLOR] - có dấu [COLOR red]/[/COLOR] nhé" default="/"/>
 		<setting id="cookie" type="text" label="cookiestring" default="" visible="false"/>
 		<setting id="pagethanked" type="text" label="Trang cuối đã get thank cho xshare" default="0-0-0-0" visible="false"/>
-		<setting id="my_nas_url" type="text" label="[COLOR blue]My NAS url[/COLOR]" default="http://buffalonas.com/"/>
+		<setting id="xshare_favourite" type="text" label="My Favourite folder" visible="false" default=""/>
 	</category>
 	<category label="Các tùy chọn riêng">
+		<setting id="auto_update" type="bool" label="[COLOR gold]Auto update xshare database[/COLOR] (y/n)" default="true"/>
 		<setting id="copyxml" type="bool" label="[COLOR green]Tự động Copy list phim xml vào [COLOR gold]MyFolder[/COLOR][/COLOR] (y/n)" default="false"/>
 		<setting id="checkdatabase" type="bool" label="[COLOR green]Mở chế độ kiểm tra database cho xshare[/COLOR] (y/n)" default="false"/>
 		<setting id="logoutf" type="bool" label="[COLOR green]Tự động Logout [COLOR gold]Fshare, [COLOR blue]4share.vn, [COLOR fuchsia]Tenlua.vn[/COLOR][/COLOR][/COLOR][/COLOR] (yes/no)" default="true"/>
@@ -49,9 +59,5 @@
 		<setting id="history" type="bool" label="[COLOR green]Cho phép hiển thị lịch sử tìm kiếm[/COLOR] (y/n)" default="true"/>
 		<setting id="phim18" type="bool" label="[COLOR red]Kích hoạt xem phim 18+[/COLOR] (y/n)" default="false"/>
 		<setting id="thank2xshare" type="bool" label="[COLOR green]Cho phép tự động cảm ơn xshare trong [COLOR red]hdvietnam.com[/COLOR][/COLOR] (y/n)" default="true"/>
-	</category>
-	<category label="HDViet.com">
-		<setting id="hdvietresolution" type="labelenum" label="[COLOR darkorange]Chọn độ phân giải tối đa trên hdviet.com[/COLOR]" values="720|1080" default="720"/>
-		<setting id="hdvietaudio" type="labelenum" label="[COLOR darkorange]Chọn Audio trên hdviet.com[/COLOR]" values="Thuyết Minh (nếu có)|Tiếng Gốc|Hỏi khi xem" default="Thuyết Minh (nếu có)"/>
 	</category>
 </settings>
