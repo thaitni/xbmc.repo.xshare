@@ -5858,7 +5858,7 @@ def myNAS(name,url,img,fanart,mode,page,query):
 		elif '/' not in username:mess(u'Hãy set username/password đúng quy ước cho acc NAS !','My NAS');return ''
 		try:url_login=make_request(urlhome,resp='o').headers.get('location')+'rpc/login'
 		except:return ''
-		response=make_post(url_login,data={'user':user.split('/')[0],'password':user.split('/')[1]})
+		response=make_post(url_login,data={'user':username.split('/')[0],'password':username.split('/')[1]})
 		if not response or response.status>302:mess('Login to NAS fail !','My NAS');return ''
 		cookie=response.cookiestring
 		f=open(joinpath(xsharefolder,'mynas.cookie'),'w');f.write(cookie);f.close()
