@@ -5310,7 +5310,6 @@ def vaphim(name,url,img,fanart,mode,page,query):
 		if len(url.split('?'))>1:href=href+'?'+url.split('?')[1]
 		
 		body=vp_readpage(href)#;print href
-		f=open(r'd:\xoa.html','w');f.write(body);f.close()
 		if not body:return 'no'
 		if re.search('<div class="search-home-title">Danh sách đề xuất</div>',body):
 			mess(u'Xin lỗi! không tìm thấy kết quả dựa trên truy vấn của bạn.','Vaphim search',10000)
