@@ -1,3 +1,7 @@
+[B]Version 3.3.5[/B] <16/03/2016>:
+ Fix:
+ - MegaBox, HDOnline, MyNAS
+ 
 [B]Version 3.3.4[/B] <13/03/2016>:
  Fix:
 - Fshare.vn: cải thiện tốc độ get link Fshare.

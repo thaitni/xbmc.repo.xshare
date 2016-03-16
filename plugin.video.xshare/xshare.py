@@ -2166,15 +2166,16 @@ def megabox(name,url,img,fanart,mode,page,query):
 			title=color['megabox']+title.replace('Phim ','')+'[/COLOR]'
 			addir(title,href,icon['megabox'],'',mode,1,'mainmenu',True)
 	elif query=='mainmenu':#url:(phim-le,phim-bo,show,clip)
+		label=os.path.basename(url)
 		submenu={'phim-le':'Phim lẻ','phim-bo':'Phim bộ','show':'Show','clip':'Clip'}
-		if url=='clip':
-			title=color['xshare']+submenu[url]+' theo thể loại[/COLOR]'
-			addir(title,url+'tl',icon['megabox'],'',mode,1,query,True)
-		elif url in ('phim-le','phim-bo','show'):
-			title=color['xshare']+submenu[url]+' theo thể loại[/COLOR]'
-			addir(title,url+'tl',icon['megabox'],'',mode,1,query,True)
-			title=color['xshare']+submenu[url]+' theo quốc gia[/COLOR]'
-			addir(title,url+'qg',icon['megabox'],'',mode,1,query,True)
+		if label=='clip':
+			title=color['xshare']+submenu[label]+' theo thể loại[/COLOR]'
+			addir(title,label+'tl',icon['megabox'],'',mode,1,query,True)
+		elif label in ('phim-le','phim-bo','show'):
+			title=color['xshare']+submenu[label]+' theo thể loại[/COLOR]'
+			addir(title,label+'tl',icon['megabox'],'',mode,1,query,True)
+			title=color['xshare']+submenu[label]+' theo quốc gia[/COLOR]'
+			addir(title,label+'qg',icon['megabox'],'',mode,1,query,True)
 		pattern='<a class.+?href="(.+?)".+?title.>(.+?)</h3>(.+?)<img.+?src="(.+?)">(.+?)</a>.+?<a.+?a>(.+?)</div><'
 		body=sub_body(make_request(homepage+url,maxr=3),'begin primary','end primary')
 		href_new,dict=put_items(re.findall(pattern,body,re.DOTALL),'i')
@@ -4900,12 +4901,23 @@ def hdonline(name,url,img,mode,page,query):
 			url=url.replace('page=%d'%(page-1),'page=%d'%page)
 			addir_info(title,url,ico,'',mode,page,query,True)
 
-	elif query=='hdo_play':
-		hd={'Referer':url};quality=0;max_link=link=sub=''
-		#href="http://hdonline.vn/frontend/episode/xmlplay?ep=1&fid=%s&format=json"%id
+	elif query=='hdo_play1':
+		hd['Referer']=url;quality=0;max_link=link=sub=''
 		if '/episode/' not in url:
 			id=xsearch('-(\d+?)\.html',url)
-			href="http://hdonline.vn/frontend/episode/xmlplay?ep=1&fid=%s&reloadbk=1&format=json"%id
+			#href="http://hdonline.vn/frontend/episode/xmlplay?ep=1&fid=%s&reloadbk=1&format=json"%id
+			href='http://hdonline.vn/frontend/episode/xmlplay?ep=1&fid=%s&format=json&_x=%s'%(id,str(random.random()))
+		else:href=url
+		xml=make_request(href,hd,resp='j')
+		print hd,href
+		print json.dumps(xml,indent=2,ensure_ascii=True)
+	elif query=='hdo_play':
+		hd['Referer']=url;quality=0;max_link=link=sub=''
+		if '/episode/' not in url:
+			id=xsearch('-(\d+?)\.html',url);x=str(random.random())
+			#http://hdonline.vn/frontend/episode/xmlplay?ep=1&fid=8769&nops=1&format=json&_x=0.4526413946031087
+			#href="http://hdonline.vn/frontend/episode/xmlplay?ep=1&fid=%s&reloadbk=1&format=json&nops=1"%id
+			href='http://hdonline.vn/frontend/episode/xmlplay?ep=1&fid=%s&format=json&nops=1&_x=%s'%(id,x)
 		else:href=url
 		xml=make_request(href,hd,resp='j')
 		if xml and xml.get('mediaid'):
@@ -4939,6 +4951,7 @@ def hdonline(name,url,img,mode,page,query):
 				except:pass
 			else:mess('File invalid or deleted!','HDOnline.vn') 
 		else:
+			mess()
 			body=make_request(url);alert=xsearch('mAlert\("(.+?)", ".player-container"\)',body)
 			if alert:mess(s2u(alert),'HDOnline.vn',10000)
 			youtube=xsearch('<iframe src=".+?file=(.+?)"',body)
@@ -5017,7 +5030,7 @@ def kphim(name,url,img,mode,page,query):
 	
 	elif query=='episode':
 		for href,title in re.findall('<a class="btn btn-default" href="(.+?)"> (.+?) </a>',make_request(url)):
-			addir_info(nocolor(name)+'- Tập '+title,href,img,'',mode,1,'play')
+			addir_info('Tập %s - '%title+nocolor(name),href,img,'',mode,1,'play')
 	else:
 		a=make_request(url);hd['Referer']=url
 		servers=re.findall('poster.+?fid.+?title="video-(\d+?)".+?title="(.+?)">',a)
@@ -5126,8 +5139,11 @@ def phimnhanh(name,url,img,mode,page,query):
 				response=make_request(link,resp='o')
 				if response.status==302:	xbmcsetResolvedUrl(response.headers.get('location'))
 			else:xbmcsetResolvedUrl(link)
-		else:mess('File invalid or deleted!','phimnhanh.com') 
-
+		else:
+			link=xsearch('file="(.+?)"',a).replace('amp;','')
+			if link and '.youtube.com' in link:play_youtube(link)
+			else:mess('File invalid or deleted!','phimnhanh.com') 
+		
 def htvonline(name,url,img,fanart,mode,page,query):
 	tvurl='http://www.htvonline.com.vn/livetv';showurl='http://www.htvonline.com.vn/shows'
 	phimurl='http://www.htvonline.com.vn/phim-viet-nam';hd['X-Requested-With']='XMLHttpRequest'
@@ -5960,29 +5976,15 @@ if not end or end not in 'no-ok-fail':endxbmc()
 '''
 
 Fix:
-- Fshare.vn: cải thiện tốc độ get link Fshare.
-- Cải tốc độ get vaphim.com page
-- Fix search on vaphim.com
-- Fix Google search trên Fshare, vaphim.
-- Cải tốc độ Goolge Web search for Fshare.vn (Thanks to datnt75)
-- Fix HDViet play HD
-- Fix tạm phimmoi.net (Vì server chưa ổn định)
-- Fix hayhaytv
+- HDOnline full time
+- MyNAS
 
-Bổ sung:
-- Fshare.vn: get cả 2 chế độ "trực tiếp/gián tiếp", cải thiện tốc đọ get link Fshare.
-- Thêm mục "Phim yêu thích trên HDOnline.vn
-- Thêm mục "Phim yêu thích trên FPTplay.vn
-- CSN: Phân lọa search theo Tên bài hát/Ca sĩ, Ca sĩ, Sáng tác, Tên Album, Lời bài hát; Bảng xếp hạng
-- NAS login
-- kphim.tv
-- phimnhanh.com
 
 Chưa fix và bổ sung kịp:
 - Mục "Xem gì hôm nay của BuiAn" và các vấn đề liên quan đến site HDVietnam
 - MyK+, Get link 4share (Vì không có acc)
 - Favourite của một số server free.
 
-Thanks to: LUC QUYET CHIEN, HieuHienSupport, vinhdo, phithien, mandy190504, 12345qazw, bongxinhtuti, linh0983, minhjp, ... và tất cả các bạn đã quan tâm xshare.
+Thanks to: , ... và tất cả các bạn đã quan tâm xshare.
 
 '''
