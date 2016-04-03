@@ -1,17 +1,21 @@
+[B]Version 3.3.6[/B] <03/04/2016>:
+- Fix:get id fshare/4share/tenlua, phimmoi,phim88, magabox, hdonline, kenh88, phimdata
+- re-up:dangcaphd (dành cho các bạn có acc VIP của dangcaphd)
+ 
 [B]Version 3.3.5[/B] <16/03/2016>:
  Fix:
  - MegaBox, HDOnline, MyNAS
  
 [B]Version 3.3.4[/B] <13/03/2016>:
  Fix:
-- Fshare.vn: cải thiện tốc độ get link Fshare.
-- Cải tốc độ get vaphim.com page
-- Fix search on vaphim.com
-- Fix Google search trên Fshare, vaphim.
-- Cải tốc độ Goolge Web search for Fshare.vn (Thanks to datnt75)
-- Fix HDViet play HD
-- Fix tạm phimmoi.net (Vì server chưa ổn định)
-- Fix hayhaytv
+ - Fshare.vn: cải thiện tốc độ get link Fshare.
+ - Cải tốc độ get vaphim.com page
+ - Fix search on vaphim.com
+ - Fix Google search trên Fshare, vaphim.
+ - Cải tốc độ Goolge Web search for Fshare.vn (Thanks to datnt75)
+ - Fix HDViet play HD
+ - Fix tạm phimmoi.net (Vì server chưa ổn định)
+ - Fix hayhaytv
 
 Bổ sung:
 - Fshare.vn: get cả 2 chế độ "trực tiếp/gián tiếp", cải thiện tốc đọ get link Fshare.
