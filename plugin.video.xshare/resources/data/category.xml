@@ -70,19 +70,23 @@
 <a server="IFI" category="viet-nam" mode="91" color="blue" icon="ifiletv.png">Việt Nam</a>
 <a server="IFI" category="vo-thuat" mode="91" color="blue" icon="ifiletv.png">Võ Thuật</a>
 
+<a server="FRE" category="anime47.com" mode="37" color="deepskyblue" icon="anime47.png">Kho phim trên anime47.com</a>
 <a server="FRE" category="hdviet.com" mode="22" color="darkorange" icon="hdviet.png">Kho phim trên hdviet.com</a>
 <a server="FRE" category="fptplay.net" mode="07" color="orange" icon="fptplay.png">Kho phim trên fptplay.net</a>
 <a server="FRE" category="hayhaytv.vn" mode="23" color="tomato" icon="hayhaytv.png">Kho phim trên hayhaytv.vn</a>
+<a server="FRE" category="bilutv.com" mode="36" color="hotpink" icon="bilutv.png">Kho phim trên bilutv.com</a>
 <a server="FRE" category="phimmoi.net" mode="24" color="ghostwhite" icon="phimmoi.png">Kho phim trên phimmoi.net</a>
 <a server="FRE" category="hdonline.vn" mode="30" color="turquoise" icon="hdonline.png">Kho phim trên hdonline.vn</a>
 <a server="FRE" category="megabox.vn" mode="17" color="orangered" icon="megabox.png">Kho phim trên megabox.vn</a>
 <a server="FRE" category="phim3s.net" mode="32" color="lightgray" icon="phim3s.png">Kho phim trên phim3s.net</a>
+<a server="FRE" category="phim14.net" mode="39" color="chartreuse" icon="phim14.png">Kho phim trên phim14.net</a>
 <a server="FRE" category="kenh88.com" mode="26" color="cyan" icon="kenh88.png">Kho phim trên kenh88.com</a>
 <a server="FRE" category="phimdata.com" mode="27" color="magenta" icon="phimdata.png">Kho phim trên phimdata.com</a>
 <a server="FRE" category="phimsot.com" mode="29" color="orangered" icon="phimsot.png">Kho phim trên phimsốt.com</a>
 <a server="FRE" category="phim47.com" mode="28" color="springgreen" icon="phim47.png">Kho phim trên phim47.com</a>
 <a server="FRE" category="kphim.tv" mode="33" color="lightgreen" icon="kphim.png">Kho phim trên kphim.tv</a>
 <a server="FRE" category="phimnhanh.com" mode="35" color="chartreuse" icon="phimnhanh.png">Kho phim trên phimnhanh.com</a>
+<a server="FRE" category="dangcaphd.com" mode="18" color="yellow" icon="dangcaphd.png">Kho phim trên dangcaphd.com</a>
 <a server="FRE" category="vuahd.tv" mode="21" color="deeppink" icon="vuahd.png">Kho phim trên vuahd.tv</a>
 <a server="FRE" category="pubvn.tv" mode="19" color="limegreen" icon="pubvn.png">Kho phim trên pubvn.net</a>
 <a server="HDV" category="xshare.vn" mode="13" color="lime" icon="isearch.png">Search trên dữ liệu đã cập nhật về máy</a>

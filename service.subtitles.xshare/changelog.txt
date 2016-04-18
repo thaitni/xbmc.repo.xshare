@@ -1,4 +1,7 @@
-﻿[B]Version 1.1.3[/B] <01/11/2015>
+﻿[B]Version 1.2[/B] <18/04/2016>
+- Fix module translate from Goolge
+
+[B]Version 1.1.3[/B] <01/11/2015>
 - Fix get subs subscene
 
 [B]Version 1.1.2[/B] <14/08/2015>

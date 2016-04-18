@@ -1,3 +1,10 @@
+[B]Version 3.3.4[/B] <18/04/2016>:
+add:bilutv, anime47
+Fix:
+- phimmoi,ifile.tv
+- hdviet thêm phân loại, quốc gia
+- download subs
+ 
 [B]Version 3.3.6[/B] <03/04/2016>:
 - Fix:get id fshare/4share/tenlua, phimmoi,phim88, magabox, hdonline, kenh88, phimdata
 - re-up:dangcaphd (dành cho các bạn có acc VIP của dangcaphd)

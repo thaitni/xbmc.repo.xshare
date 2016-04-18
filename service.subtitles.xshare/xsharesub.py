@@ -7,12 +7,15 @@ service = addon.getAddonInfo('id')
 
 home = xbmc.translatePath(addon.getAddonInfo('path')).decode("utf-8")
 libpath = xbmc.translatePath(os.path.join(home, 'resources', 'lib')).decode("utf-8")
-tempath = xbmc.translatePath(os.path.join( xbmc.translatePath(addon.getAddonInfo('profile')),'temp'))
-if not os.path.exists(xbmc.translatePath(addon.getAddonInfo('profile'))):
-	os.mkdir(xbmc.translatePath(addon.getAddonInfo('profile')))
-if not os.path.exists(tempath):os.mkdir(tempath)
-subsfolder = os.path.join(xbmc.translatePath('special://temp'),'subs')
-if not os.path.exists(subsfolder):os.mkdir(subsfolder)
+xbmc_temp = xbmc.translatePath('special://temp')
+tempath = os.path.join(xbmc_temp,'temp')
+if not os.path.exists(tempath):
+	try:os.mkdir(tempath)
+	except:pass
+subsfolder = os.path.join(xbmc_temp,'subs')
+if not os.path.exists(subsfolder):
+	try:os.mkdir(subsfolder)
+	except:pass
 
 subscene = "http://subscene.com"
 sys.path.append(libpath)
@@ -151,7 +154,7 @@ def search_movie(item):
 		if not filename:filename=title
 		mess(u'Movie: %s'%filename,20000,'Xshare %s: Movie year - %s '%(notification,year))
 
-def download(link,img):
+def download(link,filename,img):
 	sub_list=[];downloadlink=''
 	if 'phudeviet.org' in link:
 		match = re.search('<a href="(http://phudeviet.org/download/.+?)">',make_request(link))
@@ -174,7 +177,7 @@ def download(link,img):
 	except:
 		xbmc.sleep(1000)
 		try:os.mkdir(tempath)
-		except:mess(u'Không tạo được thư mục sub');return sub_list
+		except:mess(u'Không tạo được thư mục sub');return []
 
 	body=urlfetch.get(downloadlink).body
 	tempfile = os.path.join(tempath, "subtitle.sub")
@@ -182,33 +185,70 @@ def download(link,img):
 	f = open(tempfile, "rb");f.seek(0);fread=f.read(1);f.close()
 	if fread == 'R':	typeid = "rar"
 	elif fread == 'P':typeid = "zip"
-	
+	def rename(fs,fd):
+		try:
+			if os.path.isfile(fd):os.remove(fd)
+			os.rename(fs,fd)
+		except:pass
 	tempfile = os.path.join(tempath, "subtitle." + typeid)
-	os.rename(os.path.join(tempath, "subtitle.sub"), tempfile)
+	rename(os.path.join(tempath, "subtitle.sub"), tempfile)
 
 	if typeid in "rar-zip":
 		xbmc.sleep(500)
 		xbmc.executebuiltin(('XBMC.Extract("%s","%s")' % (tempfile, tempath,)).encode('utf-8'), True)
-		xbmc.executebuiltin(('XBMC.Extract("%s","%s")' % (tempfile, subsfolder,)).encode('utf-8'), True)
 
 	exts = [".srt", ".sub", ".txt", ".smi", ".ssa", ".ass"]
 	for root, dirs, files in os.walk(tempath):
 		for f in files:
 			f=re.sub(',','',f);file = os.path.join(root, f)
-			if os.path.splitext(file)[1] in exts:
-				sub_list.append(file)
+			ext=os.path.splitext(f)[1];subfile=os.path.join(subsfolder, filename+ext)
+			if ext in exts:
 				if img=='en' and addon.getSetting('trans_sub')=='true':
-					mess(u'Google đang dịch sub từ tiếng Anh sang tiếng Việt', timeShown=20000)
-					try:
-						tempfile=xshare_trans(file)
-						os.remove(file)
-						os.rename(tempfile,file)
-						mess(u'Đã dịch xong sub từ tiếng Anh sang tiếng Việt') 
-					except:mess(u'Không dịch được sub từ tiếng Anh sang tiếng Việt') 
+					mess(u'Google đang dịch sub từ tiếng Anh sang tiếng Việt', timeShown=2000)
+					if xshare_trans(file,subfile):mess(u'Đã dịch xong sub từ tiếng Anh sang tiếng Việt') 
+					else:mess(u'Dịch sub thất bại do Google chặn dịch vụ !!!') 
+				else:rename(file, subfile)
+				sub_list.append(subfile)
 	if len(sub_list) == 0:mess(u'Không tìm thấy sub')
 	return sub_list
 	
-def xshare_trans(sourcefile):
+def xshare_trans(fs,fd):
+	def trans(s):
+		try:s=s.decode('unicode_escape') if '\\' in s else s.decode('utf-8')
+		except:pass
+		return s
+
+	f=open(fs);b=f.read();f.close();s='';S=''
+	u='https://translate.googleapis.com/translate_a/single?ie=UTF-8&oe=UTF-8&client=gtx&sl=en&tl=vi&dt=t&q=%s'
+	list_1=b.splitlines();list_2=[];rows=len(list_1);row=0
+	hd={'Referer':'https://translate.google.com/','User-Agent':'Mozilla/5.0 (Windows NT 6.3) Chrome/49.0.2623.112 Safari/537.36','Cookie':''}
+	for i in list_1:
+		row+=1
+		if re.search('[a-zA-Z]',i):s=s+' '+i+' xshare';list_2.append('xshare')
+		else:list_2.append(i.strip())
+		if len(s)>1000 or row==rows:
+			mess(u'Google đã dịch %d %%'%(row*100/rows), timeShown=1500)
+			s=' '.join(i for i in s.split())
+			tran=urlfetch.get(u%urllib.quote(s),headers=hd)
+			if not hd['Cookie']:hd['Cookie']=tran.cookiestring
+			xbmc.sleep(1000)#;print tran.body
+			try:
+				l=eval(tran.body.replace(',,,',',').replace(',,"en"',''))
+				S=S+' '.join(i[0] for i in l[0])
+			except:xbmc.executebuiltin("Dialog.Close(all, true)");return False
+			s=''
+	s=' '.join(trans(i) for i in S.split())
+	list_3=s.split('xshare');d=0;f=open(fd,'w')
+	f.write('0\n00:00:00,000 --> 00:02:00,000\nXshare dich tu ban tieng Anh bang Google translate\n\n')
+	for i in list_2:
+		try:
+			if i=='xshare':f.write(list_3[d].strip().encode('utf-8')+'\n');d+=1
+			else:f.write(i+'\n')
+		except:pass
+	f.close();xbmc.executebuiltin("Dialog.Close(all, true)")
+	return True
+
+def xshare_trans1(sourcefile):
 	tempfile = os.path.join(tempath, "temp"+os.path.splitext(sourcefile)[1])
 	fs=open(sourcefile);ft=open(tempfile,'w');lineslist=[];substring=''
 	for line in fs:
@@ -241,7 +281,7 @@ def google_trans(s):
 	for i in body.split('],['):
 		research=re.search('"(.+?)","(.+?)"',i)
 		if research:result+=research.group(1)+' '
-		else:print '%s :not research'%i
+		else:print '---------------------------------------not research'
 	return result.replace('Xshare','xshare').split('xshare')
 	
 def get_params():
@@ -270,17 +310,19 @@ if params['action'] == 'search' or params['action'] == 'manualsearch':
 	item['title'] = re.sub('\[.*\]','',item['title'])
 	filename = re.sub('\[.*\]','',filename)
 	item['filename']=filename
-	print 'xshare -------------------------------------------------------------------'
-	print 'xshare file_original_path : %s'%item['file_original_path']
-	print 'xshare filename : %s'%filename
-	print 'xshare title : %s'%item['title']
-	print 'xshare year : %s'%item['year']
+	try:
+		print 'xshare -------------------------------------------------------------------'
+		print 'xshare file_original_path : %s'%item['file_original_path']
+		print 'xshare filename : %s'%filename
+		print 'xshare title : %s'%item['title']
+		print 'xshare year : %s'%item['year']
+	except:pass
 	item['mansearchstr'] = ''
 	if 'searchstring' in params:
 		item['mansearchstr'] = params['searchstring']
 	search_movie(item)
 elif params['action'] == 'download':
-	subs = download(params["link"],params["img"])
+	subs = download(params["link"],params["filename"],params["img"]);print subs,params
 	for sub in subs:
 		listitem = xbmcgui.ListItem(label=sub)
 		xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sub, listitem=listitem, isFolder=False)
