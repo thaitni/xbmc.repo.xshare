@@ -1,4 +1,7 @@
-[B]Version 3.3.4[/B] <18/04/2016>:
+[B]Version 3.3.8[/B] <19/04/2016>:
+fix : bilutv
+
+[B]Version 3.3.7[/B] <18/04/2016>:
 add:bilutv, anime47
 Fix:
 - phimmoi,ifile.tv

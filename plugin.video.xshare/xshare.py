@@ -6217,7 +6217,7 @@ def bilutv(name,url,img,mode,page,query):
 		
 		add_sep_item('--------------Top--------------')
 		s=xsearch('(<ul id="top-slide">.+?</ul>)',body,1,re.DOTALL)
-		for title,href,img in re.findall('<a title="(.+?)" href="(.+?)".+?data-src="(.+?)"',s):
+		for title,href,img in re.findall('<a title="(.+?)" href="/(.+?)".+?data-src="(.+?)"',s):
 			addir_info(title,urlhome+href,img,'',mode,1,'folder',True)
 		
 		if menu_fail:#Delete file bilutv.html if content resquest not full
@@ -6272,8 +6272,8 @@ def bilutv(name,url,img,mode,page,query):
 		if '/xem-phim/' not in url:
 			body=make_request(url)
 			fanart=xsearch('<img alt=".*?" src="(.+?)"',body)
-			url=xsearch('<a class="btn-see btn btn-danger" href="/(.+?)"',body)
-			if urlhome not in url:url=urlhome+url
+			url=xsearch('<a href="(.*?/xem-phim/.+?)">',body)
+			if urlhome not in url:url='http://bilutv.com'+url
 		body=make_request(url)
 		s=xsearch('(<ul class="choose-server">.+?/ul>)',body,1,re.DOTALL)
 		if s and re.search('class="list-episode"',body):
@@ -6317,7 +6317,8 @@ def bilutv(name,url,img,mode,page,query):
 		
 		def get_max_link(link):
 			from resources.lib import bilu
-			link=bilu.main(link[0], "bilutv.com4590481877%d"%link[1])
+			#link=bilu.main(link[0], "bilutv.com4590481877%d"%link[1])
+			link=bilu.main(link[0], "bilutv.com454657883435677%d"%link[1])
 			return link
 		
 		def get_code(b):
@@ -6360,13 +6361,28 @@ def bilutv(name,url,img,mode,page,query):
 			url=xsearch('<a class="btn-see btn btn-danger" href="/(.+?)"',make_request(url))
 			if urlhome not in url:url=urlhome+url
 		
-		a=make_request(url);link=''#;f=open(r'd:\xoa.html','w');f.write(a);f.close()
-		c=get_code(a)
+		a=make_request(url);link=''
+		c=get_code(a)#;f=open(r'd:\xoa.js','w');f.write(c);f.close()
 		for l in re.findall('"(/episode/getlinkbackup/.+?)"',c):
 			link=get_googlevideo('http://bilutv.com'+l)
+			#print 'http://bilutv.com'+l,link
 			if link:break
-		if link:xbmcsetResolvedUrl(link);return
-		
+		if not link:
+			from resources.lib import bilu
+			for s in re.findall('(\{file:decodeLink.+?\})',c):
+				for r in ('1080','720','480','360'):
+					if r in xsearch('(label.+?)\Z',s):
+						try:
+							l=eval(xsearch("(\(.+?\))",s))
+							link=bilu.main(l[0], "bilutv.com454657883435677%d"%l[1])
+							if link:
+								a=make_request(link,resp='o')
+								if a and a.status==302:link=a.headers.get('location');break
+								else:link=''
+						except:pass
+		if link:xbmcsetResolvedUrl(link)
+		else:mess(u'Xin lỗi! Link bạn muốn xem có thể đã bị hỏng')
+		'''
 		link=get_link(a)
 		if link:
 			s=make_request(get_max_link(link),resp='o')
@@ -6385,6 +6401,7 @@ def bilutv(name,url,img,mode,page,query):
 							if linkbackup:link=get_googlevideo('http://bilutv.com'+linkbackup);
 							if link:xbmcsetResolvedUrl(link)
 		if not link:mess(u'Xin lỗi! Link bạn muốn xem có thể đã bị hỏng')
+		'''
 
 def anime47(name,url,img,mode,page,query):
 	ico=os.path.join(iconpath,'anime47.png');urlhome='http://anime47.com/'

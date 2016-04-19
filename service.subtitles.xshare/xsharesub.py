@@ -17,10 +17,12 @@ if not os.path.exists(subsfolder):
 	try:os.mkdir(subsfolder)
 	except:pass
 
-subscene = "http://subscene.com"
+subscene = "https://subscene.com"
 sys.path.append(libpath)
 import urlfetch
 hd={'User-Agent':'Mozilla/5.0'}
+seasons={'01':'First','02':'Second','03':'Third','04':'Fourth','05':'Fifth','06':'Sixth','07':'Seventh','08':'Eighth','09':'Ninth','10':'Tenth','11':'Eleventh','12':'Twelfth','13':'Thirteenth','14':'Fourteenth','15':'Fifteenth','16':'Sixteenth','17':'Seventeenth','18':'Eighteenth','19':'Nineteenth','20':'Twentieth','21':'Twenty-first','22':'Twenty-second','23':'Twenty-third','24':'Twenty-fourth','25':'Twenty-fifth','26':'Twenty-sixth','27':'Twenty-seventh','28':'Twenty-eighth','29':'Twenty-ninth'}
+
 def mess(message, timeShown=5000, title='Xshare'):
 	xbmc.executebuiltin((u'XBMC.Notification("%s","%s",%s)'%(title,message,timeShown)).encode("utf-8"))
 
@@ -51,12 +53,17 @@ def find_movie(title,film_year):
 		elif not film_year:
 			film_year1=str(date.today().year)
 			if re.search(pattern,name) and year==film_year1:url=link;break
+	if not url:
+		for link,name,year in re.findall('<a href="(/subtitles/.+)">(.+)\((\d\d\d\d)\)</a>',body):
+			name=re.sub("&# ","",no_accent(name).replace("&","and")).lower()
+			if re.search(pattern,name):url=link;break
+	'''
 	if not url and re.search('[S|s]\d\d',title):
 		ss=re.search('[S|s](\d\d)',title).group(1)
-		seasons={'01':'First','02':'Second','03':'Third','04':'Fourth','05':'Fifth','06':'Sixth','07':'Seventh','08':'Eighth','09':'Ninth','10':'Tenth','11':'Eleventh','12':'Twelfth','13':'Thirteenth','14':'Fourteenth','15':'Fifteenth','16':'Sixteenth','17':'Seventeenth','18':'Eighteenth','19':'Nineteenth','20':'Twentieth','21':'Twenty-first','22':'Twenty-second','23':'Twenty-third','24':'Twenty-fourth','25':'Twenty-fifth','26':'Twenty-sixth','27':'Twenty-seventh','28':'Twenty-eighth','29':'Twenty-ninth'}
 		newtitle=re.sub('[S|s]\d\d.*','%s season'%seasons[ss],title)
 		if not re.search('[S|s]\d\d',newtitle):
 			return find_movie(newtitle,film_year)
+	'''
 	return url
 
 def find_phudeviet(title,film_year):
@@ -84,10 +91,10 @@ def google_find_phudeviet(title,film_year):
 	href='http://ajax.googleapis.com/ajax/services/search/web?v=1.0&rsz=large&start=0&'
 	href+='q=site:phudeviet.org+%s'%string_search
 	json=urlfetch.get(href,headers=hd).json
-	if json['responseStatus']==403:print 'Google: response status 403'
+	if json['responseStatus']==403:print 'phudeviet - Google: response status 403'
 	else:
 		data=json['responseData']
-		if not data or not data['results']:print 'Google not data["results"]'
+		if not data or not data['results']:print 'phudeviet - Google not data["results"]'
 		else:
 			results=data['results']
 			for result in results:
@@ -101,16 +108,26 @@ def google_find_phudeviet(title,film_year):
 
 def search_movie(item):
 	title=item['title'];year=item['year'];filename=item['filename'];mansearchstr=item['mansearchstr']
-	if mansearchstr:title=mansearchstr;mess('Manual search for string')
+	if mansearchstr:title=re.sub('\(\w+?\)','',urllib.unquote(mansearchstr));mess('Manual search for string')
 	else:title=re.sub('&#.* ','',title.replace("&","and")).strip()
+	title=' '.join(s for s in title.split())
 	subspage_url=find_movie(title, year);subtitles=[];subs=[]
 	pattern='<a href="(/subtitles/.+?)">\s+<span class=".+?">\s*(.+?)\s+</span>\s+<span>\s+(.+?)\s+</span>'
 	if subspage_url:
 		url=subscene+subspage_url
 		subs=re.findall(pattern,urlfetch.get(url=url,headers={'Cookie':'LanguageFilter=13,45'}).body)
+	
+	if re.search('[S|s]\d\d',item['filename']):
+		newtitle='%s %s Season'%(title,seasons[re.search('[S|s](\d\d)',item['filename']).group(1)])
+		subspage_url=find_movie(newtitle, year)
+		if subspage_url:
+			url=subscene+subspage_url
+			subs+=re.findall(pattern,urlfetch.get(url=url,headers={'Cookie':'LanguageFilter=13,45'}).body)
+
 	if mansearchstr:
 		url=subscene+'/subtitles/release?q='+urllib.quote_plus(title)+'&r=true'
 		subs+=re.findall(pattern,urlfetch.get(url=url,headers={'Cookie':'LanguageFilter=13,45'}).body)
+	
 	phudeviet_url = find_phudeviet(title, year)
 	if not phudeviet_url:
 		phudeviet_url = google_find_phudeviet(title,year)
@@ -120,6 +137,7 @@ def search_movie(item):
 			if 'Anh.png' in lang:lang="English"
 			else:lang="Phudeviet"
 			subs.append((href,lang,fn))
+	
 	notification=''
 	if len(subs) == 0:
 		url='http://subscene.com/subtitles/release?q=%s'%title.replace(' ','.')+'.'+year
@@ -168,8 +186,8 @@ def download(link,filename,img):
 		except:match=''
 		if match:downloadlink=subscene + match.group(1)
 	if not downloadlink:mess(u'Không tìm được maxspeed link sub');return
-	print downloadlink
-		
+	print 'downloadlink: %s'%downloadlink
+
 	typeid="srt"
 	if os.path.exists(tempath):
 		shutil.rmtree(tempath)
@@ -183,6 +201,7 @@ def download(link,filename,img):
 	tempfile = os.path.join(tempath, "subtitle.sub")
 	f = open(tempfile, "wb");f.write(body);f.close()
 	f = open(tempfile, "rb");f.seek(0);fread=f.read(1);f.close()
+
 	if fread == 'R':	typeid = "rar"
 	elif fread == 'P':typeid = "zip"
 	def rename(fs,fd):
@@ -195,21 +214,24 @@ def download(link,filename,img):
 
 	if typeid in "rar-zip":
 		xbmc.sleep(500)
-		xbmc.executebuiltin(('XBMC.Extract("%s","%s")' % (tempfile, tempath,)).encode('utf-8'), True)
-
-	exts = [".srt", ".sub", ".txt", ".smi", ".ssa", ".ass"]
+		try:xbmc.executebuiltin(('XBMC.Extract("%s","%s")' % (tempfile, tempath,)).encode('utf-8'), True)
+		except:pass
+	exts = [".srt", ".sub", ".txt", ".smi", ".ssa", ".ass"]; trans=True
+	
 	for root, dirs, files in os.walk(tempath):
 		for f in files:
 			f=re.sub(',','',f);file = os.path.join(root, f)
 			ext=os.path.splitext(f)[1];subfile=os.path.join(subsfolder, filename+ext)
 			if ext in exts:
-				if img=='en' and addon.getSetting('trans_sub')=='true':
+				if img=='en' and addon.getSetting('trans_sub')=='true' and trans:
 					mess(u'Google đang dịch sub từ tiếng Anh sang tiếng Việt', timeShown=2000)
-					if xshare_trans(file,subfile):mess(u'Đã dịch xong sub từ tiếng Anh sang tiếng Việt') 
+					if xshare_trans(file,subfile):mess(u'Đã dịch xong sub từ tiếng Anh sang tiếng Việt')
 					else:mess(u'Dịch sub thất bại do Google chặn dịch vụ !!!') 
+					trans=False
 				else:rename(file, subfile)
 				sub_list.append(subfile)
-	if len(sub_list) == 0:mess(u'Không tìm thấy sub')
+	
+	if not sub_list:mess(u'Không tìm thấy sub')
 	return sub_list
 	
 def xshare_trans(fs,fd):
@@ -235,7 +257,7 @@ def xshare_trans(fs,fd):
 			try:
 				l=eval(tran.body.replace(',,,',',').replace(',,"en"',''))
 				S=S+' '.join(i[0] for i in l[0])
-			except:xbmc.executebuiltin("Dialog.Close(all, true)");return False
+			except:pass
 			s=''
 	s=' '.join(trans(i) for i in S.split())
 	list_3=s.split('xshare');d=0;f=open(fd,'w')
@@ -307,7 +329,7 @@ if params['action'] == 'search' or params['action'] == 'manualsearch':
 	item['title'], item['year'] = xbmc.getCleanMovieTitle(filename)
 	if item['title'] == "":
 		item['title'] = no_accent(xbmc.getInfoLabel("VideoPlayer.Title"))
-	item['title'] = re.sub('\[.*\]','',item['title'])
+	item['title'] = re.sub('\[\w+?\]','',item['title'])
 	filename = re.sub('\[.*\]','',filename)
 	item['filename']=filename
 	try:
@@ -322,7 +344,7 @@ if params['action'] == 'search' or params['action'] == 'manualsearch':
 		item['mansearchstr'] = params['searchstring']
 	search_movie(item)
 elif params['action'] == 'download':
-	subs = download(params["link"],params["filename"],params["img"]);print subs,params
+	subs = download(params["link"],params["filename"],params["img"])
 	for sub in subs:
 		listitem = xbmcgui.ListItem(label=sub)
 		xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sub, listitem=listitem, isFolder=False)
