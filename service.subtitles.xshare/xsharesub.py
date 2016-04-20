@@ -118,7 +118,9 @@ def search_movie(item):
 		subs=re.findall(pattern,urlfetch.get(url=url,headers={'Cookie':'LanguageFilter=13,45'}).body)
 	
 	if re.search('[S|s]\d\d',item['filename']):
-		newtitle='%s %s Season'%(title,seasons[re.search('[S|s](\d\d)',item['filename']).group(1)])
+		newtitle=' '.join(s for s in title.split() if not re.search('[S|s]\d\d',s))
+		newtitle='%s %s Season'%(newtitle,seasons[re.search('[S|s](\d\d)',item['filename']).group(1)])
+		print 'newtitle0: %s'%newtitle
 		subspage_url=find_movie(newtitle, year)
 		if subspage_url:
 			url=subscene+subspage_url
@@ -127,6 +129,21 @@ def search_movie(item):
 	if mansearchstr:
 		url=subscene+'/subtitles/release?q='+urllib.quote_plus(title)+'&r=true'
 		subs+=re.findall(pattern,urlfetch.get(url=url,headers={'Cookie':'LanguageFilter=13,45'}).body)
+		
+	if not subs and '-' in title:
+		newtitle=' '.join(s for s in re.sub('\(.+?\)','',title.split('-')[1]).split())
+		print 'newtitle1: %s'%newtitle
+		subspage_url=find_movie(newtitle, year)
+		if subspage_url:
+			url=subscene+subspage_url
+			subs+=re.findall(pattern,urlfetch.get(url=url,headers={'Cookie':'LanguageFilter=13,45'}).body)
+		if not subs:
+			newtitle=' '.join(s for s in re.sub('\(.+?\)','',title.split('-')[0]).split())
+			print 'newtitle2: %s'%newtitle
+			subspage_url=find_movie(newtitle, year)
+			if subspage_url:
+				url=subscene+subspage_url
+				subs+=re.findall(pattern,urlfetch.get(url=url,headers={'Cookie':'LanguageFilter=13,45'}).body)
 	
 	phudeviet_url = find_phudeviet(title, year)
 	if not phudeviet_url:
@@ -139,14 +156,13 @@ def search_movie(item):
 			subs.append((href,lang,fn))
 	
 	notification=''
-	if len(subs) == 0:
+	if not subs:
 		url='http://subscene.com/subtitles/release?q=%s'%title.replace(' ','.')+'.'+year
 		pattern='<a href="(/subtitles/.+?)">\s+<span class=".+?">\s*(.+?)\s+</span>\s+<span>\s+(.+?)\s+</span>'
 		subs=re.findall(pattern,urlfetch.get(url=url,headers={'Cookie':'LanguageFilter=13,45'}).body)
 		if subs:notification=u'tìm gần đúng!'
 
-	if len(subs) == 0:
-		mess(u'Không tìm thấy phụ đề của Video: %s'%title)
+	if not subs:mess(u'Không tìm thấy phụ đề')
 	
 	fn = os.path.splitext(filename)[0].split('.x264')[0].replace(' ','.').replace('-','.').replace('*','.')
 	ratlist=fn.split('.')
@@ -324,21 +340,28 @@ def get_params():
 params = get_params()
 if params['action'] == 'search' or params['action'] == 'manualsearch':
 	item = {}
-	item['file_original_path'] = urllib.unquote(xbmc.Player().getPlayingFile().decode('utf-8'))
+	item['file_original_path'] = no_accent(urllib.unquote(xbmc.Player().getPlayingFile()))
+	try:item['file_original_path'] = no_accent(item['file_original_path'])
+	except:item['file_original_path'] = item['file_original_path'].decode('utf-8')
+	
 	filename = os.path.basename(re.split('/\w+.m3u8',item['file_original_path'])[0]).rpartition('.')[0]
-	item['title'], item['year'] = xbmc.getCleanMovieTitle(filename)
-	if item['title'] == "":
-		item['title'] = no_accent(xbmc.getInfoLabel("VideoPlayer.Title"))
-	item['title'] = re.sub('\[\w+?\]','',item['title'])
 	filename = re.sub('\[.*\]','',filename)
 	item['filename']=filename
+	
+	item['title'], item['year'] = xbmc.getCleanMovieTitle(filename)
+	if not item['title']:
+		item['title'] = xbmc.getInfoLabel("VideoPlayer.Title")
+	item['title'] = no_accent(re.sub('\[\w+?\]','',item['title']))
+	
 	try:
 		print 'xshare -------------------------------------------------------------------'
 		print 'xshare file_original_path : %s'%item['file_original_path']
 		print 'xshare filename : %s'%filename
 		print 'xshare title : %s'%item['title']
 		print 'xshare year : %s'%item['year']
+		print '--------------------------------------------------------------------------'
 	except:pass
+	
 	item['mansearchstr'] = ''
 	if 'searchstring' in params:
 		item['mansearchstr'] = params['searchstring']
