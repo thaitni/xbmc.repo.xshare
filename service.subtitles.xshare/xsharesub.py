@@ -353,14 +353,14 @@ if params['action'] == 'search' or params['action'] == 'manualsearch':
 		item['title'] = xbmc.getInfoLabel("VideoPlayer.Title")
 	item['title'] = no_accent(re.sub('\[\w+?\]','',item['title']))
 	
+	print 'xshare -------------------------------------------------------------------'
 	try:
-		print 'xshare -------------------------------------------------------------------'
 		print 'xshare file_original_path : %s'%item['file_original_path']
 		print 'xshare filename : %s'%filename
 		print 'xshare title : %s'%item['title']
 		print 'xshare year : %s'%item['year']
-		print '--------------------------------------------------------------------------'
 	except:pass
+	print '--------------------------------------------------------------------------'
 	
 	item['mansearchstr'] = ''
 	if 'searchstring' in params:
