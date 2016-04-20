@@ -360,7 +360,7 @@ if params['action'] == 'search' or params['action'] == 'manualsearch':
 		print 'xshare title : %s'%item['title']
 		print 'xshare year : %s'%item['year']
 	except:pass
-	print '--------------------------------------------------------------------------'
+	print 'xshare--------------------------------------------------------------------'
 	
 	item['mansearchstr'] = ''
 	if 'searchstring' in params:
