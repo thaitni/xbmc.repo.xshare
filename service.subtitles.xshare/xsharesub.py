@@ -170,7 +170,7 @@ def search_movie(item):
 	for link,lang,name in subs:
 		name=name.strip().replace(' ','.');rat=1;label='vie'
 		if 'Vietnam' in lang:img='vi';url=subscene+link
-		elif 'Phude' in lang:img='vi';url=link;name='[COLOR lime]phudeviet.org[/COLOR]: '+name
+		elif 'Phude' in lang:img='vi';url=link;name='phudeviet.org '+name
 		else:
 			img='en';url=subscene+link
 			if addon.getSetting('trans_sub')=='false':label='eng'
