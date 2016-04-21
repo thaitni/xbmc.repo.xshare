@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-import os,shutil,re,xbmc,xbmcaddon,xbmcgui,xbmcplugin,unicodedata,urllib,urllib2
+import os,re,xbmc,xbmcaddon,xbmcgui,xbmcplugin,unicodedata,urllib,urllib2
 from datetime import date
 
 addon = xbmcaddon.Addon()
@@ -157,6 +157,7 @@ def search_movie(item):
 	
 	notification=''
 	if not subs:
+		mess(u'Tìm gần đúng')
 		url='http://subscene.com/subtitles/release?q=%s'%title.replace(' ','.')+'.'+year
 		pattern='<a href="(/subtitles/.+?)">\s+<span class=".+?">\s*(.+?)\s+</span>\s+<span>\s+(.+?)\s+</span>'
 		subs=re.findall(pattern,urlfetch.get(url=url,headers={'Cookie':'LanguageFilter=13,45'}).body)
@@ -203,23 +204,28 @@ def download(link,filename,img):
 		if match:downloadlink=subscene + match.group(1)
 	if not downloadlink:mess(u'Không tìm được maxspeed link sub');return
 	print 'downloadlink: %s'%downloadlink
-
-	typeid="srt"
+	
 	if os.path.exists(tempath):
-		shutil.rmtree(tempath)
-	try:os.mkdir(tempath)
-	except:
-		xbmc.sleep(1000)
+		for root, dirs, files in os.walk(tempath, topdown=False):
+			for name in files:
+				try:os.remove(os.path.join(root, name))
+				except:pass
+			for name in dirs:
+				try:os.rmdir(os.path.join(root, name))
+				except:pass
+	else:
 		try:os.mkdir(tempath)
-		except:mess(u'Không tạo được thư mục sub');return []
+		except:mess(u'Không tạo được thư mục temp');return []
 
-	body=urlfetch.get(downloadlink).body
+	try:body=urlfetch.get(downloadlink).body
+	except:body=' '
 	tempfile = os.path.join(tempath, "subtitle.sub")
 	f = open(tempfile, "wb");f.write(body);f.close()
 	f = open(tempfile, "rb");f.seek(0);fread=f.read(1);f.close()
 
 	if fread == 'R':	typeid = "rar"
 	elif fread == 'P':typeid = "zip"
+	else:typeid="srt"
 	def rename(fs,fd):
 		try:
 			if os.path.isfile(fd):os.remove(fd)
@@ -236,7 +242,8 @@ def download(link,filename,img):
 	
 	for root, dirs, files in os.walk(tempath):
 		for f in files:
-			f=re.sub(',','',f);file = os.path.join(root, f)
+			#f=re.sub(',','',f);
+			file = os.path.join(root, f)
 			ext=os.path.splitext(f)[1];subfile=os.path.join(subsfolder, filename+ext)
 			if ext in exts:
 				if img=='en' and addon.getSetting('trans_sub')=='true' and trans:
@@ -256,16 +263,20 @@ def xshare_trans(fs,fd):
 		except:pass
 		return s
 
-	f=open(fs);b=f.read();f.close();s='';S=''
+	try:f=open(fs);b=f.read();f.close()
+	except:b=' '
+	s='';S=''
 	u='https://translate.googleapis.com/translate_a/single?ie=UTF-8&oe=UTF-8&client=gtx&sl=en&tl=vi&dt=t&q=%s'
 	list_1=b.splitlines();list_2=[];rows=len(list_1);row=0
 	hd={'Referer':'https://translate.google.com/','User-Agent':'Mozilla/5.0 (Windows NT 6.3) Chrome/49.0.2623.112 Safari/537.36','Cookie':''}
+	progress=xbmcgui.DialogProgress()
+	progress.create('Xshare Subtitles','Goolge translating ...')
 	for i in list_1:
 		row+=1
 		if re.search('[a-zA-Z]',i):s=s+' '+i+' xshare';list_2.append('xshare')
 		else:list_2.append(i.strip())
 		if len(s)>1000 or row==rows:
-			mess(u'Google đã dịch %d %%'%(row*100/rows), timeShown=1500)
+			progress.update(row*100/rows,'Goolde Translate đang dịch từ tiếng Anh sang tiếng Việt')
 			s=' '.join(i for i in s.split())
 			tran=urlfetch.get(u%urllib.quote(s),headers=hd)
 			if not hd['Cookie']:hd['Cookie']=tran.cookiestring
@@ -275,6 +286,8 @@ def xshare_trans(fs,fd):
 				S=S+' '.join(i[0] for i in l[0])
 			except:pass
 			s=''
+		if xbmc.abortRequested or progress.iscanceled():break
+	progress.close()
 	s=' '.join(trans(i) for i in S.split())
 	list_3=s.split('xshare');d=0;f=open(fd,'w')
 	f.write('0\n00:00:00,000 --> 00:02:00,000\nXshare dich tu ban tieng Anh bang Google translate\n\n')
@@ -353,14 +366,14 @@ if params['action'] == 'search' or params['action'] == 'manualsearch':
 		item['title'] = xbmc.getInfoLabel("VideoPlayer.Title")
 	item['title'] = no_accent(re.sub('\[\w+?\]','',item['title']))
 	
-	print 'xshare -------------------------------------------------------------------'
 	try:
+		print 'xshare -------------------------------------------------------------------'
 		print 'xshare file_original_path : %s'%item['file_original_path']
 		print 'xshare filename : %s'%filename
 		print 'xshare title : %s'%item['title']
 		print 'xshare year : %s'%item['year']
+		print '--------------------------------------------------------------------------'
 	except:pass
-	print 'xshare--------------------------------------------------------------------'
 	
 	item['mansearchstr'] = ''
 	if 'searchstring' in params:

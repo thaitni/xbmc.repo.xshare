@@ -1,4 +1,7 @@
-﻿[B]Version 1.2.2[/B] <20/04/2016>
+﻿[B]Version 1.2.3[/B] <21/04/2016>
+- Fix module download
+
+[B]Version 1.2.2[/B] <20/04/2016>
 - Fix module search_movie by vietnamese film title
 
 [B]Version 1.2.1[/B] <19/04/2016>
