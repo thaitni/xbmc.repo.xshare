@@ -11,7 +11,7 @@ def fill_array(a,p):#a:array, p:position
 	if (len(a)-1) < p:
 		for i in range(len(a)-1,p):a.append(0)
 	return a
-print
+
 def decode(_0x55bax2):
 	_0x55bax1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 	_0x55bax2 = _0x55bax2.replace('\n', '')
@@ -142,7 +142,7 @@ def _0x55bax4(_0x55bax1):return _0x55bax1
 def _0x55bax5(_0x55bax1):
 	try:
 		print 'return: %s'%_0x55bax1
-	except:print _0xdd5c[2]
+	except:print 'bilu.py',_0xdd5c[2]
 
 def _0x55bax7a(_0x55bax1, _0x55bax2):
 	_0x55bax5 = ''
@@ -405,3 +405,30 @@ def main(_0x55bax1, _0x55bax2, _0x55bax3=False):
 	_0x55bax4 = _0x55bax4[16 : len(_0x55bax4)]
 	_0x55bax1 = _0x55baxf(_0x55bax4, _0x55bax7, _0x55bax8, _0x55bax3)
 	return _0x55bax1
+
+def getcode(s):
+	w, i, s, e=s
+	lIll=0;ll1I=0;Il1l=0;ll1l=[];l1lI=[]
+	while True:
+		if lIll < 5:l1lI.append(w[lIll])
+		elif lIll < len(w):ll1l.append(w[lIll])
+		lIll+=1
+		
+		if  ll1I < 5 :l1lI.append(i[ll1I])
+		elif  ll1I < len(i):ll1l.append(i[ll1I])
+		ll1I+=1
+		
+		if  Il1l < 5:l1lI.append(s[Il1l])
+		elif  Il1l < len(s):ll1l.append(s[Il1l])
+		Il1l+=1
+		
+		if len(w) + len(i) + len(s) + len(e) == len(ll1l) + len(l1lI) + len(e):break
+
+	lI1l=''.join(s for s in ll1l);I1lI=''.join(s for s in l1lI);ll1I=0;l1ll=[]
+	for lIll in range(0,len(ll1l),2):
+		ll11 = -1
+		if ord(I1lI[ll1I]) % 2:ll11 = 1
+		l1ll.append(chr(int(lI1l[lIll:lIll+2], 36) - ll11))
+		ll1I+=1
+		if ll1I >= len(l1lI):ll1I = 0
+	return ''.join(s for s in l1ll)

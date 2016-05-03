@@ -1,3 +1,10 @@
+[B]Version 3.3.9[/B] <03/05/2016>:
+add:
+- search on taifile.net
+- phim.media
+
+fix :  Hdonline.vn, Phim 47.com
+
 [B]Version 3.3.8[/B] <19/04/2016>:
 fix : bilutv
 

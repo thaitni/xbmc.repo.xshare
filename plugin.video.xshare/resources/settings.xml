@@ -48,6 +48,7 @@
 		<setting id="xshare_favourite" type="text" label="My Favourite folder" visible="false" default=""/>
 	</category>
 	<category label="Các tùy chọn riêng">
+		<setting id="resolut" type="labelenum" label="[COLOR gold]Chọn độ phân giải cho các server free (max/min)[/COLOR]" values="Max|Min" default="Max"/>
 		<setting id="auto_update" type="bool" label="[COLOR gold]Auto update xshare database[/COLOR] (y/n)" default="true"/>
 		<setting id="copyxml" type="bool" label="[COLOR green]Tự động Copy list phim xml vào [COLOR gold]MyFolder[/COLOR][/COLOR] (y/n)" default="false"/>
 		<setting id="checkdatabase" type="bool" label="[COLOR green]Mở chế độ kiểm tra database cho xshare[/COLOR] (y/n)" default="false"/>

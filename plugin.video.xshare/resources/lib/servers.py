@@ -42,6 +42,9 @@ class fshare:
 		elif response.status==200:
 			if re.search('<title>.*Lỗi 404.*</title>|"index-404"',response.body):
 				utils.mess(u'Tập tin quý khách yêu cầu không tồn tại!','Fshare.vn');result='fail'
+			elif 'sử dụng nhiều địa chỉ IP' in response.body:
+				utils.mess(u'Quý khách đang sử dụng nhiều địa chỉ IP để tải xuống!','Fshare.vn',10000)
+				result='fail'
 			elif re.search('<i class="fa fa-star">',response.body):utils.mess('Your Fshare acc is FREE','Fshare.vn')
 			
 			if re.search('class="fa fa-lock"',response.body):

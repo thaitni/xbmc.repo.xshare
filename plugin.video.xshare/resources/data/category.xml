@@ -13,11 +13,13 @@
 <a server="MMN" category="MyFshare" mode="15" color="gold" icon="Myfshare.png">Thư mục chia sẻ của tôi trên Fshare (MyFshare)</a>
 <a server="GGS" category="xshare.vn" mode="13" color="lime" icon="isearch.png">Search trên dữ liệu đã cập nhật về máy</a>
 <a server="GGS" category="fshare.vn" mode="02" color="lime" icon="gsearch.png">Google Search [COLOR gold]Fshare.vn[/COLOR]</a>
+<a server="GGS" category="fshare.vn" mode="02" color="lime" icon="gsearch.png">Google Search [COLOR gold]Fshare.vn[/COLOR]</a>
 <a server="GGS" category="vaphim.com" mode="02" color="lime" icon="gsearch.png">Google Search [COLOR gold]Vaphim.com[/COLOR]</a>
 <a server="GGS" category="4share.vn" mode="02" color="lime" icon="gsearch.png">Google Search [COLOR blue]4share.vn...[/COLOR]</a>
 <a server="GGS" category="ifile.tv" mode="02" color="lime" icon="gsearch.png">Google Search [COLOR blue]Ifile.tv[/COLOR]</a>
 <a server="GGS" category="tenlua.vn" mode="02" color="lime" icon="gsearch.png">Google Search [COLOR fuchsia]TenLua.vn...[/COLOR]</a>
 <a server="GGS" category="hdvietnam.com" mode="02" color="lime" icon="gsearch.png">Google Search [COLOR crimson]hdvietnam.com[/COLOR]</a>
+<a server="GGS" category="taifile.net" mode="13" color="lime" icon="vaphim.png">Search[/COLOR] Trực tiếp trên [COLOR gold]Taifile.Net...</a>
 <a server="GGS" category="vaphim.com" mode="13" color="lime" icon="vaphim.png">Search[/COLOR] Trực tiếp trên [COLOR gold]Vaphim.com...</a>
 <a server="GGS" category="ifile.tv" mode="13" color="lime" icon="ifiletv.png">Search[/COLOR] Trực tiếp trên [COLOR blue]Ifile.tv...</a>
 <a server="GGS" category="4share.vn" mode="13" color="lime" icon="4share.png">Search[/COLOR] Trực tiếp trên [COLOR blue]4share.vn...</a>
@@ -87,6 +89,7 @@
 <a server="FRE" category="kphim.tv" mode="33" color="lightgreen" icon="kphim.png">Kho phim trên kphim.tv</a>
 <a server="FRE" category="phimnhanh.com" mode="35" color="chartreuse" icon="phimnhanh.png">Kho phim trên phimnhanh.com</a>
 <a server="FRE" category="dangcaphd.com" mode="18" color="yellow" icon="dangcaphd.png">Kho phim trên dangcaphd.com</a>
+<a server="FRE" category="phim.media" mode="40" color="orange" icon="phim.png">Kho phim trên phim.media</a>
 <a server="FRE" category="vuahd.tv" mode="21" color="deeppink" icon="vuahd.png">Kho phim trên vuahd.tv</a>
 <a server="FRE" category="pubvn.tv" mode="19" color="limegreen" icon="pubvn.png">Kho phim trên pubvn.net</a>
 <a server="HDV" category="xshare.vn" mode="13" color="lime" icon="isearch.png">Search trên dữ liệu đã cập nhật về máy</a>
