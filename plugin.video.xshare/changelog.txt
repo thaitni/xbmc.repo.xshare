@@ -1,3 +1,7 @@
+[B]Version 3.4.0[/B] <08/05/2016>:
+add: TVhay.org, phimbathu.com
+fix: Hdonline.vn, Fshare list folder
+
 [B]Version 3.3.9[/B] <03/05/2016>:
 add:
 - search on taifile.net
