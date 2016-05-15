@@ -1,3 +1,6 @@
+[B]Version 3.4.1[/B] <15/05/2016>:
+fix một số lỗi nhỏ và mục hdvietnam
+
 [B]Version 3.4.0[/B] <08/05/2016>:
 add: TVhay.org, phimbathu.com
 fix: Hdonline.vn, Fshare list folder
