@@ -1,3 +1,10 @@
+[B]Version 3.4.2[/B] </05/2016>:
+Sắp xếp lại list mục lục của xshare
+recode hdvietnam, fix search hdviet, fix phim47, recode hayhaytv
+Thêm mục My Favourites V2
+Thêm mục Thông tin từ taiphimhd.com
+Thêm chức năng sắp xếp mục "Kho phim trên các server khác"
+
 [B]Version 3.4.1[/B] <15/05/2016>:
 fix một số lỗi nhỏ và mục hdvietnam
 

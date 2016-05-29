@@ -1,19 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8">
 <a server="MMN" category="FVR" mode="98" color="gold" icon="favorite.png">My Favourites</a>
+<a server="MMN" category="xshare" mode="100" color="blue" icon="favorite.png">My Favourites V2</a>
 <a server="MMN" category="Home" mode="89" color="orange" icon="xshare.png">Xem Truyền Hình</a>
-<a server="MMN" category="Home" mode="51" color="gold" icon="favorite.png">chiasenhac.com / [COLOR fuchsia]nhacdj.vn[/COLOR]</a>
+<a server="MMN" category="Home" mode="51" color="gold" icon="favorite.png">[COLOR green]nhaccuatui.com[/COLOR] / chiasenhac.com / [COLOR fuchsia]nhacdj.vn[/COLOR]</a>
 <a server="MMN" category="GGS" mode="10" color="lime" icon="gsearch.png">Google Search - Site search - Database search...</a>
-<a server="MMN" category="vaphim.com" mode="01" color="yellow" icon="vaphim.png">Kho phim trên vaphim.com</a>
-<a server="MMN" category="VPH" mode="10" color="gold" icon="vaphim.png">Kho Vaphim trên Dữ liệu nội bộ</a>
-<a server="MMN" category="IFI" mode="10" color="blue" icon="ifiletv.png">Kho phim trên ifile.tv</a>
-<a server="MMN" category="FRE" mode="10" color="orange" icon="serverphimkhac.png">Kho phim trên các server khác</a>
-<a server="MMN" category="HDV" mode="10" color="crimson" icon="hdvietnam.png">Thông tin từ HDVietnam.com</a>
+<a server="MMN" category="VIP" mode="10" color="yellow" icon="vaphim.png">Kho phim trên Fshare[/COLOR] / [COLOR blue]4share[/COLOR] / [COLOR fuchsia]tenlua</a>
+<a server="VIP" category="vaphim.com" mode="01" color="yellow" icon="vaphim.png">Kho phim trên vaphim.com</a>
+<a server="VIP" category="VPH" mode="10" color="gold" icon="vaphim.png">Kho Vaphim trên Dữ liệu nội bộ</a>
+<a server="VIP" category="IFI" mode="10" color="blue" icon="ifiletv.png">Kho phim trên ifile.tv</a>
+<a server="MMN" category="FRE" mode="88" color="orange" icon="serverphimkhac.png">Kho phim trên các server khác</a>
+<a server="MMN" category="CDE" mode="10" color="crimson" icon="hdvietnam.png">Thông tin từ các trang chuyên đề điện ảnh</a>
+<a server="CDE" category="HDV" mode="10" color="crimson" icon="hdvietnam.png">Thông tin từ HDVietnam.com</a>
+<a server="CDE" category="taiphimhd.com" mode="53" color="blue" icon="taiphimhd.png">Thông tin từ taiphimhd.com</a>
 <a server="MMN" category="Maxlink" mode="16" color="gold" icon="maxspeed.png">Play direct link (khi đã get được link)</a>
-<a server="MMN" category="IDF" mode="15" color="" icon="id.png">Get link [COLOR gold]Fshare-Fsend[/COLOR] [COLOR blue]4share[/COLOR] [COLOR fuchsia]tenlua[/COLOR] (theo ID) [COLOR green] subscene[/COLOR] (link)</a>
+<a server="MMN" category="IDF" mode="15" color="" icon="id.png">Get link [COLOR gold]Fshare-Fsend[/COLOR] / [COLOR blue]4share[/COLOR] / [COLOR fuchsia]tenlua[/COLOR] (theo ID) /[COLOR green] subscene[/COLOR] (link)</a>
 <a server="MMN" category="thumuccucbo" mode="96" color="orange" icon="Myfolder.png">Thư mục cục bộ (MyFolder)</a>
 <a server="MMN" category="MyFshare" mode="15" color="gold" icon="Myfshare.png">Thư mục chia sẻ của tôi trên Fshare (MyFshare)</a>
 <a server="GGS" category="xshare.vn" mode="13" color="lime" icon="isearch.png">Search trên dữ liệu đã cập nhật về máy</a>
-<a server="GGS" category="fshare.vn" mode="02" color="lime" icon="gsearch.png">Google Search [COLOR gold]Fshare.vn[/COLOR]</a>
 <a server="GGS" category="fshare.vn" mode="02" color="lime" icon="gsearch.png">Google Search [COLOR gold]Fshare.vn[/COLOR]</a>
 <a server="GGS" category="vaphim.com" mode="02" color="lime" icon="gsearch.png">Google Search [COLOR gold]Vaphim.com[/COLOR]</a>
 <a server="GGS" category="4share.vn" mode="02" color="lime" icon="gsearch.png">Google Search [COLOR blue]4share.vn...[/COLOR]</a>
@@ -73,41 +76,19 @@
 <a server="IFI" category="viet-nam" mode="91" color="blue" icon="ifiletv.png">Việt Nam</a>
 <a server="IFI" category="vo-thuat" mode="91" color="blue" icon="ifiletv.png">Võ Thuật</a>
 
-<a server="FRE" category="anime47.com" mode="37" color="deepskyblue" icon="anime47.png">Kho phim trên anime47.com</a>
-<a server="FRE" category="hdviet.com" mode="22" color="darkorange" icon="hdviet.png">Kho phim trên hdviet.com</a>
-<a server="FRE" category="fptplay.net" mode="07" color="orange" icon="fptplay.png">Kho phim trên fptplay.net</a>
-<a server="FRE" category="hayhaytv.vn" mode="23" color="tomato" icon="hayhaytv.png">Kho phim trên hayhaytv.vn</a>
-<a server="FRE" category="bilutv.com" mode="36" color="hotpink" icon="bilutv.png">Kho phim trên bilutv.com</a>
-<a server="FRE" category="phimmoi.net" mode="24" color="ghostwhite" icon="phimmoi.png">Kho phim trên phimmoi.net</a>
-<a server="FRE" category="hdonline.vn" mode="30" color="turquoise" icon="hdonline.png">Kho phim trên hdonline.vn</a>
-<a server="FRE" category="megabox.vn" mode="17" color="orangered" icon="megabox.png">Kho phim trên megabox.vn</a>
-<a server="FRE" category="phim3s.net" mode="32" color="lightgray" icon="phim3s.png">Kho phim trên phim3s.net</a>
-<a server="FRE" category="phim14.net" mode="39" color="chartreuse" icon="phim14.png">Kho phim trên phim14.net</a>
-<a server="FRE" category="kenh88.com" mode="26" color="cyan" icon="kenh88.png">Kho phim trên kenh88.com</a>
-<a server="FRE" category="tvhay.org" mode="41" color="gold" icon="tvhay.png">Kho phim trên tvhay.org</a>
-<a server="FRE" category="phimdata.com" mode="27" color="magenta" icon="phimdata.png">Kho phim trên phimdata.com</a>
-<a server="FRE" category="phimsot.com" mode="29" color="orangered" icon="phimsot.png">Kho phim trên phimsốt.com</a>
-<a server="FRE" category="phim47.com" mode="28" color="springgreen" icon="phim47.png">Kho phim trên phim47.com</a>
-<a server="FRE" category="phimbathu.com" mode="43" color="lightgray" icon="phimbathu.png">Kho phim trên phimbathu.com</a>
-<a server="FRE" category="kphim.tv" mode="33" color="lightgreen" icon="kphim.png">Kho phim trên kphim.tv</a>
-<a server="FRE" category="phimnhanh.com" mode="35" color="chartreuse" icon="phimnhanh.png">Kho phim trên phimnhanh.com</a>
-<a server="FRE" category="dangcaphd.com" mode="18" color="yellow" icon="dangcaphd.png">Kho phim trên dangcaphd.com</a>
-<a server="FRE" category="phim.media" mode="40" color="orange" icon="phim.png">Kho phim trên phim.media</a>
-<a server="FRE" category="vuahd.tv" mode="21" color="deeppink" icon="vuahd.png">Kho phim trên vuahd.tv</a>
-<a server="FRE" category="pubvn.tv" mode="19" color="limegreen" icon="pubvn.png">Kho phim trên pubvn.net</a>
 <a server="HDV" category="xshare.vn" mode="13" color="lime" icon="isearch.png">Search trên dữ liệu đã cập nhật về máy</a>
+<a server="HDV" category="get_room_id" mode="08" color="lime" icon="hdvietnam.png">Get room HDVietnam theo ID (vd:997745)</a>
 <a server="HDV" category="muctheodoi" mode="08" color="crimson" icon="hdvietnam.png">[COLOR blue]Room Theo dõi của tôi[/COLOR] trên hdvietnam.com</a>
-<a server="HDV" category="get_room_id" mode="08" color="lime" icon="hdvietnam.png">Get room HDVietnam theo ID</a>
-<a server="HDV" category="UPD" mode="08" color="crimson" icon="hdvietnam.png">[COLOR lime]Cập nhật data[/COLOR] từ tất cả [COLOR blue]RSS hôm nay[COLOR crimson]của hdvietnam.com</a>
 <a server="HDV" category="MCS" mode="08" color="crimson" icon="hdvietnam.png">[COLOR blue]Mục CHIA SẺ PHIM[/COLOR] của hdvietnam.com</a>
 <a server="HDV" category="CSN" mode="08" color="crimson" icon="hdvietnam.png">[COLOR green]Mục CHIA SẺ NHẠC[/COLOR] của hdvietnam.com</a>
+<a server="HDV" category="UPD" mode="08" color="crimson" icon="hdvietnam.png">[COLOR lime]Cập nhật data[/COLOR] từ tất cả [COLOR blue]RSS hôm nay[COLOR crimson]của hdvietnam.com</a>
 <a server="HDV" category="000" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay của hdvietnam.com</a>
-<a server="HDV" category="33" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [COLOR gold]Fshare.vn[/COLOR]</a>
-<a server="HDV" category="146" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [COLOR blue]4share.vn[/COLOR]</a>
-<a server="HDV" category="311" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [COLOR fuchsia]tenlua.vn[/COLOR]</a>
-<a server="HDV" category="265" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Thuyết minh hoặc lồng tiếng</a>
-<a server="HDV" category="110" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]3D</a>
-<a server="HDV" category="116" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Phim tài liệu - Documentaries</a>
-<a server="HDV" category="123" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Phim hoạt hình</a>
-<a server="HDV" category="57" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Phim bộ - Series</a>
-<a server="HDV" category="157" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Phim cho iOS/Android</a>
+<a server="HDV" category="33" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay Mục CHIA SẺ PHIM: [COLOR gold]Fshare.vn[/COLOR]</a>
+<a server="HDV" category="146" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay Mục CHIA SẺ PHIM: [COLOR blue]4share.vn[/COLOR]</a>
+<a server="HDV" category="311" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay Mục CHIA SẺ PHIM: [COLOR fuchsia]tenlua.vn[/COLOR]</a>
+<a server="HDV" category="265" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Thuyết minh hoặc lồng tiếng</a>
+<a server="HDV" category="110" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]3D</a>
+<a server="HDV" category="116" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Phim tài liệu - Documentaries</a>
+<a server="HDV" category="123" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Phim hoạt hình</a>
+<a server="HDV" category="57" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Phim bộ - Series</a>
+<a server="HDV" category="157" mode="08" color="blue" icon="hdvietnam.png">RSS [COLOR crimson]hôm nay Mục CHIA SẺ PHIM: [/COLOR][COLOR whitesmoke]Phim cho iOS/Android</a>
