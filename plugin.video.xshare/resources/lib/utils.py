@@ -39,9 +39,14 @@ def mess(message='',title='',timeShown=5000):
 		xbmc.executebuiltin((u'XBMC.Notification(%s,%s,%s,%s)'%(s0,s1,timeShown,icon)).encode("utf-8"))
 
 def rsl(s):
-	s=s.replace('HD','1080').replace('SD','640').replace('large','640').replace('medium','480')
+	s=s.replace('HDG','').replace('HD','1080').replace('SD','640').replace('large','640').replace('medium','480')
 	result=xsearch('(\d+)',s)
 	return result if result else '240'
+
+def ls(l):
+	r=True if get_setting('resolut')=='Max' else False
+	l=sorted(l, key=lambda k: int(k[1]),reverse=r)
+	return l
 
 def namecolor(name,c=''):return '[COLOR %s]%s[/COLOR]'%(c,name) if c else re.sub('\[[^\[]+?\]','',name)
 def xrw(fn,s=''):
@@ -75,4 +80,9 @@ def xsearch(pattern,string,group=1,flags=0,result=''):
 def s2u(s):return s.decode('utf-8') if isinstance(s,str) else s
 def u2s(s):return s.encode('utf-8') if isinstance(s,unicode) else s
 def unescape(string):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',s,1),s) for s in string.split())
-
+def s2c(s):
+	def sc(s):i=xsearch('&#(\d+);',s);return re.sub('&#\d+;',d.get(i,''),s) if i else s
+	d={'192':'À','193':'Á','194':'Â','195':'Ă','202':'Ê','204':'Ì','205':'Í','211':'Ó','212':'Ô','217':'Ù','218':'Ú','224':'à','225':'á','226':'â','227':'ă','232':'è','233':'é','234':'ê','235':'ẽ','236':'ì','237':'í','242':'ò','243':'ó','244':'ô','245':'ỏ','249':'ù','250':'ú','253':'ý'}
+	return ' '.join(sc(i) for i in s.split())
+def s2c1(s):
+	return ' '.join(re.sub('&#\d+;',unichr(int(xsearch('&#(\d+);',i))),i) if xsearch('&#(\d+);',i) else i for i in s.split())

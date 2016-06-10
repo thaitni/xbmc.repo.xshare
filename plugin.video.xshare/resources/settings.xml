@@ -24,6 +24,8 @@
 		<setting id="passhdviet" type="text" option="hidden" label="Password [COLOR darkorange]hdviet.com[/COLOR]"/>
 		<setting id="hdvietresolution" type="labelenum" label="[COLOR darkorange]Chọn độ phân giải tối đa trên hdviet.com[/COLOR]" values="720|1080" default="720"/>
 		<setting id="hdvietaudio" type="labelenum" label="[COLOR darkorange]Chọn Audio trên hdviet.com[/COLOR]" values="Thuyết Minh (nếu có)|Tiếng Gốc|Hỏi khi xem" default="Thuyết Minh (nếu có)"/>
+		<setting id="nct_u" type="text" label="User name [COLOR turquoise]nhaccuatui.com[/COLOR]"/>
+		<setting id="nct_p" type="text" option="hidden" label="Password [COLOR turquoise]nhaccuatui.com[/COLOR]"/>
 		<setting id="csn_u" type="text" label="User name [COLOR green]chiasenhac.com[/COLOR]"/>
 		<setting id="csn_p" type="text" option="hidden" label="Password [COLOR green]chiasenhac.com[/COLOR]"/>
 		<setting id="csn_s" type="labelenum" label="[COLOR green]Tìm kiếm theo[/COLOR]" values="Tên bài hát/Ca sĩ|Ca sĩ|Sáng tác|Tên Album|Lời bài hát" default="Tên bài hát/Ca sĩ"/>

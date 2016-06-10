@@ -1,4 +1,8 @@
-[B]Version 3.4.2[/B] </05/2016>:
+[B]Version 3.4.3[/B] <10/06/2016>:
+fix fptplay, hdonline va cac loi khac
+them NCT, imovies, vietsubhd, mphim
+
+[B]Version 3.4.2[/B] <30/05/2016>:
 Sắp xếp lại list mục lục của xshare
 recode hdvietnam, fix search hdviet, fix phim47, recode hayhaytv
 Thêm mục My Favourites V2
