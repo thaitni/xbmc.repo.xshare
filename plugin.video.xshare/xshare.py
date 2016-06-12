@@ -4626,7 +4626,7 @@ def phimsot(name,url,img,mode,page,query):
 			else:mess('File invalid or deleted!','phimsot.com') 
 
 def phim47(name,url,img,mode,page,query):
-	ico=os.path.join(iconpath,'phim47.png');urlhome='http://phim47.com/'
+	ico=os.path.join(iconpath,'phim47.png');urlhome='http://phim47.com/';c='springgreen'
 	if not os.path.isfile(ico):
 		try:urllib.urlretrieve('http://tailieuhot.vn/images/danh-ba-web/phim-47.jpg',ico)
 		except:pass
@@ -4709,28 +4709,26 @@ def phim47(name,url,img,mode,page,query):
 				addir_info(title+' '+name,href,img,fanart,mode,1,'p47_play')
 	
 	elif query=='p47_play':
-		l=[];all=[];link=''
-		for link in re.findall("playlist':.?'(.+?)'",make_request(url)):
-			j=re.findall('<jwplayer:source (.+?)/>',make_request(link))
-			l=[(xsearch('file="(.+?)"',i),xsearch('label="(.+?)"',i)) for i in j]
-			all+=[(xsearch('file="(.+?)"',i),xsearch('label="(.+?)"',i)) for i in j]
-			if myaddon.getSetting('resolut')=='Max':
-				items=sorted(list(set([(i[0],resolu(i[1])) for i in l])), key=lambda k: int(k[1]),reverse=True)
-			else:items=sorted(list(set([(i[0],resolu(i[1])) for i in l])), key=lambda k: int(k[1]))
-			link=dl(items[0][0])
+		items=[];link=sub='';items=[]
+		from resources.lib.servers import phim47;p47=phim47(c)
+		for link in re.findall("playlist':.?'(.+?)'",xread(url)):
+			l,sub=p47.maxLink(link)
+			link=dl(l[0][0])
 			if link:break
-			else:mess('Checking next link ...','phim47.com')
-
+			else:items+=[i for i in l if link not in i]
+		
 		if not link:#test all
 			mess('Checking all ...','phim47.com')
 			if myaddon.getSetting('resolut')=='Max':
-				items=sorted(list(set([(i[0],resolu(i[1])) for i in all])), key=lambda k: int(k[1]),reverse=True)
-			else:items=sorted(list(set([(i[0],resolu(i[1])) for i in all])), key=lambda k: int(k[1]))
+				items=sorted(list(set([(i[0],resolu(i[1])) for i in items])), key=lambda k: int(k[1]),reverse=True)
+			else:items=sorted(list(set([(i[0],resolu(i[1])) for i in items])), key=lambda k: int(k[1]))
 			for href,label in items:
 				link=dl(href)
 				if link:break
 		
-		if link:xbmcsetResolvedUrl(link)
+		if link:
+			xbmcsetResolvedUrl(link)
+			if sub:xbmc.sleep(2000);xbmc.Player().setSubtitles(sub);mess(u'Sub của phim47.com')
 		else:mess('File invalid or deleted!','phim47.com') 
 
 def hdonline(name,url,img,fanart,mode,page,query,bakName,bakData):
@@ -7120,7 +7118,7 @@ def addir_info(name,url,img,fanart='',mode=0,page=1,query='',isFolder=False,text
 			if 'Add' in inf['action']:
 				lists.append(('Add to My Favourites V2',{'query':inf['action'],'mode':100+mode}))
 			elif 'Remove' in inf['action']:
-				lists.append(('Remove from My Favourites V2',{'query':inf['action'],'mode':100}))
+				lists.append(('Remove from My Favourites V2',{'query':inf['action'],'mode':101}))
 		
 		if menu.has_key('servers_list'):
 			inf=menu.get('servers_list')

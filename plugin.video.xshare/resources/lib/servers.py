@@ -716,7 +716,7 @@ class fptPlay:
 			href=xsearch('(\w{20,30})',xsearch('href="(.+?)"',s))+'?'+xsearch('id="episode_(\d{1,4})"',s)
 			items.append((self.fpt2s(title),href))
 
-		if '&rsaquo;&rsaquo;' in b:items.append(('[COLOR lime]%s[/COLOR]'%title,''))
+		if '&rsaquo;&rsaquo;' in b:items.append(('[COLOR lime]Các tập tiếp theo ...[/COLOR]',''))
 		return items
 
 class phim3s_net:
@@ -2074,6 +2074,28 @@ class mphim:
 		except:mess('Get maxLink error !')
 		return items
 		
+class phim47:
+	def __init__(self,c):
+		self.hd={'User-Agent':'Mozilla/5.0'}
+		self.urlhome='http://phim47.com/'
+
+	def maxLink(self,url):
+		b=xread(url);j=re.findall('<jwplayer:source (.+?)/>',b)
+		l=ls([(xsearch('file="(.+?)"',i),rsl(xsearch('label="(.+?)"',i))) for i in j])
+		sub=xsearch('file="([^"]+?)" label="Tiếng Việt"',b)
+		return l,sub
+	
+	def maxLink1(self,url):
+		l=[];all=[];link=''
+		for link in re.findall("playlist':.?'(.+?)'",xread(url)):
+			j=re.findall('<jwplayer:source (.+?)/>',xread(link))
+			l=ls([(xsearch('file="(.+?)"',i),xsearch('label="(.+?)"',i)) for i in j])
+			all+=[(xsearch('file="(.+?)"',i),xsearch('label="(.+?)"',i)) for i in j]
+			link=dl(l[0][0])
+			if link:break
+			else:mess('Checking next link ...','phim47.com')
+
+
 
 
 			
