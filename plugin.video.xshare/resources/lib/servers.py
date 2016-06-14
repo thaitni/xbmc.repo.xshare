@@ -1662,7 +1662,7 @@ class nhaccuatui:
 		cs=', '.join(re.findall('target="_blank">([^<]+?)</a>',s))
 		title=title+' - '+'[COLOR green]%s[/COLOR]'%cs
 		count=counter.get(xsearch('id="NCTCounter_sg_(\d+)"',s))
-		if count:title+=' [COLOR gold](%s)[/COLOR]'%'{0:,}'.format(int(count)).replace(',','.')
+		if count:title+=' [COLOR gold](%s)[/COLOR]'%fmn(count)
 		href=xsearch('href="(.+?)"',s)
 		img=xsearch('src="(.+?)"',s) if not sg else xsearch('data-src="(.+?)"',s)
 		return title,href,img
@@ -1696,7 +1696,7 @@ class nhaccuatui:
 		cs=xsearch('target="_blank">(.+?)</a>',s)
 		if cs:title=title+' - '+'[COLOR green]%s[/COLOR]'%cs
 		count=counter.get(xsearch('id="NCTCounter_pl_(\d+)"',s))
-		if count:title+=' [COLOR gold](%s)[/COLOR]'%'{0:,}'.format(int(count)).replace(',','.')
+		if count:title+=' [COLOR gold](%s)[/COLOR]'%fmn(count)
 		href=xsearch('href="(.+?)"',s)
 		img=xsearch('data-src="(.+?)"',s)
 		if not img:img=xsearch('src="(.+?)"',s)
@@ -1736,7 +1736,7 @@ class nhaccuatui:
 			if creator:title=title+' - '+'[COLOR green]%s[/COLOR]'%creator
 			href=self.getData(i,'locationHQ')
 			count=counter.get(xsearch('-(\d+)\.',href))
-			if count:title+=' [COLOR gold](%s)[/COLOR]'%'{0:,}'.format(int(count)).replace(',','.')
+			if count:title+=' [COLOR gold](%s)[/COLOR]'%fmn(count)
 			img=self.getData(i,'avatar')
 			items.append((title,href,img))
 		
@@ -2074,7 +2074,7 @@ class mphim:
 		except:mess('Get maxLink error !')
 		return items
 		
-class phim47:
+class phim47com:
 	def __init__(self,c):
 		self.hd={'User-Agent':'Mozilla/5.0'}
 		self.urlhome='http://phim47.com/'
@@ -2095,7 +2095,59 @@ class phim47:
 			if link:break
 			else:mess('Checking next link ...','phim47.com')
 
+class vtvgo:
+	def __init__(self,c):
+		self.hd={'User-Agent':'Mozilla/5.0','Cookie':xrw('vtvgo.cookie')}
+		self.urlhome='http://vtvgo.vn/'
 
+	def vodList(self,url):
+		def e(i):return i.get('name').encode('utf-8'),i.get('downloadUrl').encode('utf-8'),i.get('thumbnailUrl').encode('utf-8')
+		b=xread(url,self.hd)
+		try:j=json.loads(b)
+		except:j=[{},[]]
+		return [e(i) for i in j[1]]
+	
+	def liveList(self):
+		def detail(s):return xsearch('title="(.+?)"',s),xsearch('href="(.+?)"',s),xsearch('src="(.+?)"',s)
+		#try:
+		#	b=urlfetch.get(self.urlhome,headers=self.hd)
+		#	if b.status==200:xrw('vtvgo.cookie',b.cookiestring)
+		#	b=b.body
+		#except:b=''
+		b=xread(self.urlhome)
+		return [detail(i) for i in b.split('class="item"') if 'class="play-icon"' in i] 
+	
+	def live(self,url):
+		return xsearch("file\": '(.+?)'",xread(url,self.hd))
 
+	def detail(self,s):
+		title=xsearch('title="(.+?)"',s)
+		if not title:title=xsearch('alt="(.+?)"',s)
+		href=xsearch('href="(.+?)"',s)
+		img=xsearch("data-bg='(.+?)'",s)
+		if not img:img=xsearch('src="(.+?)"',s)
+		return title,href,img
+	
+	def news(self,url,page):
+		items=[]
+		b='\n'.join([xread(url%i,self.hd) for i in range(page,page+5)])
+		for s in [i for i in b.split('<div class="box-img') if '"icon-play"' in i]:
+			items.append(self.detail(s))
+		return items
 
-			
+	def gameshows(self,url):
+		b=xread(url,self.hd)
+		
+		
+	def category(self,url):
+		def detail(s):return xsearch('"title">(.+?)<',s),xsearch('href="(.+?)"',s),xsearch('src="(.+?)"',s)
+		def filter(s):return '"slider_shadow"' in s or 'class="icon-play"' in s
+		b=xread(url,self.hd);items=[]
+		for s in [i for i in b.split('row fix-row label-news-page') if '<h2>' in i]:
+			items.append((xsearch('<h2>(.+?)</h2>',s),'sep',''))
+			items+=[detail(i) for i in s.split('<div class="item ') if filter(i)]
+		return items
+	
+	def vodLink(self,url):
+		return xsearch("file\": '(.+?)'",xread(url))
+		

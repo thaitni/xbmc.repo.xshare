@@ -77,6 +77,11 @@ def xsearch(pattern,string,group=1,flags=0,result=''):
 	except:s=result
 	return s
 
+def fmn(n):
+	try:s=format(int(n), "8,d").replace(',','.').strip()
+	except:s=str(n)
+	return s
+
 def s2u(s):return s.decode('utf-8') if isinstance(s,str) else s
 def u2s(s):return s.encode('utf-8') if isinstance(s,unicode) else s
 def unescape(string):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',s,1),s) for s in string.split())

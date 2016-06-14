@@ -13,8 +13,8 @@ xbmcplugin.setContent(int(sys.argv[1]), 'movies');homnay=datetime.date.today().s
 from resources.lib.utils import xsearch,xrw
 
 media_ext=['aif','iff','m3u','m3u8','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp','asf','asx','avi','flv','mov','mp4','mpg','mkv','m4v','rm','swf','vob','wmv','bin','cue','dmg','iso','mdf','toast','vcd','ts','flac','m2ts','dtshd','nrg'];icon={}
-color={'fshare':'[COLOR gold]','vaphim':'[COLOR gold]','phimfshare':'[COLOR khaki]','4share':'[COLOR blue]','tenlua':'[COLOR fuchsia]','fptplay':'[COLOR orange]','trangtiep':'[COLOR lime]','search':'[COLOR lime]','ifile':'[COLOR blue]','hdvietnam':'[COLOR red]','hdviet':'[COLOR darkorange]','xshare':'[COLOR blue]','subscene':'[COLOR green]','chiasenhac':'[COLOR orange]','phimmoi':'[COLOR ghostwhite]','megabox':'[COLOR orangered]','dangcaphd':'[COLOR yellow]','hayhaytv':'[COLOR tomato]','kenh88':'[COLOR cyan]','phimdata':'[COLOR magenta]','phim47':'[COLOR springgreen]','phimsot':'[COLOR orangered]','hdonline':'[COLOR turquoise]','phim3s':'[COLOR lightgray]','kphim':'[COLOR lightgreen]','phimnhanh':'[COLOR chartreuse]','bilutv':'[COLOR hotpink]','pubvn':'[COLOR deepskyblue]','anime47':'[COLOR deepskyblue]','phim14':'[COLOR chartreuse]','taifile':'[COLOR cyan]','phim':'[COLOR orange]','tvhay':'[COLOR gold]','nhacdj':'[COLOR fuchsia]','phimbathu':'[COLOR lightgray]','taiphimhd':'[COLOR blue]','hdsieunhanh':'[COLOR orangered]','vuahd':'[COLOR tomato]','nhaccuatui':'[COLOR turquoise]','imovies':'[COLOR orange]','vietsubhd':'[COLOR cyan]','imax':'[COLOR chartreuse]','mphim':'[COLOR deepskyblue]'}
-for hd in ['xshare','4share','dangcaphd','downsub','favorite','fptplay','fshare','gsearch','hdvietnam','icon','id','ifiletv','ifile','isearch','khophim','maxspeed','megabox','movie','msearch','myfolder','myfshare','phimfshare','serverphimkhac','setting','tenlua','vaphim','hdviet','hayhaytv','chiasenhac','kenh88','phimdata','phim47','phimsot','hdonline','phim3s','kphim','phimnhanh','bilutv','anime47','phim14','taifile','phim','tvhay','nhacdj','phimbathu','taiphimhd','hdsieunhanh','phimmoi','vuahd','pubvn','nhaccuatui','imovies','vietsubhd','imax','mphim']:
+color={'fshare':'[COLOR gold]','vaphim':'[COLOR gold]','phimfshare':'[COLOR khaki]','4share':'[COLOR blue]','tenlua':'[COLOR fuchsia]','fptplay':'[COLOR orange]','trangtiep':'[COLOR lime]','search':'[COLOR lime]','ifile':'[COLOR blue]','hdvietnam':'[COLOR red]','hdviet':'[COLOR darkorange]','xshare':'[COLOR blue]','subscene':'[COLOR green]','chiasenhac':'[COLOR orange]','phimmoi':'[COLOR ghostwhite]','megabox':'[COLOR orangered]','dangcaphd':'[COLOR yellow]','hayhaytv':'[COLOR tomato]','kenh88':'[COLOR cyan]','phimdata':'[COLOR magenta]','phim47':'[COLOR springgreen]','phimsot':'[COLOR orangered]','hdonline':'[COLOR turquoise]','phim3s':'[COLOR lightgray]','kphim':'[COLOR lightgreen]','phimnhanh':'[COLOR chartreuse]','bilutv':'[COLOR hotpink]','pubvn':'[COLOR deepskyblue]','anime47':'[COLOR deepskyblue]','phim14':'[COLOR chartreuse]','taifile':'[COLOR cyan]','phim':'[COLOR orange]','tvhay':'[COLOR gold]','nhacdj':'[COLOR fuchsia]','phimbathu':'[COLOR lightgray]','taiphimhd':'[COLOR blue]','hdsieunhanh':'[COLOR orangered]','vuahd':'[COLOR tomato]','nhaccuatui':'[COLOR turquoise]','imovies':'[COLOR orange]','vietsubhd':'[COLOR cyan]','imax':'[COLOR chartreuse]','mphim':'[COLOR deepskyblue]','vtvgo':'[COLOR green]'}
+for hd in ['xshare','4share','dangcaphd','downsub','favorite','fptplay','fshare','gsearch','hdvietnam','icon','id','ifiletv','ifile','isearch','khophim','maxspeed','megabox','movie','msearch','myfolder','myfshare','phimfshare','serverphimkhac','setting','tenlua','vaphim','hdviet','hayhaytv','chiasenhac','kenh88','phimdata','phim47','phimsot','hdonline','phim3s','kphim','phimnhanh','bilutv','anime47','phim14','taifile','phim','tvhay','nhacdj','phimbathu','taiphimhd','hdsieunhanh','phimmoi','vuahd','pubvn','nhaccuatui','imovies','vietsubhd','imax','mphim','vtvgo']:
 	icon.setdefault(hd,os.path.join(iconpath,'%s.png'%hd))
 hd={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:41.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/600.1.4 Gecko/20100101 Firefox/41.0'}
 
@@ -2282,6 +2282,7 @@ def megabox(name,url,img,fanart,mode,page,query):
 	
 	elif query=='mainmenu' and url in ('phim-letl','phim-leqg','phim-botl','phim-boqg','showtl','showqg','cliptl'):
 		dict=json_rw('megabox.json')
+		if not dict.get(url):dict=update_dict(dict)
 		for title,href in dict[url]:
 			title=color['megabox']+title.replace('Phim ','')+'[/COLOR]'
 			addir(title,href,icon['megabox'],'',mode,1,'mainmenu',True)
@@ -4710,7 +4711,7 @@ def phim47(name,url,img,mode,page,query):
 	
 	elif query=='p47_play':
 		items=[];link=sub='';items=[]
-		from resources.lib.servers import phim47;p47=phim47(c)
+		from resources.lib.servers import phim47com;p47=phim47com(c)
 		for link in re.findall("playlist':.?'(.+?)'",xread(url)):
 			l,sub=p47.maxLink(link)
 			link=dl(l[0][0])
@@ -7607,6 +7608,107 @@ def mphim (name,url,img,fanart,mode,page,query):
 		if link:xbmcsetResolvedUrl(link)
 		else:mess('File invalid or deleted!','mphim.net') 
 
+def vtvgo (name,url,img,fanart,mode,page,query):
+	ico=os.path.join(iconpath,'vtvgo.png');urlhome='http://vtvgo.vn/';c='green'
+	if not os.path.isfile(ico):
+		try:makerequest(ico,xread('http://vtvgo.vn/public/images/logo.png'),'wb')
+		except:pass
+	
+	from resources.lib.servers import vtvgo;vtv=vtvgo(c)
+	if query=='Home':
+		title=color['search']+"Search trên vtvgo.vn[/COLOR]"
+		addir_info(title,'vtvgo.vn',ico,'',mode,1,'search',True)
+		addir_info('live','',img,img,mode,1,'live1')
+		#b=xread(urlhome)
+		#s=xsearch('(<ul class="nav navbar-nav".+?/ul>)',b,1,re.S)
+		#for href,title in re.findall(' <li><a href="(.+?)" class=.*?>(.+?)</a></li>',s):
+		#	addir_info(namecolor(title,c),href,ico,'',mode,1,'menu',True)
+		menu=[("http://vtvgo.vn/tin-tuc.html","Tin tức tổng hợp","cat01"),
+			("http://vtvgo.vn/kho-video.html","Gameshows","cat02"),
+			("http://vtvgo.vn/an-tuong-vtv.html","VTV Awards 2016","cat03"),
+			("http://vtvgo.vn/euro2016","[COLOR red]Toàn cảnh[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR]","cat04")]
+		
+		for href,title,cat in menu:addir_info(namecolor('[B]%s[/B]'%title,c),href,ico,'',mode,1,cat,True)
+		add_sep_item('VTVgo Live TV--------------------------------------')
+		[addir_info(namecolor('[B]%s[/B]'%i[0],c),i[1],i[2],'',mode,1,'live') for i in vtv.liveList()]
+		
+	elif query=='cat01':#Tin tức tổng hợp
+		for title in re.findall('<h2>(.+?)</h2>',xread(url)):
+			addir_info(namecolor(title,c),'',ico,'',mode,1,'cat1',True)
+	
+	elif query=='cat1':
+		if 'Mới Nhất' in name:url='http://vtvgo.vn/get-data-news?keyword=new&page=%d'
+		elif 'Nóng Nhất' in name:url='http://vtvgo.vn/get-data-hot-news?keyword=hot&page=%d'
+		elif 'Thời Sự' in name:url='http://vtvgo.vn/get-data-news?keyword=thoi+su&page=%d'
+		elif 'Kinh Tế' in name:url='http://vtvgo.vn/get-data-news?keyword=kinh+te&page=%d'
+		elif 'Thể Thao' in name:url='http://vtvgo.vn/get-data-news?keyword=the+thao&page=%d'
+		elif 'Giải Trí' in name:url='http://vtvgo.vn/get-data-news?keyword=giai+tri&page=%d'
+		elif 'Thế Giới' in name:url='http://vtvgo.vn/get-data-news?keyword=the+gioi&page=%d'
+		for title,href,img in vtv.news(url,page):addir_info(title,href,img,img,mode,1,'play')
+		
+	elif query=='cat02':#Gameshows
+		for title,href,img in vtv.cat02(url):
+			if 'sub' in href:add_sep_item('%s --------------------------------------'%title)
+			else:addir_info(title,href,img,img,mode,1,'play')
+	
+	elif query=='cat03':
+		for title,href,img in vtv.cat03(url):
+			if 'sub' in href:add_sep_item('%s --------------------------------------'%title)
+			else:addir_info(title,href,img,img,mode,1,'play')
+	
+	elif query=='cat04':
+		items=[('[B]Trực Tiếp[/B]','http://vtvgo.vn/euro2016/live.html','cat41'),
+			('Nổi Bật','http://vtvgo.vn/euro2016/index.html','cat42'),
+			('Phát Lại','http://vtvgo.vn/euro2016/replay.html','cat43')]
+		for title,href,q in items:addir_info(namecolor(title,c),href,ico,'',mode,1,q,True)
+
+	elif query=='cat41':
+		url='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=1_by8rxnyv&kalsig=ad9291d0921fec4bcf6bc406a5d0c752'
+		[addir_info(i[0],i[1],i[2],'',mode,1,'playVOD') for i in vtv.vodList(url)]
+	
+	elif query=='cat42':
+		url='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=0_b6j8g4qd&kalsig=712cbe56fea1cb0b73673a883cc894fa'
+		[addir_info(i[0],i[1],i[2],'',mode,1,'playVOD') for i in vtv.vodList(url)]
+	
+	elif query=='cat43':
+		url='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=0_o1xvei02&kalsig=ec6ef0389dd66176ea2c92b73ebe15cc'
+		[addir_info(i[0],i[1],i[2],'',mode,1,'playVOD') for i in vtv.vodList(url)]
+		
+	elif query=='playVOD':
+		try:link=xbmcsetResolvedUrl(urllib2.urlopen(url).geturl())
+		except:mess('Get maxspeed link fail !','VTVgo.vn')
+	
+	elif query=='live':
+		try:xbmcsetResolvedUrl(vtv.live(url))
+		except:mess('Get maxspeed liveTV link fail !','VTVgo.vn')
+	
+	elif query=='temp':
+		addir_info('live','vtvgo.vn',ico,'',mode,1,'live')
+		
+		#Get vod
+		url='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=0_b6j8g4qd&kalsig=712cbe56fea1cb0b73673a883cc894fa'
+		[addir_info(i[0],i[1],i[2],'',mode,1,'play') for i in vtv.vodList(url)]
+		
+		#get liveshow
+		url='http://stats.kaltura.com/api_v3/index.php?service=stats&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=collect&event:eventType=2&event:clientVer=2.44&event:currentPoint=0&event:duration=0&event:eventTimestamp=1465786164742&event:isFirstInSession=false&event:objectType=KalturaStatsEvent&event:partnerId=2111921&event:sessionId=f5d114f2-e71e-3bbe-770f-2e7dfa14cd9e&event:uiconfId=35084022&event:seek=false&event:entryId=1_md5u3rvg&event:widgetId=_2111921&event:referrer=http%253A%252F%252Fvtvgo.vn%252Feuro2016%252Flive.html&kalsig=98023341845a24ceb4c600c0a4cd00d8'
+	
+		url='http://analytics.kaltura.com/api_v3/index.php?service=analytics&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=trackEvent&entryId=1_md5u3rvg&partnerId=2111921&eventType=1&sessionId=f5d114f2-e71e-3bbe-770f-2e7dfa14cd9e&eventIndex=1&bufferTime=0&actualBitrate=-1&flavourId=-1&referrer=http%253A%252F%252Fvtvgo.vn%252Feuro2016%252Flive.html&deliveryType=hdnetworkmanifest&sessionStartTime=null&uiConfId=35084022&clientVer=2.44&position=0&playbackType=live&kalsig=9a68d7a983bba60bf041bf6f55574c2b'
+	
+	elif query=='play':
+		#try:xbmcsetResolvedUrl(urllib2.urlopen(url).geturl())
+		try:xbmcsetResolvedUrl(vtv.vodLink(url))
+		except:mess('Get maxspeed link fail !','VTVgo.vn')
+
+	elif query=='live1':
+		#b=xread('http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget:v2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks={1:result:ks}&2:service=playlist&2:action=execute&2:id=1_by8rxnyv&kalsig=ad9291d0921fec4bcf6bc406a5d0c752')
+		b=xread('http://cdnapi.kaltura.com/p/2111921/sp/211192100/playManifest/entryId/1_md5u3rvg/format/hdnetworkmanifest/protocol/http/uiConfId/35084022/a.f4m?referrer=aHR0cDovL3Z0dmdvLnZu&playSessionId=f5d114f2-e71e-3bbe-770f-2e7dfa14cd9e')
+		url=xsearch('url="(.+?)"',b)
+		#link=os.path.dirname(url)+'/'+xsearch('<media url="(.+?)" bitrate="2000"',xread(url))+		'.bootstrap?g=KXMUJWTDGGUA&hdcore=3.1.0&plugin=aasp-3.1.0.43.124|Referer=http://vtvgo.vn/public/js/plugin/jwplayer/jwplayer.flash.swf'
+		link=os.path.dirname(url)+'/'+xsearch('id="manifest_2000" url="(.+?)"',xread(url))+'?g=XRFUTIMRMNBQ&hdcore=3.1.0&plugin=aasp-3.1.0.43.124|Referer=Referer	http://cdnapi.kaltura.com/html5/html5lib/v2.44/modules/EmbedPlayer/binPlayers/kaltura-player/kdp3.swf'
+		#link=os.path.dirname(url)+'/'+xsearch('<media url="(.+?)" bitrate="2000"',xread(url))+'.bootstrap|Referer=http://vtvgo.vn/public/js/plugin/jwplayer/jwplayer.flash.swf&g=KXMUJWTDGGUA&hdcore=3.1.0&plugin=aasp-3.1.0.43.124'
+		xbmcsetResolvedUrl('http://vtvgoeuroobj.b5695cde.cdnviet.com/b41e8952adc111b2f9c1a93d997c71151465934448/Content/HDS/Live/Channel(VTV6)/manifest.f4m?g=KYMVRJMGXCYA&hdcore=3.1.0&plugin=aasp-3.1.0.43.124 pageURL=http://vtvgo.vn/euro2016/live.html swfUrl=http://cdnapi.kaltura.com/html5/html5lib/v2.44/modules/EmbedPlayer/binPlayers/kaltura-player/kdp3.swf swfVfy=true live=true')
+		#xbmcsetResolvedUrl('http://vtvgoeuroobj.04477775.sabai.vn/b41e8952adc111b2f9c1a93d997c71151465934448/Content/HDS/Live/Channel(VTV6)/manifest.f4m?g=KYMVRJMGXCYA&hdcore=3.1.0&plugin=aasp-3.1.0.43.124')
+
 try:#Container.SetViewMode(num) addir:name,link,img,fanart,mode,page,query,isFolder
 	myfolder=s2u(myaddon.getSetting('thumuccucbo'))
 	if not os.path.exists(myfolder):myfolder=joinpath(datapath,'myfolder')
@@ -7711,6 +7813,7 @@ elif mode==52:myNAS(name,url,img,fanart,mode,page,query)
 elif mode==53:taiphimhd(name,url,img,fanart,mode,page,query)
 elif mode==54:vietsubhd(name,url,img,fanart,mode,page,query)
 elif mode==55:mphim(name,url,img,fanart,mode,page,query)
+elif mode==56:vtvgo(name,url,img,fanart,mode,page,query)
 elif mode==88:servers_list(name,url,img,fanart,mode,page,query)
 elif mode==89:television(name,url,img,fanart,mode,page,query,text)
 elif mode==90:end=doc_TrangFshare(name,url,img,fanart,query)

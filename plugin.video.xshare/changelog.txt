@@ -1,3 +1,6 @@
+[B]Version 3.4.3.2[/B] <14/06/2016>:
+fix phim47 search va cac loi khac
+
 [B]Version 3.4.3.1[/B] <12/06/2016>:
 fix fptplay eps, phim47 sub, phim47.com va cac loi khac
 
