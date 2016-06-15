@@ -1,3 +1,6 @@
+[B]Version 3.4.4[/B] <15/06/2016>:
+Thêm VTVGo Euro 2016
+
 [B]Version 3.4.3.2[/B] <14/06/2016>:
 fix phim47 search va cac loi khac
 

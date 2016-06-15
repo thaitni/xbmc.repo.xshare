@@ -60,8 +60,13 @@ def xrw(fn,s=''):
 
 def xread(url,headers={'User-Agent':'Mozilla/5.0'},data=None):
 	req=urllib2.Request(url,data,headers)
-	try:res=urllib2.urlopen(req, timeout=20);b=res.read();res.close()
+	try:res=urllib2.urlopen(req, timeout=30);b=res.read();res.close()
 	except:b=''
+	return b
+
+def xget(url,data=None,timeout=30):#b.getcode();b.headers.get('Set-Cookie');b.geturl()
+	try:b=urllib2.urlopen(url,data,timeout)
+	except:b=None
 	return b
 
 def get_input(title=u"", default=u""):

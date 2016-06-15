@@ -7614,19 +7614,15 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 		try:makerequest(ico,xread('http://vtvgo.vn/public/images/logo.png'),'wb')
 		except:pass
 	
-	from resources.lib.servers import vtvgo;vtv=vtvgo(c)
+	from resources.lib.servers import vtvgovn;vtv=vtvgovn(c)
 	if query=='Home':
 		title=color['search']+"Search trên vtvgo.vn[/COLOR]"
 		addir_info(title,'vtvgo.vn',ico,'',mode,1,'search',True)
-		addir_info('live','',img,img,mode,1,'live1')
-		#b=xread(urlhome)
-		#s=xsearch('(<ul class="nav navbar-nav".+?/ul>)',b,1,re.S)
-		#for href,title in re.findall(' <li><a href="(.+?)" class=.*?>(.+?)</a></li>',s):
-		#	addir_info(namecolor(title,c),href,ico,'',mode,1,'menu',True)
+		
 		menu=[("http://vtvgo.vn/tin-tuc.html","Tin tức tổng hợp","cat01"),
 			("http://vtvgo.vn/kho-video.html","Gameshows","cat02"),
 			("http://vtvgo.vn/an-tuong-vtv.html","VTV Awards 2016","cat03"),
-			("http://vtvgo.vn/euro2016","[COLOR red]Toàn cảnh[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR]","cat04")]
+			("http://vtvgo.vn/euro2016","[COLOR red]Toàn cảnh[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR] (Bản quyền của vtvgo.vn)","cat04")]
 		
 		for href,title,cat in menu:addir_info(namecolor('[B]%s[/B]'%title,c),href,ico,'',mode,1,cat,True)
 		add_sep_item('VTVgo Live TV--------------------------------------')
@@ -7648,30 +7644,39 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 		
 	elif query=='cat02':#Gameshows
 		for title,href,img in vtv.cat02(url):
-			if 'sub' in href:add_sep_item('%s --------------------------------------'%title)
+			if 'sep' in href:add_sep_item('%s --------------------------------------'%title)
 			else:addir_info(title,href,img,img,mode,1,'play')
 	
 	elif query=='cat03':
 		for title,href,img in vtv.cat03(url):
-			if 'sub' in href:add_sep_item('%s --------------------------------------'%title)
+			if 'sep' in href:add_sep_item('%s --------------------------------------'%title)
 			else:addir_info(title,href,img,img,mode,1,'play')
 	
 	elif query=='cat04':
-		items=[('[B]Trực Tiếp[/B]','http://vtvgo.vn/euro2016/live.html','cat41'),
+		items=[('[B]Trực Tiếp [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]','http://vtvgo.vn/euro2016/live.html','cat41'),
 			('Nổi Bật','http://vtvgo.vn/euro2016/index.html','cat42'),
 			('Phát Lại','http://vtvgo.vn/euro2016/replay.html','cat43')]
 		for title,href,q in items:addir_info(namecolor(title,c),href,ico,'',mode,1,q,True)
 
 	elif query=='cat41':
-		url='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=1_by8rxnyv&kalsig=ad9291d0921fec4bcf6bc406a5d0c752'
-		[addir_info(i[0],i[1],i[2],'',mode,1,'playVOD') for i in vtv.vodList(url)]
+		addir_info(namecolor('[B]VTV6 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'1_rhex2pfs',ico,'',mode,1,'golive')
+		addir_info(namecolor('[B]VTV3 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'1_ks4iwsda',ico,'',mode,1,'golive')
+	
+	elif query=='golive':
+		b=xread('https://drive.google.com/folderview?id=0B5y3DO2sHt1LajFDalU2U05GX28')
+		b=xread(urllib2.base64.b64decode(xsearch('<title>(.+?)</title>',b))%url)
+		try:link=json.loads(xsearch('\((\{.+?\})\)',b)).get('flavors')[0].get('url')
+		except:link=''
+		xbmcsetResolvedUrl(link)
 	
 	elif query=='cat42':
-		url='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=0_b6j8g4qd&kalsig=712cbe56fea1cb0b73673a883cc894fa'
+		b=xread('https://drive.google.com/folderview?id=0B5y3DO2sHt1LRzFuUzN5cUhKT28')
+		url=urllib2.base64.b64decode(xsearch('<title>(.+?)</title>',b))
 		[addir_info(i[0],i[1],i[2],'',mode,1,'playVOD') for i in vtv.vodList(url)]
 	
 	elif query=='cat43':
-		url='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=0_o1xvei02&kalsig=ec6ef0389dd66176ea2c92b73ebe15cc'
+		b=xread('https://drive.google.com/folderview?id=0B5y3DO2sHt1LcGNoaC1QcUpldGs')
+		url=urllib2.base64.b64decode(xsearch('<title>(.+?)</title>',b))
 		[addir_info(i[0],i[1],i[2],'',mode,1,'playVOD') for i in vtv.vodList(url)]
 		
 	elif query=='playVOD':
@@ -7682,32 +7687,9 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 		try:xbmcsetResolvedUrl(vtv.live(url))
 		except:mess('Get maxspeed liveTV link fail !','VTVgo.vn')
 	
-	elif query=='temp':
-		addir_info('live','vtvgo.vn',ico,'',mode,1,'live')
-		
-		#Get vod
-		url='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=0_b6j8g4qd&kalsig=712cbe56fea1cb0b73673a883cc894fa'
-		[addir_info(i[0],i[1],i[2],'',mode,1,'play') for i in vtv.vodList(url)]
-		
-		#get liveshow
-		url='http://stats.kaltura.com/api_v3/index.php?service=stats&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=collect&event:eventType=2&event:clientVer=2.44&event:currentPoint=0&event:duration=0&event:eventTimestamp=1465786164742&event:isFirstInSession=false&event:objectType=KalturaStatsEvent&event:partnerId=2111921&event:sessionId=f5d114f2-e71e-3bbe-770f-2e7dfa14cd9e&event:uiconfId=35084022&event:seek=false&event:entryId=1_md5u3rvg&event:widgetId=_2111921&event:referrer=http%253A%252F%252Fvtvgo.vn%252Feuro2016%252Flive.html&kalsig=98023341845a24ceb4c600c0a4cd00d8'
-	
-		url='http://analytics.kaltura.com/api_v3/index.php?service=analytics&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=trackEvent&entryId=1_md5u3rvg&partnerId=2111921&eventType=1&sessionId=f5d114f2-e71e-3bbe-770f-2e7dfa14cd9e&eventIndex=1&bufferTime=0&actualBitrate=-1&flavourId=-1&referrer=http%253A%252F%252Fvtvgo.vn%252Feuro2016%252Flive.html&deliveryType=hdnetworkmanifest&sessionStartTime=null&uiConfId=35084022&clientVer=2.44&position=0&playbackType=live&kalsig=9a68d7a983bba60bf041bf6f55574c2b'
-	
 	elif query=='play':
-		#try:xbmcsetResolvedUrl(urllib2.urlopen(url).geturl())
 		try:xbmcsetResolvedUrl(vtv.vodLink(url))
 		except:mess('Get maxspeed link fail !','VTVgo.vn')
-
-	elif query=='live1':
-		#b=xread('http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget:v2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks={1:result:ks}&2:service=playlist&2:action=execute&2:id=1_by8rxnyv&kalsig=ad9291d0921fec4bcf6bc406a5d0c752')
-		b=xread('http://cdnapi.kaltura.com/p/2111921/sp/211192100/playManifest/entryId/1_md5u3rvg/format/hdnetworkmanifest/protocol/http/uiConfId/35084022/a.f4m?referrer=aHR0cDovL3Z0dmdvLnZu&playSessionId=f5d114f2-e71e-3bbe-770f-2e7dfa14cd9e')
-		url=xsearch('url="(.+?)"',b)
-		#link=os.path.dirname(url)+'/'+xsearch('<media url="(.+?)" bitrate="2000"',xread(url))+		'.bootstrap?g=KXMUJWTDGGUA&hdcore=3.1.0&plugin=aasp-3.1.0.43.124|Referer=http://vtvgo.vn/public/js/plugin/jwplayer/jwplayer.flash.swf'
-		link=os.path.dirname(url)+'/'+xsearch('id="manifest_2000" url="(.+?)"',xread(url))+'?g=XRFUTIMRMNBQ&hdcore=3.1.0&plugin=aasp-3.1.0.43.124|Referer=Referer	http://cdnapi.kaltura.com/html5/html5lib/v2.44/modules/EmbedPlayer/binPlayers/kaltura-player/kdp3.swf'
-		#link=os.path.dirname(url)+'/'+xsearch('<media url="(.+?)" bitrate="2000"',xread(url))+'.bootstrap|Referer=http://vtvgo.vn/public/js/plugin/jwplayer/jwplayer.flash.swf&g=KXMUJWTDGGUA&hdcore=3.1.0&plugin=aasp-3.1.0.43.124'
-		xbmcsetResolvedUrl('http://vtvgoeuroobj.b5695cde.cdnviet.com/b41e8952adc111b2f9c1a93d997c71151465934448/Content/HDS/Live/Channel(VTV6)/manifest.f4m?g=KYMVRJMGXCYA&hdcore=3.1.0&plugin=aasp-3.1.0.43.124 pageURL=http://vtvgo.vn/euro2016/live.html swfUrl=http://cdnapi.kaltura.com/html5/html5lib/v2.44/modules/EmbedPlayer/binPlayers/kaltura-player/kdp3.swf swfVfy=true live=true')
-		#xbmcsetResolvedUrl('http://vtvgoeuroobj.04477775.sabai.vn/b41e8952adc111b2f9c1a93d997c71151465934448/Content/HDS/Live/Channel(VTV6)/manifest.f4m?g=KYMVRJMGXCYA&hdcore=3.1.0&plugin=aasp-3.1.0.43.124')
 
 try:#Container.SetViewMode(num) addir:name,link,img,fanart,mode,page,query,isFolder
 	myfolder=s2u(myaddon.getSetting('thumuccucbo'))

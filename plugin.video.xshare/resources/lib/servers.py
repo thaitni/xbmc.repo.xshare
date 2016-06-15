@@ -2095,11 +2095,32 @@ class phim47com:
 			if link:break
 			else:mess('Checking next link ...','phim47.com')
 
-class vtvgo:
+class vtvgovn:
 	def __init__(self,c):
 		self.hd={'User-Agent':'Mozilla/5.0','Cookie':xrw('vtvgo.cookie')}
 		self.urlhome='http://vtvgo.vn/'
 
+	def liveGoList(self,url):
+		def e(i):return i.get('name').encode('utf-8'),i.get('id').encode('utf-8'),i.get('thumbnailUrl').encode('utf-8')
+		b=xread(url,self.hd)
+		try:j=json.loads(b)
+		except:j=[{},[]]
+		return [e(i) for i in j[1]]
+	
+	def cat02(self,url):
+		b=xread(url);items=[]
+		for s in ['<h3 class="'+i for i in b.split('<h3 class="') if xsearch('>([^<]+?)</a></h3>',i)]:
+			items.append((xsearch('>([^<]+?)</a></h3>',s),'sep',''))
+			for s in [i for i in s.split('<div class="item">') if '"icon-play"' in i]:items.append(self.detail(s))
+		return items
+	
+	def cat03(self,url):
+		b=xread(url);items=[]
+		for s in ['<h3 class="'+i for i in b.split('<h3 class="') if '</h3>'in i]:
+			items.append((xsearch('<h3 class="s_title">([^<]+?)</h3>',s),'sep',''))
+			for s in [i for i in s.split('<div class="item">') if '"icon-play"' in i]:items.append(self.detail(s))
+		return items
+	
 	def vodList(self,url):
 		def e(i):return i.get('name').encode('utf-8'),i.get('downloadUrl').encode('utf-8'),i.get('thumbnailUrl').encode('utf-8')
 		b=xread(url,self.hd)
@@ -2109,13 +2130,23 @@ class vtvgo:
 	
 	def liveList(self):
 		def detail(s):return xsearch('title="(.+?)"',s),xsearch('href="(.+?)"',s),xsearch('src="(.+?)"',s)
-		#try:
-		#	b=urlfetch.get(self.urlhome,headers=self.hd)
-		#	if b.status==200:xrw('vtvgo.cookie',b.cookiestring)
-		#	b=b.body
-		#except:b=''
-		b=xread(self.urlhome)
-		return [detail(i) for i in b.split('class="item"') if 'class="play-icon"' in i] 
+		b=xget(self.urlhome)
+		if b and b.getcode()==200:
+			xrw('vtvgo.cookie',b.headers.get('Set-Cookie'));b=b.read()
+			if xsearch("else window.location.href = '(.+?)'",b):
+				b=xread(xsearch("else window.location.href = '(.+?)'",b))
+		else:b=''
+		
+		title=xsearch('title content="(.+?)"',b)
+		href=xsearch('url content="(.+?)"',b)
+		img=xsearch('image content="(.+?)"',b)
+		items=[self.detail(i) for i in b.split('class="item"') if 'class="play-icon"' in i]
+		if href!="http://vtvgo.vn/" and href not in items:items.append((title,href,img))
+		return sorted(items, key=lambda k: k[1])
+	
+	def cat41(self,url):
+		url='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=1_by8rxnyv&kalsig=ad9291d0921fec4bcf6bc406a5d0c752'
+		return self.liveGoList(url)
 	
 	def live(self,url):
 		return xsearch("file\": '(.+?)'",xread(url,self.hd))
