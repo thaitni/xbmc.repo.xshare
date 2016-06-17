@@ -6908,6 +6908,7 @@ def television(name,url,img,fanart,mode,page,query,text):
 	fptlive_ico=icon['fptplay'];fptlive='https://fptplay.net/livetv';c='orange'
 	hplus_ico='http://static.hplus.com.vn/themes/front/images/logo_hplus.png';hplus='http://hplus.com.vn/'
 	xemtvhd_ico='http://xemtvhd.com/logo/xemtvhd.png';xemtvhd='http://www.xemtvhd.com/'
+	vtvgo_ico=os.path.join(iconpath,'vtvgo.png')
 	hd['x-requested-with']='XMLHttpRequest';hd['referer']=''
 	def fixs(string):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',s),s) for s in string.split())
 	
@@ -6916,6 +6917,7 @@ def television(name,url,img,fanart,mode,page,query,text):
 		#o=make_post('http://hplus.com.vn/user/login/',data=data)
 		#hd['Cookie']=o.cookiestring
 		addir_info(namecolor('Truyền hình FPTplay.net',c),fptlive,fptlive_ico,'',mode,1,'fptlive',True)
+		addir_info(namecolor('Truyền hình VTVGo.vn','blue'),'Home',vtvgo_ico,'',56,1,'Home',True)
 		b=make_request('http://hplus.com.vn/ti-vi-truc-tuyen/kenh-htv',headers=hd,resp='o')
 		if b:cookie=b.cookiestring;b=b.body
 		else:cookie=''
@@ -7621,8 +7623,7 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 		
 		menu=[("http://vtvgo.vn/tin-tuc.html","Tin tức tổng hợp","cat01"),
 			("http://vtvgo.vn/kho-video.html","Gameshows","cat02"),
-			("http://vtvgo.vn/an-tuong-vtv.html","VTV Awards 2016","cat03"),
-			("http://vtvgo.vn/euro2016","[COLOR red]Toàn cảnh[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR] (Bản quyền của vtvgo.vn)","cat04")]
+			("http://vtvgo.vn/an-tuong-vtv.html","VTV Awards 2016","cat03")]
 		
 		for href,title,cat in menu:addir_info(namecolor('[B]%s[/B]'%title,c),href,ico,'',mode,1,cat,True)
 		add_sep_item('VTVgo Live TV--------------------------------------')
@@ -7653,20 +7654,25 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 			else:addir_info(title,href,img,img,mode,1,'play')
 	
 	elif query=='cat04':
-		items=[('[B]Trực Tiếp [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]','http://vtvgo.vn/euro2016/live.html','cat41'),
-			('Nổi Bật','http://vtvgo.vn/euro2016/index.html','cat42'),
-			('Phát Lại','http://vtvgo.vn/euro2016/replay.html','cat43')]
-		for title,href,q in items:addir_info(namecolor(title,c),href,ico,'',mode,1,q,True)
-
-	elif query=='cat41':
-		addir_info(namecolor('[B]VTV6 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'1_rhex2pfs',ico,'',mode,1,'golive')
 		addir_info(namecolor('[B]VTV3 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'1_ks4iwsda',ico,'',mode,1,'golive')
+		addir_info(namecolor('[B]VTV6 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'1_rhex2pfs',ico,'',mode,1,'golive')
 	
+		addir_info(namecolor('[B]VTV3 live - [COLOR orange]FPT[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://118.69.252.4/tv2/vtv3HD/index.m3u8',ico,'',mode,1,'cat41')
+		addir_info(namecolor('[B]VTV6 live - [COLOR orange]FPT[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://118.69.252.4/tv2/vtv6HD/index.m3u8',ico,'',mode,1,'cat41')
+		
+		add_sep_item('-----------------------------------------------')
+		addir_info(namecolor('Nổi Bật',c),'http://vtvgo.vn/euro2016/index.html',ico,'',mode,1,'cat42',True)
+		addir_info(namecolor('Phát Lại',c),'http://vtvgo.vn/euro2016/replay.html',ico,'',mode,1,'cat43',True)
+
+	elif query=='cat41':xbmcsetResolvedUrl(url)
+	
+	elif query=='golive':xbmcsetResolvedUrl(vtv.golive(url))
 	elif query=='golive':
 		b=xread('https://drive.google.com/folderview?id=0B5y3DO2sHt1LajFDalU2U05GX28')
 		b=xread(urllib2.base64.b64decode(xsearch('<title>(.+?)</title>',b))%url)
 		try:link=json.loads(xsearch('\((\{.+?\})\)',b)).get('flavors')[0].get('url')
 		except:link=''
+		print link
 		xbmcsetResolvedUrl(link)
 	
 	elif query=='cat42':

@@ -2181,4 +2181,35 @@ class vtvgovn:
 	
 	def vodLink(self,url):
 		return xsearch("file\": '(.+?)'",xread(url))
+	
+	def golive(self,url):
+		url='http://cdnapi.kaltura.com/p/2111921/sp/211192100/playManifest/entryId/'+url
+		url+='/format/applehttp/protocol/http/uiConfId/35084022/index.m3u8?referrer=aHR0cDovL3Z0dmdvLnZu&'
+		url+='playSessionId=&responseFormat=%s&callback='
+		try:
+			base=urllib2.os.path.dirname(json.loads(xread(url%'json')).get('flavors')[0].get('url'))
+			b=xread(url%'xml');link='1024'
+			for i in b.splitlines():
+				if link in i:link='OK';continue
+				elif i and link=='OK':link=i;break
+			link=base+'/'+link
+		except:link=''
+		return link+'?audio=2'
 		
+	def golive1(self,url):
+		#b=xread('https://drive.google.com/folderview?id=0B5y3DO2sHt1LajFDalU2U05GX28')
+		#b=xread(urllib2.base64.b64decode(xsearch('<title>(.+?)</title>',b))%url)
+		b='http://cdnapi.kaltura.com/p/2111921/sp/211192100/playManifest/entryId/%s/format/applehttp/protocol/http/uiConfId/35084022/index.m3u8?referrer=aHR0cDovL3Z0dmdvLnZu&playSessionId=236fb9c2-70c2-50c1-e15d-a812189598b8&responseFormat=jsonp&callback=jQuery111109580692829438424_1465981277141&mediaType=201'
+		b=xread(b%url)
+		try:
+			b=xget(json.loads(xsearch('\((\{.+?\})\)',b)).get('flavors')[0].get('url'))#;print b
+			if b and b.getcode()==200:
+				href=b.geturl()#;print href
+				b=xread(href);link='854';print b
+				for i in b.splitlines():
+					if link in i:link='OK';continue
+					if link=='OK' and i:link=i;break
+				link=urllib2.os.path.dirname(href)+'/'+link
+			else:link=''
+		except:link=''
+		return link

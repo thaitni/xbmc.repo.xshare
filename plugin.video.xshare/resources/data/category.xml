@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8">
 <a server="MMN" category="FVR" mode="98" color="gold" icon="favorite.png">My Favourites</a>
 <a server="MMN" category="xshare" mode="101" color="blue" icon="favorite.png">My Favourites V2</a>
-<a server="MMN" category="Home" mode="56" color="green" icon="xshare.png">[B]VTVGo.vn - [COLOR lime]Euro 2016[/COLOR][/B]</a>
 <a server="MMN" category="Home" mode="89" color="orange" icon="xshare.png">Xem Truyền Hình</a>
+<a server="MMN" category="cat04" mode="56" color="green" icon="xshare.png">[B][COLOR red]Toàn cảnh[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]</a>
 <a server="MMN" category="Home" mode="51" color="gold" icon="favorite.png">chiasenhac.com / [COLOR blue]nhaccuatui.com[/COLOR] / [COLOR fuchsia]nhacdj.vn[/COLOR]</a>
 <a server="MMN" category="GGS" mode="10" color="lime" icon="gsearch.png">Google Search - Site search - Database search...</a>
 <a server="MMN" category="VIP" mode="10" color="yellow" icon="vaphim.png">Kho phim trên Fshare[/COLOR] / [COLOR blue]4share[/COLOR] / [COLOR fuchsia]tenlua</a>

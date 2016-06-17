@@ -1,3 +1,6 @@
+[B]Version 3.4.4.1[/B] <15/06/2016>:
+Thêm FPTPlay VTV Euro 2016
+
 [B]Version 3.4.4[/B] <15/06/2016>:
 Thêm VTVGo Euro 2016
 
