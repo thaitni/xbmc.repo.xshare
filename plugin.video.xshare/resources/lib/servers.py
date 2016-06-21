@@ -3,6 +3,8 @@
 import urllib,urllib2,urlfetch, re, os, json
 from utils import *
 
+#xread('http://ip-api.com/json')
+
 def gibberishAES(string, key=''):
 	import ctypes
 	def aa(l,s=4):
@@ -1986,12 +1988,14 @@ class hdonline:
 			
 		loop=0;items=[];result='';self.hd['Referer']=self.home;url=url.replace('m.hdonline.vn','hdonline.vn')
 		while not items and loop<3:
-			s=xsearch('"playlist":\[(\{.+?\})\]',xread(url,self.hd))
+			b=xread(url,self.hd)
+			s=xsearch('"playlist":\[(\{.+?\})\]',b)
 			try:
 				j=[json.loads(i) for i in re.findall('(\{.+?\})',s)]
 				items=[detail(self.home,i) for i in j]
 			except:items=[]
-			if not items:loop+=1;mess('Xshare retry get link...%d'%loop);xbmc.sleep(2000*loop)
+			if 'class="fa fa-user"' in b:loop=3
+			elif not items:loop+=1;mess('Xshare retry get link...%d'%loop);xbmc.sleep(2000*loop)
 		#f=open(r'd:\xoa1.html','w');f.write(s);f.close()
 		#else:mess(u'Hãy set acc/pass cho hdonline.vn nhé','HDOnline.vn')
 		return items
@@ -2014,6 +2018,15 @@ class hdonline:
 					if i.get('code').encode('utf-8')=='vi':sub=i.get('file');break
 		except:pass
 		return items,sub
+	
+	def getLink(self,url):
+		b=xread(url,hd)
+		id=xsearch('-(\d+)\.html',url)
+		token=xsearch('\|(\w{80,100})\|',b)
+		rand=xsearch('\|(\d{10,12})\|',b)
+		url='http://hdonline.vn/frontend/episode/xmlplay?ep=1&fid=%s&token=%s-%s&format=json'%(id,token,rand)
+		try:j=json.loads(xread(url,hd))
+		except:j={}
 		
 class mphim:
 	def __init__(self,c):
@@ -2183,6 +2196,18 @@ class vtvgovn:
 		return xsearch("file\": '(.+?)'",xread(url))
 	
 	def golive(self,url):
+		b=xread('https://drive.google.com/folderview?id=0B5y3DO2sHt1LWnJSTDBBRkZNZEU')
+		url=xread(urllib2.base64.b64decode(xsearch('<title>(.+?)</title>',b).split(' ')[1])%url)
+		try:url=xget(json.loads(url).get('flavors')[0].get('url')).geturl()
+		except:url=''
+		return url
+		base=urllib2.os.path.dirname(url)
+		for i in xread(url).splitlines():
+			if link in i:link='OK';continue
+			elif i and link=='OK':link=i;break
+		link=base+'/'+link
+		
+	def golive1(self,url):
 		url='http://cdnapi.kaltura.com/p/2111921/sp/211192100/playManifest/entryId/'+url
 		url+='/format/applehttp/protocol/http/uiConfId/35084022/index.m3u8?referrer=aHR0cDovL3Z0dmdvLnZu&'
 		url+='playSessionId=&responseFormat=%s&callback='
@@ -2194,7 +2219,7 @@ class vtvgovn:
 				elif i and link=='OK':link=i;break
 			link=base+'/'+link
 		except:link=''
-		return link+'?audio=2'
+		return link
 		
 	def golive1(self,url):
 		#b=xread('https://drive.google.com/folderview?id=0B5y3DO2sHt1LajFDalU2U05GX28')
@@ -2213,3 +2238,23 @@ class vtvgovn:
 			else:link=''
 		except:link=''
 		return link
+	
+	def golive_f4m(self,url='1_rhex2pfs'):
+		url=json.loads(xread('http://cdnapi.kaltura.com/p/2111921/sp/211192100/playManifest/entryId/%s/format/hdnetworkmanifest/protocol/http/uiConfId/35084022/?referrer=aHR0cDovL3Z0dmdvLnZu&responseFormat=json'%url)).get('flavors')[0]['url']
+		
+		#url='http://vtvgoeuroobj.04477775.sabai.vn/64aa5d03694d469b23382af99d4746621466325887/Content/HDS/Live/Channel(VTV6)/manifest.f4m'
+		b=urllib2.urlopen(url)
+		url=b.geturl().replace('.f4m','')
+		#return 'http://vtvgoeuroobj.b5695cde.cdnviet.com/a9b5697eb19288806f6ceb661f7fdc6b1466332250/Content/HDS/Live/Channel(VTV6)/Stream(manifest_1200)/manifest.bootstrap?g=WBPGLZKANOKW&hdcore=3.1.0&plugin=aasp-3.1.0.43.124?swfUrl=http://vtvgo.vn/public/js/plugin/jwplayer/jwplayer.flash.swf&pageUrl=http://vtvgo.vn/euro2016/live.html'
+		#return 'rtmp://vtvgoeuroobj.b5695cde.cdnviet.com/Content/HDS/Live/Channel(VTV6)/manifest.f4m?ks=djJ8MjExMTkyMXwaLOyQmTgyudBssKQJeLOIJYT5VmR40jQx7FPKd_msL5HQKwOLvPuopVF3CjiLspwzyX_gidcnALuP99F6m_luYv3hpM2ZqilaO5PXiqFaKw=='+ ' swfUrl=http://vtvgo.vn/public/js/plugin/jwplayer/jwplayer.flash.swf pageUrl=http://vtvgo.vn/euro2016/live.html'
+		#return 'http://vtvgoeuroobj.b5695cde.cdnviet.com/a46eda7b32a7bc4b801b5d153b51029a1466429037/Content/HDS/Live/Channel(VTV6)/Stream(manifest_400)/manifest.bootstrap?g=UWOYDGHGGRPW&hdcore=3.1.0&plugin=aasp-3.1.0.43.124 '+ ' swfUrl=http://vtvgo.vn/public/js/plugin/jwplayer/jwplayer.flash.swf pageUrl=http://vtvgo.vn/euro2016/live.html'
+		return url
+		
+	def temp(self):
+		u='http://cdnapi.kaltura.com/p/2111921/sp/211192100/playManifest/entryId/1_rhex2pfs/format/applehttp/protocol/http/uiConfId/35084022?referrer=aHR0cDovL3Z0dmdvLnZu&responseFormat=jsonp&callback='
+
+
+		u='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=1_by8rxnyv&kalsig=ad9291d0921fec4bcf6bc406a5d0c752'
+		
+		play='http://cdnapi.kaltura.com/html5/html5lib/v2.6.3/mwEmbedFrame.php/p/2111921/uiconf_id/35084022/entry_id/1_rhex2pfs?wid=_2111921&iframeembed=true&playerId=kaltura_player_1411138624&entry_id=1_rhex2pfs&flashvars'
+	

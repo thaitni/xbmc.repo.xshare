@@ -1,3 +1,6 @@
+[B]Version 3.4.4.2[/B] <15/06/2016>:
+Fix VTV Euro 2016 xem lại
+
 [B]Version 3.4.4.1[/B] <15/06/2016>:
 Thêm FPTPlay VTV Euro 2016
 

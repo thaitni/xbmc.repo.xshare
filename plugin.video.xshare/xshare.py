@@ -5740,7 +5740,6 @@ def chiasenhac(name,url,img,fanart,mode,page,query):
 	elif 'search.php' in url or url=='chiasenhac.com':csn_search(url,query)
 	
 	elif query=='Home':
-		print 'aaaaaaaaaaa'
 		menu={'MyPlaylist':{'action':'Search','server':['chiasenhac.com']}}
 		title='[COLOR lime]CSN Search theo[/COLOR] - [COLOR gold]%s[/COLOR] - Phím Func tìm khác'
 		title=title%myaddon.getSetting('csn_s')
@@ -7656,6 +7655,7 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 	elif query=='cat04':
 		addir_info(namecolor('[B]VTV3 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'1_ks4iwsda',ico,'',mode,1,'golive')
 		addir_info(namecolor('[B]VTV6 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'1_rhex2pfs',ico,'',mode,1,'golive')
+		addir_info(namecolor('[B]VTV6 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] Các độ phân giải khác',c),'1_rhex2pfs',ico,'',mode,1,'cat44',True)
 	
 		addir_info(namecolor('[B]VTV3 live - [COLOR orange]FPT[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://118.69.252.4/tv2/vtv3HD/index.m3u8',ico,'',mode,1,'cat41')
 		addir_info(namecolor('[B]VTV6 live - [COLOR orange]FPT[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://118.69.252.4/tv2/vtv6HD/index.m3u8',ico,'',mode,1,'cat41')
@@ -7664,15 +7664,24 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 		addir_info(namecolor('Nổi Bật',c),'http://vtvgo.vn/euro2016/index.html',ico,'',mode,1,'cat42',True)
 		addir_info(namecolor('Phát Lại',c),'http://vtvgo.vn/euro2016/replay.html',ico,'',mode,1,'cat43',True)
 
+	elif query=='cat44':
+		addir_info(namecolor('[B]VTV6 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] Chỉ có Audio',c),'1_rhex2pfs',ico,'',mode,1,'golive_TYPE=AUDIO')
+		addir_info(namecolor('[B]VTV6 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] 854x480',c),'1_rhex2pfs',ico,'',mode,1,'golive_854')
+		addir_info(namecolor('[B]VTV6 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] 1024x576',c),'1_rhex2pfs',ico,'',mode,1,'golive_1024')
+		addir_info(namecolor('[B]VTV6 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] 1280x720',c),'1_rhex2pfs',ico,'',mode,1,'golive_1280')
+	
 	elif query=='cat41':xbmcsetResolvedUrl(url)
 	
-	elif query=='golive':xbmcsetResolvedUrl(vtv.golive(url))
-	elif query=='golive':
-		b=xread('https://drive.google.com/folderview?id=0B5y3DO2sHt1LajFDalU2U05GX28')
-		b=xread(urllib2.base64.b64decode(xsearch('<title>(.+?)</title>',b))%url)
-		try:link=json.loads(xsearch('\((\{.+?\})\)',b)).get('flavors')[0].get('url')
-		except:link=''
-		print link
+	elif query=='golive':xbmcsetResolvedUrl(vtv.golive(url)+'|User-Agent=Mozilla/5.0 (Windows NT 10.0; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0')
+	elif 'golive_' in query:
+		url=vtv.golive(url)
+		link=query.split('_')[1]
+		base=urllib2.os.path.dirname(url)
+		for i in xread(url).splitlines():
+			if 'AUDIO' in link and link in i:link=xsearch('URI="(.+?)"',i);break
+			elif link in i:link='OK';continue
+			elif i and link=='OK':link=i;break
+		link=base+'/'+link
 		xbmcsetResolvedUrl(link)
 	
 	elif query=='cat42':
@@ -7686,7 +7695,7 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 		[addir_info(i[0],i[1],i[2],'',mode,1,'playVOD') for i in vtv.vodList(url)]
 		
 	elif query=='playVOD':
-		try:link=xbmcsetResolvedUrl(urllib2.urlopen(url).geturl())
+		try:link=xbmcsetResolvedUrl(urllib2.urlopen(url).geturl()+'|Referer=http://vtvgo.vn/euro2016/live.html')
 		except:mess('Get maxspeed link fail !','VTVgo.vn')
 	
 	elif query=='live':
