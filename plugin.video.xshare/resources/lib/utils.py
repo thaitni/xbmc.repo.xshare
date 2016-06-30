@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import xbmc, xbmcaddon, urllib2,re, os
+import xbmc, xbmcaddon, urllib2,re, os, time
 
 #addon=addon()
 addon= xbmcaddon.Addon()
@@ -27,6 +27,11 @@ class myaddon:
 		self.icon_folder	= os.path.join(self.data_path,'icon')
 		self.icon			= os.path.join(self.icon_folder,'icon.png')
 
+def filetime(fn):#return hour
+	fn=os.path.join(xsharefolder,fn)
+	t=os.path.getmtime(fn) if os.path.isfile(fn) else 0
+	return int((time.time()-t)/600)
+	
 def get_setting(name):return addon.getSetting(name)
 def set_setting(name,value):addon.setSetting(name,value)
 def mess(message='',title='',timeShown=5000):
@@ -52,7 +57,7 @@ def namecolor(name,c=''):return '[COLOR %s]%s[/COLOR]'%(c,name) if c else re.sub
 def xrw(fn,s=''):
 	fn=os.path.join(xsharefolder,fn)
 	try:
-		if s:f=open(fn,'w');f.write(s)
+		if s:f=open(fn,'w');f.write(s);s=fn
 		else:f=open(fn);s=f.read()
 		f.close()
 	except:s=''

@@ -685,11 +685,44 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 class fptPlay:
 	def __init__(self):
 		self.hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','referer':'https://fptplay.net/'}
-		cookie=xrw(os.path.join(xsharefolder,'fptplay.cookie'))
-		self.hd['Cookie'],self.hd['x-csrf-token']=cookie.split(':')
+		self.hd['Cookie']=xrw('fptplay.cookie') if filetime('fptplay.cookie')<30 else self.login()
+		#self.hd['x-csrf-token']=xsearch('token=([^;]+)',self.hd['Cookie'])
+		#self.hd['Cookie']=cookie,self.hd['x-csrf-token']=cookie.split(':')
 		
 	def fpt2s(self,s):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',i),i) for i in s.split())
 	
+	def login(self):
+		email=get_setting('mail_fptplay');password=get_setting('pass_fptplay')
+		data={'email':email,'password':password}
+		if not email:
+			email,password=urllib2.base64.b64decode('eHNoYXJlQHRoYW5odGhhaS5uZXQ6YWRkb254c2hhcmU=').split(':')
+		response=urlfetch.get('https://fptplay.net/tai-khoan');self.hd['Cookie']=response.cookiestring
+		response=urlfetch.post('https://fptplay.net/user/login',headers=self.hd,data=data)
+		if 'state=fail' not in response.headers.get('location'):
+			mess(u'Login thành công','fptplay.net');f=response.cookiestring;xrw('fptplay.cookie',f)
+		else:mess(u'Login không thành công!','fptplay.net');f=''
+		return f
+	
+	def login1(self):
+		email=get_setting('mail_fptplay');password=get_setting('pass_fptplay')
+		if not email:
+			email,password=urllib2.base64.b64decode('eHNoYXJlQHRoYW5odGhhaS5uZXQ6YWRkb254c2hhcmU=').split(':')
+		data=urllib.urlencode({'email':email,'password':password})
+		hd={'User-Agent':'Mozilla/5.0','x-requested-with':'XMLHttpRequest','referer':'https://fptplay.net/tai-khoan'}
+		cookie=urllib2.HTTPCookieProcessor()
+		opener=urllib2.build_opener(cookie)
+		urllib2.install_opener(opener)
+		try:res=urllib2.urlopen('https://fptplay.net/tai-khoan')
+		except:pass
+		hd['Cookie']=';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar)
+		req=urllib2.Request('https://fptplay.net/user/login',data,hd)
+		try:res=urllib2.urlopen(req);b=res.read();res.close()
+		except:b=''
+		cookie=';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar)
+		if 'laravel_id' in cookie:xrw('fptplay.cookie',cookie);mess(u'Login thành công','fptplay.net')
+		else:mess(u'Login không thành công!','fptplay.net')
+		return cookie
+
 	def detail(self,s):
 		title=self.fpt2s(xsearch('title="([^"]+?)"',s))
 		if not title:title=self.fpt2s(xsearch('alt="([^"]+?)"',s))
@@ -1530,7 +1563,7 @@ class sieunhanh:
 class chiasenhac:
 	def __init__(self,username,password):
 		self.session = urlfetch.Session(headers={'User_Agent':'Mozilla/5.0 (Android 4.4; Mobile; rv:42.0) Gecko/41.0 Firefox/42.0','Cookie':'vq=i%3A1080%3B; mq=i%3A500%3B'})
-		self.urlhome='http://chiasenhac.com/'
+		self.urlhome='http://chiasenhac.vn/'
 		self.login(username,password)
 	
 	def fetch(self, url, data=''):
@@ -1540,18 +1573,18 @@ class chiasenhac:
 	
 	def login(self,username,password):
 		data={'username':username,'password':password,'login':'Dang Nhap'}
-		response=self.fetch('http://chiasenhac.com/login.php', data=data)
+		response=self.fetch('http://chiasenhac.vn/login.php', data=data)
 		if not response or response.status!=302:mess(u'Login Không thành công!','chiasenhac.com')
 
 	def logout(self):
-		self.fetch('http://chiasenhac.com/login.php?logout=true')
+		self.fetch('http://chiasenhac.vn/login.php?logout=true')
 
 	def favourite(self, url,action='add'):
-		href='http://chiasenhac.com/mp3/favourite/'+os.path.basename(url).replace('.','_%s.'%action)
+		href='http://chiasenhac.vn/mp3/favourite/'+os.path.basename(url).replace('.','_%s.'%action)
 		self.fetch(href)
 	
 	def get_favourite(self):
-		response = self.fetch('http://chiasenhac.com/mp3/favourite')
+		response = self.fetch('http://chiasenhac.vn/mp3/favourite')
 		if response and response.status==200:body=response.body
 		else:body=''
 		return body
@@ -1975,13 +2008,23 @@ class hdonline:
 		
 		return title,href,img,q,dir
 	
-	def eps1(self,url):
+	def eps(self,id,page):
+		b=xread('http://hdonline.vn/episode/ajax?film=%s&episode=&page=%d&search='%(id,page))
+		items=[('http://hdonline.vn'+j[0],j[1]) for j in re.findall('href="(.+?)"[^>]+>(\d+)</a>',b)]
+		
+		pn=xsearch('<a class="active"[^<]+>\d+</a><[^<]+>(\d+)</a>',b)
+		if pn:items.append(('[COLOR lime]Các tập tiếp theo...[/COLOR]',pn))
+		return items
+		
+	def eps2(self,url):
 		film=xsearch('-(\d+)\.html',url)
 		b=xread('http://hdonline.vn/episode/ajax?film=%s&episode=&page=1&search='%film)
 		items=[(i[1],film+'-'+i[0]) for i in re.findall('data-episodeid="(\d+)".+?>(\d+)</a>',b)]
 		return items
-		
-	def eps(self,url):
+		#<a href="/phim-12-monkeys-season-2-12085.html" class="btn-episode" data-episodeid="101272" data-order="1" onclick="PlayChangeUrl(this);return false;">1</a>
+		#http://hdonline.vn/phim-12-monkeys-season-2-tap-2-12085.101336.html
+	
+	def eps1(self,url):
 		def detail(home,i):
 			j=i.get('title').encode('utf-8'),home+i.get('file').encode('utf-8'),i.get('image').encode('utf-8')
 			return j
@@ -2019,14 +2062,23 @@ class hdonline:
 		except:pass
 		return items,sub
 	
-	def getLink(self,url):
-		b=xread(url,hd)
-		id=xsearch('-(\d+)\.html',url)
+	def getLink(self,url,ep='1'):
+		b=xread(url,self.hd)
+		id=xsearch('-(\d+)\.',url)
 		token=xsearch('\|(\w{80,100})\|',b)
 		rand=xsearch('\|(\d{10,12})\|',b)
-		url='http://hdonline.vn/frontend/episode/xmlplay?ep=1&fid=%s&token=%s-%s&format=json'%(id,token,rand)
-		try:j=json.loads(xread(url,hd))
+		url='http://hdonline.vn/frontend/episode/xmlplay?ep=%s&fid=%s&token=%s-%s&format=json'%(ep,id,token,rand)
+		try:j=json.loads(xread(url,self.hd))#;print json.dumps(j,indent=2)
 		except:j={}
+		items=[];sub=''
+		if j.get("audiodub"):mess(u'Phim này có 2 audio','HDonline.vn',10000)
+		if j.get('level'):items=ls([(i.get('file'),rsl(i.get('label'))) for i in j.get('level')])
+		elif j.get('file'):items=j.get('file')
+		
+		if j.get('subtitle'):
+			for i in j.get('subtitle'):
+				if i.get('code').encode('utf-8')=='vi':sub=i.get('file');break
+		return items,sub
 		
 class mphim:
 	def __init__(self,c):
@@ -2195,9 +2247,44 @@ class vtvgovn:
 	def vodLink(self,url):
 		return xsearch("file\": '(.+?)'",xread(url))
 	
-	def golive(self,url):
+	def golive(self,url,l='04'):
+		c='VTV6' if url=='1_rhex2pfs' else 'VTV3'
 		b=xread('https://drive.google.com/folderview?id=0B5y3DO2sHt1LWnJSTDBBRkZNZEU')
 		url=xread(urllib2.base64.b64decode(xsearch('<title>(.+?)</title>',b).split(' ')[1])%url)
+		try:url=json.loads(url).get('flavors')[0].get('url');print url
+		except:url=''
+		
+		t=xsearch('(\w{40,50})',url)
+		d1='http://vtvgoeuroobj.b5695cde.cdnviet.com'
+		d2='Content/HLS/Live/Channel(%s)/Stream(%s)/index.m3u8'
+		s=['#EXTM3U\n#EXT-X-VERSION:4\n#EXT-X-ALLOW-CACHE:YES\n']
+		s+='#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio",NAME="und",DEFAULT=YES,AUTOSELECT=YES,'
+		s+='URI="%s/%s/%s"\n'%(d1,t,d2%(c,'05'))
+		if l=='01':r='640x360';b='680243'
+		elif l=='02':r='854x480';b='1497634'
+		elif l=='03':r='1024x576';b='1906330'
+		else:r='1280x720';b='2315025'
+		
+		s+='#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=%s,RESOLUTION=%s,AUDIO="audio"\n'%(b,r)
+		s+='%s/%s/%s\n'%(d1,t,d2%(c,l))
+		url=xrw('vtv.m3u8',''.join(s))
+		return url
+		
+	def golive6(self,url):
+		b=xread('https://drive.google.com/folderview?id=0B5y3DO2sHt1LWnJSTDBBRkZNZEU')
+		url=xread(urllib2.base64.b64decode(xsearch('<title>(.+?)</title>',b).split(' ')[1])%url)
+		try:
+			url=xget(json.loads(url).get('flavors')[0].get('url')).geturl();print 'sss: '+url
+			s='\n'.join(l for l in xread(url).replace('Stream',urllib2.os.path.dirname(url)+'/Stream').splitlines() if l)
+			url=xrw('vtv.m3u8',s)
+		except:url=''
+		print url
+		
+		return url
+		
+	def golive0(self,url):
+		b=xread('https://drive.google.com/folderview?id=0B5y3DO2sHt1LWnJSTDBBRkZNZEU')
+		url=xread(urllib2.base64.b64decode(xsearch('<title>(.+?)</title>',b).split(' ')[1])%url);print url
 		try:url=xget(json.loads(url).get('flavors')[0].get('url')).geturl()
 		except:url=''
 		return url

@@ -2399,7 +2399,6 @@ def get_home_page(fn,url='',update=False,hd=hd):
 	return body
 
 def fptplay(name,url,img,mode,page,query):
-	hd={'User-Agent':'android Mozilla/5.0','x-requested-with':'XMLHttpRequest','referer':url}
 	ico=icon['fptplay'];c=xsearch('([a-z]+)',color['fptplay'])
 	
 	def login():
@@ -2424,19 +2423,17 @@ def fptplay(name,url,img,mode,page,query):
 	
 	def stream(href,id,epi='1'):
 		data=urllib.urlencode({'id':id,'type':'newchannel','quality':'3','episode':epi,'mobile':'web'})
-		try:link=json.loads(xread(href,hd,data)).get('stream');xbmcsetResolvedUrl(link);print 'aaa',link
+		try:link=json.loads(xread(href,hd,data)).get('stream');xbmcsetResolvedUrl(link)
 		except:
 			b=xread(url);id=xsearch("var id = '(.+?)'",b)
 			data=urllib.urlencode({'id':id,'type':'newchannel','quality':'3','episode':epi,'mobile':'web'})
 			href='https://fptplay.net/show/getlinklivetv'#cac link tv tren muc phim dang phat
-			try:link=json.loads(xread(href,hd,data)).get('stream');xbmcsetResolvedUrl(link);print 'bbb',link
+			try:link=json.loads(xread(href,hd,data)).get('stream');xbmcsetResolvedUrl(link)
 			except:pass
 			print href,hd,data
 	
-	cookie=makerequest(joinpath(xsharefolder,'fptplay.cookie'))
-	if ':' not in cookie:cookie=login()
-	hd['Cookie'],hd['x-csrf-token']=cookie.split(':')
 	from resources.lib.servers import fptPlay;fpt=fptPlay()
+	hd=fpt.hd
 	
 	if query=="fptplay.net":
 		b=get_home_page('fptplay.html','https://fptplay.net')
@@ -2459,7 +2456,7 @@ def fptplay(name,url,img,mode,page,query):
 			faddir([fpt.detail(i) for i in re.findall('(<li class="slide_img enyo".+?/li>)',s,re.S)])
 		
 		if get_home_page('fptplay.html','https://fptplay.net',True):xbmc.executebuiltin("Container.Refresh")
-		if checkupdate('fptplay.cookie',24,xsharefolder):login()
+		if checkupdate('fptplay.cookie',30,xsharefolder):login()
 		
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
 	elif query=="INP" or url=="fptplay.net":
@@ -3470,6 +3467,23 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 			for href,title in s:
 				addir_info('Tập '+title+' '+namecolor(name),href,img,'',mode,1,'play')
 	
+	elif query=="play":
+		b=xread(url)
+		url='http://www.hayhaytv.vn/getsource/%s'%xsearch("FILM_KEY = '(.+?)'",b)
+		b=xread(url,{'Referer':'http://www.hayhaytv.vn/'})
+		try:j=eval(b)
+		except:j=[]
+		s=[(i.get('file').replace('\\',''),i.get('label')) for i in j]
+		link=''
+		if s:
+			L=sorted(s, key=lambda k: k[1],reverse=True if myaddon.getSetting('resolut')=='Max' else False)
+			#print href,L
+			for href,r in L:
+				link=dl(href)#;print 'a',link,'b',href
+				if link:break
+		if link:xbmcsetResolvedUrl(link)
+		else:mess('File invalid or deleted!','hayhaytv.vn') 
+			
 	elif query=="play":
 		b=xread(url)
 		s=re.findall("file:'([^']+?)',label:'([^']+?)'",b)
@@ -4834,10 +4848,15 @@ def hdonline(name,url,img,fanart,mode,page,query,bakName,bakData):
 		
 		page_detail(b)
 	
-	elif query=='eps1':
-		for title,href,img in hdo.eps(url):
-			title=title+' '+namecolor(name)
-			addir_info(title,href,img,'',mode,1,'play',menu=menu)
+	elif query=='eps':
+		if 'Các tập tiếp theo' in  name:name= url.split('.html')[1];url= url.split('.html')[0]+'.html'
+		else:name=namecolor(name)
+		id=xsearch('-(\d+)\.html',url)
+		for href,epi in hdo.eps(id,page):
+			if 'Các tập tiếp theo' in href:addir_info(href,url+name,img,'',mode,page+1,query,True)
+			else:
+				title='Tập-'+epi+' '+name
+				addir_info(title,href,img,'',mode,1,'play',menu=menu)
 	
 	elif query=='eps':
 		for title,href,img in hdo.eps(url):
@@ -4851,7 +4870,41 @@ def hdonline(name,url,img,fanart,mode,page,query,bakName,bakData):
 		if bakData.get(bakName):xrw('sysmenu.dat',json.dumps(bakData));mess('buff list ok',timeShown=100)
 	
 	elif query=='play':
+		epi=xsearch('Tập-(\d+) ',name)
+		if not epi:epi='1'
 		from resources.lib.servers import hdonline;hdo=hdonline(c)
+		items,sub=hdo.getLink(url,epi)
+		link=gdl(items)
+		if link:
+			xbmcsetResolvedUrl(link)
+			if sub:
+				if 'hdonline.vn' in sub:
+					if not sub.startswith('http'):sub='http://data.hdonline.vn/api/vsub.php?url=%s'%sub
+					s=xread('http://data.hdonline.vn/api/vsub.php?url='+sub)
+					subname=joinpath(subsfolder,os.path.basename(sub).split('?')[0]+'-Vie.sub')
+					makerequest(subname,s,'wb')
+				else:subname=sub
+				xbmc.sleep(1000);xbmc.Player().setSubtitles(subname);mess(u'Sub của HDOnline.vn')
+		else:mess('File invalid or deleted!','hdonline.vn') 
+
+	elif query=='play':
+		epi=xsearch('Tập-(\d+) ',name)
+		if not epi:epi='1'
+		from resources.lib.servers import hdonline;hdo=hdonline(c)
+		j=hdo.getLink(url,epi)
+		link=''
+		if j:
+			L=sorted(j, key=lambda k: k[1],reverse=True if myaddon.getSetting('resolut')=='Max' else False)
+			#print href,L
+			for href,r in L:
+				link=dl(href)#;print 'a',link,'b',href
+				if link:break
+		if link:xbmcsetResolvedUrl(link)
+		else:mess('File invalid or deleted!','hdonline.vn') 
+
+	elif query=='play':
+		from resources.lib.servers import hdonline;hdo=hdonline(c)
+		hdo.getLink(url)
 		if 'http://hdonline.vn/frontend/episode/xmlplay' not in url:
 			l=hdo.eps(url)
 			if l:url=l[0][1]
@@ -4949,9 +5002,9 @@ def kphim(name,url,img,mode,page,query):
 		if servers:video_id=servers[0][0]
 		else:video_id=xsearch("fvid='(.+?)'",a)
 		server_id=xsearch('loadNewPlayer\(fsvvideo, (\d.+?),',a)
-		#print 'http://kphim.tv/embed/%s/%s/'%(server_id,video_id)
 		tk=urllib2.hashlib.md5(server_id+'var').hexdigest()
 		b=make_request('http://kphim.tv/embed/%s/%s/%s'%(server_id,video_id,tk),headers=hd)
+		print 'http://kphim.tv/embed/%s/%s/%s'%(server_id,video_id,tk),hd
 		
 		a=xsearch('(<video.+?/video>)',b,1,re.DOTALL)
 		for s in re.findall('(data-res="\d+p")',a):a=re.sub(s,'data-res="'+xsearch('data-res="(\d+)p"',s)+'"',a)
@@ -5565,13 +5618,15 @@ def nhaccuatui(name,url,img,fanart,mode,page,query):
 		xbmcsetResolvedUrl(nct.getLink(id,'video'))
 
 def chiasenhac(name,url,img,fanart,mode,page,query):
-	hd={'User_Agent':'Mozilla/5.0 (Android 4.4; Mobile; rv:42.0) Gecko/41.0 Firefox/42.0','Cookie':'vq=i%3A1080%3B; mq=i%3A500%3B'}
-	ico=os.path.join(iconpath,'chiasenhac.png');icodj=os.path.join(iconpath,'nhacdj.png');urlhome='http://chiasenhac.com/'
+	hd={'User_Agent':'Mozilla/5.0 (Android 4.4; Mobile; rv:42.0) Gecko/41.0 Firefox/42.0'}
+	if myaddon.getSetting('resolut')=='Max':hd['Cookie']='vq=i%3A1080%3B; mq=i%3A500%3B'
+	else:hd['Cookie']='vq=i%3A720%3B; mq=i%3A500%3B'
+	ico=os.path.join(iconpath,'chiasenhac.png');icodj=os.path.join(iconpath,'nhacdj.png');urlhome='http://chiasenhac.vn/'
 	if not os.path.isfile(ico):
 		try:urllib.urlretrieve('http://chiasenhac.com/templates/light2012/images/logo.jpg',ico)
 		except:pass
 	menu={'MyPlaylist':{'action':'Add','server':['chiasenhac.com']}}
-	
+	url=url.replace('.com','.vn')
 	def csn_url(url):return urlhome+url if 'http://' not in url else url
 	
 	def csn_get_dir(s,art=dict(),isFolder=False):
@@ -6653,6 +6708,79 @@ def phim14(name,url,img,mode,page,query):
 			b=xsearch('(<div class="jp-player-video">.+?</div)',make_request(url),1,re.DOTALL)
 			u=xsearch('src="(.+?)\?',b)
 			if u:return play_youtube(u)
+		b=xread(url)
+		url=xsearch('link:"(.+?)"',b);print url
+		link=''
+		if url:
+			href='http://player8.phim14.net/gkphp97pc/plugins/gkpluginsphp.php'
+			b=xread(href,data='link='+url.replace('&','%26'))
+			try:j=json.loads(b)
+			except:j=[]
+			#print 'j=%s'%j
+			#makerequest(r'D:\xoa.js',json.dumps(j,indent=2),'a')
+			def hh(l):
+				L=[];link=''
+				for i in l:
+					j=i.get('link',[])
+					L+=((s.get('link'),resolu(s.get('label'))) for s in j if s.get('label').lower()!='auto')
+				L=sorted(L, key=lambda k: int(k[1]),reverse=True if myaddon.getSetting('resolut')=='Max' else False)
+				for href,label in L:
+					link=dl(href)
+					if link:break
+				return link
+			
+			l=j.get('list',list())
+			if l:
+				if isinstance(l, unicode):link=l
+				elif l and isinstance(l, list):link=hh(l)
+				elif l and (isinstance(l, dict) or isinstance(l, list)):#Kg sd
+					for s in re.findall('(label="\d+p")',a):a=re.sub(s,'label="'+xsearch('label="(\d+)p"',s)+'"',a)
+					a=a.replace('hd1080','1080').replace('hd720','720').replace('large','640').replace('medium','480')
+					
+					def get_max_link(link):
+						b=make_request(link,resp='o',maxr=5)
+						if b and b.history:link=b.history[-1].headers.get('location')
+						else:link=''
+						return link
+					for i in l:
+						k=i.get('link',list())#;print i.get('title')
+						if k and isinstance(k, unicode):link=get_max_link(k)
+						elif k and (isinstance(k, dict) or isinstance(k, list)):
+							r=0
+							for m in k:
+								if m.get('label')=='HD':link=m.get('link')
+								elif m.get('label')=='SD' and not link:link=m.get('link')
+								else:
+									try:
+										if int(m.get('label').replace('p',''))>r:r=int(m.get('label').replace('p',''));link=m.get('link')
+									except:pass
+							if link:link=get_max_link(link)
+						if link:break
+			else:
+				l=j.get('link',list())#;print 'aaaaaaaaaa %s'%l
+				if l and isinstance(l, unicode):link=l
+				elif l and isinstance(l, list):link=hh([j])
+				elif l and (isinstance(l, dict) or isinstance(l, list)):#Kg sd
+					r=0
+					for i in l:
+						try:
+							if i.get('label')=='HD':link=i.get('link')
+							elif i.get('label')=='SD' and not link:link=i.get('link')
+							elif int(i.get('label').replace('p',''))>r:r=int(i.get('label').replace('p',''));link=i.get('link')
+						except:pass
+					if link:
+						b=make_request(link,resp='o',maxr=5)
+						try:link=b.history[-1].headers.get('location')
+						except:link=''
+		else:print 'String Not found'
+		if link:xbmcsetResolvedUrl(link)
+		elif not link:mess('File invalid or deleted!','phim14.net') 
+
+	elif query=='play1':#http://player8.phim14.net/3008/plugins/plugins_player.php
+		if 'm.phim14.net' in url:
+			b=xsearch('(<div class="jp-player-video">.+?</div)',make_request(url),1,re.DOTALL)
+			u=xsearch('src="(.+?)\?',b)
+			if u:return play_youtube(u)
 		b=make_request('http://phim14.net/ajax/episode.html?episodeid=%s'%xsearch('\.(\d+?)\.html',url),hd)
 		url=xsearch('link:"(.+?)"',b)
 		link=''
@@ -6996,8 +7124,7 @@ def television(name,url,img,fanart,mode,page,query,text):
 			addir_info(namecolor(fixs(title),c),href,img,'',mode,1,'fptlive_play')
 	
 	elif query=='fptlive_play':
-		try:hd['Cookie'],hd['x-csrf-token']=makerequest(joinpath(xsharefolder,'fptplay.cookie')).split(':')
-		except:pass
+		from resources.lib.servers import fptPlay;fpt=fptPlay(); hd['Cookie']=fpt.hd['Cookie']
 		id=[s for s in url.split('/') if s]
 		if id:id=id[len(id)-1]
 		else:id='vtv3-hd'
@@ -7653,16 +7780,38 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 			else:addir_info(title,href,img,img,mode,1,'play')
 	
 	elif query=='cat04':
-		addir_info(namecolor('[B]VTV3 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'1_ks4iwsda',ico,'',mode,1,'golive')
-		addir_info(namecolor('[B]VTV6 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'1_rhex2pfs',ico,'',mode,1,'golive')
-		addir_info(namecolor('[B]VTV6 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] Các độ phân giải khác',c),'1_rhex2pfs',ico,'',mode,1,'cat44',True)
-	
-		addir_info(namecolor('[B]VTV3 live - [COLOR orange]FPT[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://118.69.252.4/tv2/vtv3HD/index.m3u8',ico,'',mode,1,'cat41')
-		addir_info(namecolor('[B]VTV6 live - [COLOR orange]FPT[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://118.69.252.4/tv2/vtv6HD/index.m3u8',ico,'',mode,1,'cat41')
-		
+		addir_info(namecolor('[B]VTV3 - [COLOR orange]FPT[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://118.69.252.4/tv2/vtv3HD/index.m3u8',ico,'',mode,1,'cat41')
+		addir_info(namecolor('[B]VTV6 - [COLOR orange]FPT[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://118.69.252.4/tv2/vtv6HD/index.m3u8',ico,'',mode,1,'cat41')
 		add_sep_item('-----------------------------------------------')
-		addir_info(namecolor('Nổi Bật',c),'http://vtvgo.vn/euro2016/index.html',ico,'',mode,1,'cat42',True)
-		addir_info(namecolor('Phát Lại',c),'http://vtvgo.vn/euro2016/replay.html',ico,'',mode,1,'cat43',True)
+		
+		addir_info(namecolor('[B]VTV3 - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] 640x360',c),'1_ks4iwsda-01',ico,'',mode,1,'golive')
+		addir_info(namecolor('[B]VTV3 - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] 854x480',c),'1_ks4iwsda-02',ico,'',mode,1,'golive')
+		addir_info(namecolor('[B]VTV3 - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] 1024x576',c),'1_ks4iwsda-03',ico,'',mode,1,'golive')
+		addir_info(namecolor('[B]VTV3 - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] 1280x720',c),'1_ks4iwsda-04',ico,'',mode,1,'golive')
+		add_sep_item('-----------------------------------------------')
+		
+		addir_info(namecolor('[B]VTV6 - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] 640x360',c),'1_rhex2pfs-01',ico,'',mode,1,'golive')
+		addir_info(namecolor('[B]VTV6 - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] 854x480',c),'1_rhex2pfs-02',ico,'',mode,1,'golive')
+		addir_info(namecolor('[B]VTV6 - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] 1024x576',c),'1_rhex2pfs-03',ico,'',mode,1,'golive')
+		addir_info(namecolor('[B]VTV6 - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] 1280x720',c),'1_rhex2pfs-04',ico,'',mode,1,'golive')
+		add_sep_item('-----------------------------------------------')
+		
+		addir_info(namecolor('[B]VTV3 - [COLOR orange](Dự phòng)[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://live.tvmienphi.biz/stream-flix/vtv3hd.php','https://static.fptplay.net/static/img/share/channels/icon_channel_vtv3-hd_145810226276.jpg','',mode,1,'cat45')
+		addir_info(namecolor('[B]VTV6 - [COLOR orange](Dự phòng)[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://live.tvmienphi.biz/stream-flix/vtv3hd.php','https://static.fptplay.net/static/img/share/channels/icon_channel_vtv6-hd_14567302322.jpg','',mode,1,'cat45')
+		addir_info(namecolor('[B]VTV3 - [COLOR orange](Dự phòng)[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://embed.sohatv.vn?__c=vtv3','https://static.fptplay.net/static/img/share/channels/icon_channel_vtv3-hd_145810226276.jpg','',mode,1,'cat45')
+		addir_info(namecolor('[B]VTV6 - [COLOR orange](Dự phòng)[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://embed.sohatv.vn?__c=vtv6','https://static.fptplay.net/static/img/share/channels/icon_channel_vtv6-hd_14567302322.jpg','',mode,1,'cat45')
+		addir_info(namecolor('[B]VTV9 - [COLOR orange](Dự phòng)[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B]',c),'http://embed.sohatv.vn?__c=vtv9','http://vtv1.vcmedia.vn/web_images/vtv9-3.png','',mode,1,'cat45')
+		add_sep_item('-----------------------------------------------')
+		
+		addir_info('[B][COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR] [COLOR red]Nổi Bật[/COLOR][/B]','http://vtvgo.vn/euro2016/index.html',ico,'',mode,1,'cat42',True)
+		addir_info('[B][COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR] [COLOR lime]Phát Lại[/COLOR][/B]','http://vtvgo.vn/euro2016/replay.html',ico,'',mode,1,'cat43',True)
+
+	elif query=='cat45':
+		if 'stream-flix' in url:
+			link=xsearch('"file":\'(.+?)\'',xread(url))
+			if 'VTV6' in name:link=link.replace('vtv3','vtv6')
+		else:link=xsearch('playUrl.{3,5}"(.+?)"',xread(url))+'|Referer=http://vtv.vn/truyen-hinh-truc-tuyen.htm'
+		xbmcsetResolvedUrl(link)
 
 	elif query=='cat44':
 		addir_info(namecolor('[B]VTV6 live - [COLOR red]VTVGo[/COLOR] [COLOR lime]Euro[/COLOR] [COLOR blue]2016[/COLOR][/B] Chỉ có Audio',c),'1_rhex2pfs',ico,'',mode,1,'golive_TYPE=AUDIO')
@@ -7672,7 +7821,10 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 	
 	elif query=='cat41':xbmcsetResolvedUrl(url)
 	
-	elif query=='golive':xbmcsetResolvedUrl(vtv.golive(url)+'|User-Agent=Mozilla/5.0 (Windows NT 10.0; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0')
+	elif query=='golive':
+		xbmcsetResolvedUrl(vtv.golive(url.split('-')[0],url.split('-')[1]))
+		#xbmcsetResolvedUrl(joinpath(xsharefolder,'vtv.m3u8'))
+	
 	elif 'golive_' in query:
 		url=vtv.golive(url)
 		link=query.split('_')[1]
