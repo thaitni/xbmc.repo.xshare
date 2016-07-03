@@ -2473,13 +2473,14 @@ def fptplay(name,url,img,mode,page,query):
 			addir_info('[COLOR lime]Page next: %d[/COLOR]'%(page+1),pn,ico,'',mode,page+1,"pageNext",True)
 	
 	elif url=='https://fptplay.net/livetv':
-		for s in [i for i in xread(url).split('"col-xs-6 col-sm-5 col-md-4">') if ' class="livetv_header' in i]:
-			i=xsearch('<span class="livetv_header Regular pull-left">(.+?)</span>',s)
-			add_sep_item('%s -----------------------------------------'%fpt.fpt2s(i))
-			for title,href,img,dir in [fpt.detail(i) for i in re.findall('(<a class="tv_channel.+?/a>)',s,re.S)]:
-				addir_info(namecolor(title,c),os.path.basename(href),img,'',mode,1,'playTV')
-
-	elif query=='playTV':stream('https://fptplay.net/show/getlinklivetv',url)
+		for title,href,img in fpt.liveChannals():
+			if 'sep' in href:add_sep_item('%s -----------------------------------------'%title)
+			else:addir_info(namecolor(title,c),os.path.basename(href),img,'',mode,1,'playTV')
+			
+	elif query=='playTV':#stream('https://fptplay.net/show/getlinklivetv',url)
+		link=fpt.liveLink(url)
+		if link:xbmcsetResolvedUrl(link)
+		else:mess('Get channel link fail!') 
 	
 	elif query=='category':
 		b=xread(url)
@@ -3418,10 +3419,10 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 		if get_home_page('hayhaytv.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
 
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
-	elif query=="INP":
-		query=make_mySearch('',url,'','','','Input')
-		if query:return hayhaytv(name,url,img,fanart,mode,page,query)
 	elif url=="hayhaytv.vn":
+		if query=="INP":
+			query=make_mySearch('',url,'','','','Input')
+			if not query.strip():return
 		search_string = urllib.quote_plus(query)
 		url='http://www.hayhaytv.vn/tim-kiem.html?term='+search_string
 		hd={'User-Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest'}
@@ -3467,6 +3468,17 @@ def hayhaytv(name,url,img,fanart,mode,page,query):
 			for href,title in s:
 				addir_info('Tập '+title+' '+namecolor(name),href,img,'',mode,1,'play')
 	
+	elif query=="play":
+		from resources.lib.servers import hayhayvn;hh=hayhayvn(c)
+		link,sub=hh.getLink(url)
+		if link:
+			if sub:
+				s=xread(sub)
+				sub=joinpath(subsfolder,'hayhay-Vie.sub')
+				makerequest(sub,s,'wb')
+			xbmcsetResolvedUrl(link,sub)
+		else:mess('File invalid or deleted!','hayhaytv.vn') 
+		
 	elif query=="play":
 		b=xread(url)
 		url='http://www.hayhaytv.vn/getsource/%s'%xsearch("FILM_KEY = '(.+?)'",b)
@@ -4690,6 +4702,11 @@ def phim47(name,url,img,mode,page,query):
 		for href,title in re.findall('<a href="(.+?)" title=".+?">(.+?)</a>',S):
 			addir_info(namecolor(title),href,img,img,mode,1,"p47_getpage",True)
 	
+	elif query=='xemnhieu':
+		from resources.lib.servers import phim47com;p47=phim47com(c)
+		for title,href,img in p47.xemnhieu(get_home_page('phim47.html')):
+			addir_info(title,href,img,img,mode,1,"get_series",True)
+	
 	elif query=='xemnhieu':		
 		body=get_home_page('phim47.html')
 		items=re.findall('<li class="zitem">.+?src="(.+?)".+?<a href="(.+?)".+?>(.+?)</a>',body,re.DOTALL)
@@ -4710,13 +4727,26 @@ def phim47(name,url,img,mode,page,query):
 	
 	elif query=='get_series':
 		name=xsearch('\](.+?)\[',name)
+		b=xread(url)
+		fanart=xsearch('<link rel="image_src" href="(.+?)"',b);count=0
+		for url in re.findall('id="xemphimus" href="(http://phim47.com.+?)"',b):
+			b=xread(url);count+=1
+			for s in re.findall('("list_episode".+?"clear_span")',b,re.DOTALL):
+				title=xsearch('"name_server">([^<]+?)</span>',s)
+				if title:add_sep_item('%s-%d----------------------------------------------'%(title,count))
+				tap1=xsearch('class="current">([^<]+?)</',s)
+				if tap1:addir_info('Tập %s'%tap1+' '+name,url,img,fanart,mode,1,'p47_play')
+				for href,title in re.findall('<a href="(.+?)" title="(.+?)">',s):
+					addir_info(title+' '+name,href,img,fanart,mode,1,'p47_play')
+	
+	elif query=='get_series':
+		name=xsearch('\](.+?)\[',name)
 		body=make_request(url)
 		url=xsearch('href="(http://phim47.com/xem-online[^"]+?)"',body);print url
 		fanart=xsearch('<link rel="image_src" href="(.+?)"',body)
 		body=make_request(xsearch('href="(http://phim47.com/xem-online[^"]+?)"',body))
 		for s in re.findall('("list_episode".+?"clear_span")',body,re.DOTALL):
 			title=xsearch('"name_server">([^<]+?)</span>',s)
-			#title=xsearch('"left server_name"> (.+?:)',s)+xsearch('"left server_name">.+?<img alt=".+?" title="(.+?)"',s)
 			if title:addir_info('%s%s[/COLOR]'%(color['trangtiep'],title),'',img,fanart,mode,1,"")
 			tap1=xsearch('class="current">([^<]+?)</',s)
 			if tap1:addir_info('Tập %s'%tap1+' '+name,url,img,fanart,mode,1,'p47_play')
@@ -4724,7 +4754,20 @@ def phim47(name,url,img,mode,page,query):
 				addir_info(title+' '+name,href,img,fanart,mode,1,'p47_play')
 	
 	elif query=='p47_play':
-		items=[];link=sub='';items=[]
+		from resources.lib.servers import phim47com;p47=phim47com(c)
+		link,sub=p47.getLink(url)
+		if link and 'youtube.com' not in link:
+			if sub:
+				s=xread(sub)
+				sub=joinpath(subsfolder,'phim47-Vie.sub')
+				makerequest(sub,s,'wb')
+			xbmcsetResolvedUrl(link,sub)
+		elif link:play_youtube(link)
+		else:mess('File invalid or deleted!','phim47.com') 
+		
+	elif query=='p47_play':
+		items=[];link=sub='';items=[];url=url.replace('xem-phim-','xem-online/')
+		print url
 		from resources.lib.servers import phim47com;p47=phim47com(c)
 		for link in re.findall("playlist':.?'(.+?)'",xread(url)):
 			l,sub=p47.maxLink(link)
@@ -4923,109 +4966,70 @@ def hdonline(name,url,img,fanart,mode,page,query,bakName,bakData):
 		else:mess('File invalid or deleted!','hdonline.vn') 
 
 def kphim(name,url,img,mode,page,query):
-	hd={'User-Agent':'Mozilla/5.0 (Windows NT 6.3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36'}
+	hd={'User-Agent':'Mozilla/5.0'};c='lightgreen'
 	color['kphim']='[COLOR lightgreen]'
 	ico=os.path.join(iconpath,'kphim.png');urlhome='http://kphim.tv/'
 	if not os.path.isfile(ico):
 		try:makerequest(ico,get('http://kphim.tv/resources/images/logo.png').body,'wb')
 		except:pass
 		
-	def namecolor(name,c='lightgreen'):return '[COLOR %s]'%c+name+'[/COLOR]'
-	def nocolor(name):return re.sub('\[.+?\]','',name)
-	def items_home(S):
-		for s in S:
-			href=xsearch('href="(.+?)"',s)
-			img=xsearch('src="(.+?)"',s)
-			title=xsearch('>(.+?)</h4>',s)
-			t=re.search('>(.+?) <span style=".+?">(.+?)</span>',s)
-			if t: title+=' - '+t.group(1)+' '+t.group(2)
-			elif xsearch('>(.+?)</span>',s):title+=' - '+xsearch('>(.+?)</span>',s)
-			addir_info(namecolor(title,'aquamarine'),href,img,'',mode,1,'episode',True)
-	
+	from resources.lib.servers import kPhim;kph=kPhim(c)
 	if  query=='kphim.tv':
-		a=make_request(urlhome)
+		a=xread(urlhome)
 		title=color['search']+"Search trên kphim.tv[/COLOR]"
 		addir_info(title,'kphim.tv',ico,'',mode,1,'search',True)
 		
 		for title in re.findall('<div class="title-tab">.*?\s(.+?)\s.*?</div>',a):
-			addir_info(namecolor(title.strip()),urlhome,ico,'',mode,1,'new',True)
+			addir_info(namecolor(title.strip(),c),urlhome,ico,'',mode,1,'new',True)
 		
-		b=xsearch('(<nav id="footer-nav">.+?</ul>)',a,1,re.DOTALL)
+		b=xsearch('(<nav id="footer-nav">.+?</ul>)',a,1,re.S)
 		for href,title in re.findall('<li><a href="(.+?)">(.+?)</a></li>',b):
-			if 'theloai' in href:addir_info(namecolor(title),href,img,'',mode,1,'theloai',True)
-			else:addir_info(namecolor(title),href,img,'',mode,1,'episode',True)
+			if 'theloai' in href:addir_info(namecolor(title,c),href,img,'',mode,1,'theloai',True)
+			else:addir_info(namecolor(title,c),href,img,'',mode,1,'episode',True)
 			
 		title='PHIM TRUYỀN HÌNH HÀN QUỐC'
 		href='http://kphim.tv/theloai/phim-truyen-hinh-han-quoc-z1.html'
 		addir_info('[COLOR lime]'+title+'[/COLOR]',href,img,'',mode,1,'theloai',True)
-		items_home(re.findall('(<div class="kdrama-item.+?</div>)',a,re.DOTALL))
+		l=re.findall('(<div class="kdrama-item.+?</div>)',a,re.S)
+		for title,href,img in kph.detail(l):
+			addir_info(namecolor(title,c),href,img,'',mode,1,'episode',True)
 		
 		title='TV SHOW, TRUYỀN HÌNH THỰC TẾ'
 		href='http://kphim.tv/theloai/truyen-hinh-thuc-te-z2.html'
 		addir_info('[COLOR lime]'+title+'[/COLOR]',href,img,'',mode,1,'theloai',True)
-		items_home(re.findall('(<div class="kshow-item.+?</div>)',a,re.DOTALL))
+		l=re.findall('(<div class="kshow-item.+?</div>)',a,re.S)
+		for title,href,img in kph.detail(l):
+			addir_info(namecolor(title,c),href,img,'',mode,1,'episode',True)
 
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
-	elif query=="INP":
-		query=make_mySearch('',url,'','','','Input')
-		if query:return kphim(name,url,img,mode,page,query)
-		else:return 'no'
 	elif url=="kphim.tv":
+		if query=="INP":
+			query=make_mySearch('',url,'','','','Input')
+			if not query:return
+		
 		search_string = urllib.quote_plus(query)
 		url='http://kphim.tv/search/?keyword=%s'%search_string
-		return kphim(name,url,img,mode,1,query='theloai')
+		for title,href,img in kph.genre(url):
+			addir_info(namecolor(title,c),href,img,'',mode,1,'episode',True)
 	
 	elif query=='new':
-		if 'TOP' in name:s=xsearch('(%s.+?<script>)'%nocolor(name),make_request(urlhome),1,re.DOTALL)
-		else:s=xsearch('(%s.+?</ul>)'%nocolor(name),make_request(urlhome),1,re.DOTALL)
+		if 'TOP' in name:s=xsearch('(%s.+?<script>)'%namecolor(name),make_request(urlhome),1,re.DOTALL)
+		else:s=xsearch('(%s.+?</ul>)'%namecolor(name),make_request(urlhome),1,re.DOTALL)
 		for href,title,label in set(re.findall('href="(.+?)" title="(.+?)".+?> ([^>]+?)</span>',s)):
-			addir_info(namecolor(title+' - '+label),href,img,'',mode,1,'episode',True)
+			addir_info(namecolor(title+' - '+label,c),href,img,'',mode,1,'episode',True)
 
 	elif query=='theloai':
-		a=make_request(url)
-		for s in re.findall('(<li style.+?/li>)',a,re.DOTALL):
-			href=xsearch('href="(.+?)"',s)
-			img=xsearch('src="(.+?)"',s)
-			t=xsearch('>(.+?)-\d+?</span>',s)
-			title=t+' - ' if t else ''
-			title+=xsearch('"movie-name-1">(.+?)</h3>',s)+' - '+xsearch('"movie-name-2">(.+?)</h4>',s)
-			t=xsearch('<strong> (.+?)</strong></p>',s)
-			if t:title+= ' (%s)'%t
-			addir_info(namecolor(title),href,img,'',mode,1,'episode',True)
+		for title,href,img in kph.genre(url):
+			addir_info(namecolor(title,c),href,img,'',mode,1,'episode',True)
 	
 	elif query=='episode':
-		for href,title in re.findall('<a class="btn btn-default" href="(.+?)"> (.+?) </a>',make_request(url)):
-			addir_info('Tập %s - '%title+nocolor(name),href,img,'',mode,1,'play')
+		for href,title in kph.eps(url):
+			addir_info('Tập %s - '%title+namecolor(name),href,img,'',mode,1,'play')
+	
 	else:
-		a=make_request(url);hd['Referer']=url
-		servers=re.findall('poster.+?fid.+?title="video-(\d+?)".+?title="(.+?)">',a)
-		if servers:video_id=servers[0][0]
-		else:video_id=xsearch("fvid='(.+?)'",a)
-		server_id=xsearch('loadNewPlayer\(fsvvideo, (\d.+?),',a)
-		tk=urllib2.hashlib.md5(server_id+'var').hexdigest()
-		b=make_request('http://kphim.tv/embed/%s/%s/%s'%(server_id,video_id,tk),headers=hd)
-		print 'http://kphim.tv/embed/%s/%s/%s'%(server_id,video_id,tk),hd
-		
-		a=xsearch('(<video.+?/video>)',b,1,re.DOTALL)
-		for s in re.findall('(data-res="\d+p")',a):a=re.sub(s,'data-res="'+xsearch('data-res="(\d+)p"',s)+'"',a)
-		a=a.replace('hd1080','1080').replace('hd720','720').replace('large','640').replace('medium','480')
-		items=re.findall('src="(.+?)".+?data-res="(.+?)"',a)
-		if myaddon.getSetting('resolut')=='Max':items=sorted(items, key=lambda k: int(k[1]),reverse=True)
-		else:items=sorted(items, key=lambda k: int(k[1]))
-		if items:
-			link=''
-			for href,label in items:
-				response=make_request(href.replace('amp;',''),resp='o')
-				if response and response.status==302:
-					href=response.headers.get('location')
-					if make_request(href,resp='s')==200:link=href;break
-				if not link:xbmc.sleep(1000)
-			if link:xbmcsetResolvedUrl(link)
-			else:mess('File invalid or deleted!','kphim.tv') 
-		else:
-			link=xsearch('file="(.+?)"',a).replace('amp;','')
-			if link and '.youtube.com' in link:play_youtube(link)
-			else:mess('File invalid or deleted!','kphim.tv') 
+		link=kph.getLink(url)
+		if link:xbmcsetResolvedUrl(link)
+		else:mess('File invalid or deleted!','kphim.tv') 
 
 def phimnhanh(name,url,img,mode,page,query):
 	color['phimnhanh']='[COLOR chartreuse]'
@@ -5741,7 +5745,7 @@ def chiasenhac(name,url,img,fanart,mode,page,query):
 			m=''.join(s for s in setting if  setting.get(s)==search_set and s!='None')
 			url='http://search.chiasenhac.com/search.php?s=%s&mode=%s'%(urllib.quote_plus(string),m)
 		else:m=xsearch('mode=(.+?)\W',url+'&')
-		body=make_request(url)
+		body=xread(url)
 		
 		if m=='album':
 			csn_get_album_page(body)
@@ -5792,7 +5796,7 @@ def chiasenhac(name,url,img,fanart,mode,page,query):
 		setting={'None':'Tên bài hát/Ca sĩ','artist':'Ca sĩ','composer':'Sáng tác','album':'Tên Album','lyric':
 		'Lời bài hát'};myaddon.setSetting('csn_s',setting.get(query));xbmc.executebuiltin("Container.Refresh")
 	
-	elif 'search.php' in url or url=='chiasenhac.com':csn_search(url,query)
+	elif 'search.php' in url or url=='chiasenhac.vn':csn_search(url,query)
 	
 	elif query=='Home':
 		menu={'MyPlaylist':{'action':'Search','server':['chiasenhac.com']}}
@@ -7032,7 +7036,7 @@ def tvhay(name,url,img,mode,page,query):
 		else:mess('File invalid or deleted!','tvhay.org') 
 	
 def television(name,url,img,fanart,mode,page,query,text):
-	fptlive_ico=icon['fptplay'];fptlive='https://fptplay.net/livetv';c='orange'
+	fptlive_ico=icon['fptplay'];c='orange'
 	hplus_ico='http://static.hplus.com.vn/themes/front/images/logo_hplus.png';hplus='http://hplus.com.vn/'
 	xemtvhd_ico='http://xemtvhd.com/logo/xemtvhd.png';xemtvhd='http://www.xemtvhd.com/'
 	vtvgo_ico=os.path.join(iconpath,'vtvgo.png')
@@ -7043,7 +7047,7 @@ def television(name,url,img,fanart,mode,page,query,text):
 		#data=urllib2.base64.b64decode('ZW1haWw9eHNoYXJlQHRoYW5odGhhaS5uZXQmcGFzc3dkPXhzaGFyZWFkZG9u')
 		#o=make_post('http://hplus.com.vn/user/login/',data=data)
 		#hd['Cookie']=o.cookiestring
-		addir_info(namecolor('Truyền hình FPTplay.net',c),fptlive,fptlive_ico,'',mode,1,'fptlive',True)
+		addir_info(namecolor('Truyền hình FPTplay.net',c),'',fptlive_ico,'',mode,1,'fptlive',True)
 		addir_info(namecolor('Truyền hình VTVGo.vn','blue'),'Home',vtvgo_ico,'',56,1,'Home',True)
 		b=make_request('http://hplus.com.vn/ti-vi-truc-tuyen/kenh-htv',headers=hd,resp='o')
 		if b:cookie=b.cookiestring;b=b.body
@@ -7115,23 +7119,14 @@ def television(name,url,img,fanart,mode,page,query,text):
 			addir_info(namecolor(fixs(title.strip()),c),href,img,'',mode,1,'hplus_play',text=cookie)
 	
 	elif query=='fptlive':
-		b=make_request(fptlive,resp='o')
-		if b and b.status==200:cookie=b.cookiestring;b=b.body#;print cookie
-		for s in re.findall('(<a class="tv_channel.+?/a>)',b,re.DOTALL):
-			title=xsearch('title="(.+?)"',s)
-			href=xsearch('data-href="(.+?)"',s)
-			img=xsearch('data-original="(.+?)\?',s)
-			addir_info(namecolor(fixs(title),c),href,img,'',mode,1,'fptlive_play')
+		from resources.lib.servers import fptPlay;fpt=fptPlay()
+		for title,href,img in fpt.liveChannals():
+			if 'sep' in href:add_sep_item('%s -----------------------------------------'%title)
+			else:addir_info(namecolor(title,c),os.path.basename(href),img,'',mode,1,'fptlive_play')
 	
 	elif query=='fptlive_play':
-		from resources.lib.servers import fptPlay;fpt=fptPlay(); hd['Cookie']=fpt.hd['Cookie']
-		id=[s for s in url.split('/') if s]
-		if id:id=id[len(id)-1]
-		else:id='vtv3-hd'
-		data={'id':id,'type':'newchannel','quality':'3','mobile':'web'}
-		b=make_post('https://fptplay.net/show/getlinklivetv',data=data,headers=hd,resp='j')
-		try:link=b.get('stream')
-		except:link=''
+		from resources.lib.servers import fptPlay;fpt=fptPlay()
+		link=fpt.liveLink(url)
 		if link:xbmcsetResolvedUrl(link)
 		else:mess('Get channel link fail!') 
 	
@@ -7875,7 +7870,7 @@ except:pass
 try:img=urllib.unquote_plus(params["img"])
 except:pass
 try:fanart=urllib.unquote_plus(params["fanart"])
-except:pass
+except:pass#xbmcsetResolvedUrl(link,sub)
 try:mode=int(params["mode"])
 except:pass#xbmc.executebuiltin("Container.Refresh")
 try:page=int(params["page"])

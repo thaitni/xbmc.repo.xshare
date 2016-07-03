@@ -684,45 +684,61 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 
 class fptPlay:
 	def __init__(self):
-		self.hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','referer':'https://fptplay.net/'}
+		self.hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest'}
+		self.hd['referer']='https://fptplay.net/fptplay/gioi-thieu'
 		self.hd['Cookie']=xrw('fptplay.cookie') if filetime('fptplay.cookie')<30 else self.login()
-		#self.hd['x-csrf-token']=xsearch('token=([^;]+)',self.hd['Cookie'])
-		#self.hd['Cookie']=cookie,self.hd['x-csrf-token']=cookie.split(':')
 		
 	def fpt2s(self,s):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',i),i) for i in s.split())
 	
 	def login(self):
 		email=get_setting('mail_fptplay');password=get_setting('pass_fptplay')
-		data={'email':email,'password':password}
 		if not email:
-			email,password=urllib2.base64.b64decode('eHNoYXJlQHRoYW5odGhhaS5uZXQ6YWRkb254c2hhcmU=').split(':')
-		response=urlfetch.get('https://fptplay.net/tai-khoan');self.hd['Cookie']=response.cookiestring
-		response=urlfetch.post('https://fptplay.net/user/login',headers=self.hd,data=data)
-		if 'state=fail' not in response.headers.get('location'):
-			mess(u'Login thành công','fptplay.net');f=response.cookiestring;xrw('fptplay.cookie',f)
-		else:mess(u'Login không thành công!','fptplay.net');f=''
-		return f
-	
-	def login1(self):
-		email=get_setting('mail_fptplay');password=get_setting('pass_fptplay')
-		if not email:
+			mess(u'Bạn đang sử dụng account Fptplay của xshare')
 			email,password=urllib2.base64.b64decode('eHNoYXJlQHRoYW5odGhhaS5uZXQ6YWRkb254c2hhcmU=').split(':')
 		data=urllib.urlencode({'email':email,'password':password})
-		hd={'User-Agent':'Mozilla/5.0','x-requested-with':'XMLHttpRequest','referer':'https://fptplay.net/tai-khoan'}
-		cookie=urllib2.HTTPCookieProcessor()
-		opener=urllib2.build_opener(cookie)
-		urllib2.install_opener(opener)
-		try:res=urllib2.urlopen('https://fptplay.net/tai-khoan')
+		cookie=urllib2.HTTPCookieProcessor();opener=urllib2.build_opener(cookie);urllib2.install_opener(opener)
+		#try:b=opener.open(self.hd['referer'])
+		#except:pass
+		opener.addheaders=self.hd.items();url='https://fptplay.net/user/login'
+		req=urllib2.Request('https://fptplay.net/user/login',data)
+		try:b=urllib2.urlopen(req,timeout=30)
 		except:pass
-		hd['Cookie']=';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar)
-		req=urllib2.Request('https://fptplay.net/user/login',data,hd)
-		try:res=urllib2.urlopen(req);b=res.read();res.close()
-		except:b=''
-		cookie=';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar)
-		if 'laravel_id' in cookie:xrw('fptplay.cookie',cookie);mess(u'Login thành công','fptplay.net')
+		cookie=xcookie(cookie);print cookie
+		if 'laravel_id' in cookie:mess(u'Login thành công','fptplay.net');xrw('fptplay.cookie',cookie)
 		else:mess(u'Login không thành công!','fptplay.net')
 		return cookie
-
+	
+	def login5(self):
+		email=get_setting('mail_fptplay');password=get_setting('pass_fptplay')
+		if not email:
+			mess(u'Bạn đang sử dụng account Fptplay của xshare')
+			email,password=urllib2.base64.b64decode('eHNoYXJlQHRoYW5odGhhaS5uZXQ6YWRkb254c2hhcmU=').split(':')
+		data=urllib.urlencode({'email':email,'password':password})
+		cookie=urllib2.HTTPCookieProcessor();opener=urllib2.build_opener(cookie)
+		opener.addheaders=self.hd.items();url='https://fptplay.net/user/login'
+		try:
+			opener.open(self.hd['referer'])
+			urllib2.install_opener(opener)
+			urllib2.urlopen(url,data)
+		except:pass
+		cookie=xcookie(cookie)
+		if 'laravel_id' in cookie:mess(u'Login thành công','fptplay.net');xrw('fptplay.cookie',cookie)
+		else:mess(u'Login không thành công!','fptplay.net')
+		return cookie
+	
+	def login0(self):
+		email=get_setting('mail_fptplay');password=get_setting('pass_fptplay')
+		if not email:
+			mess(u'Bạn đang sử dụng account Fptplay của xshare')
+			email,password=urllib2.base64.b64decode('eHNoYXJlQHRoYW5odGhhaS5uZXQ6YWRkb254c2hhcmU=').split(':')
+		data={'email':email,'password':password}
+		response=urlfetch.get('https://fptplay.net/tai-khoan');self.hd['Cookie']=response.cookiestring
+		response=urlfetch.post('https://fptplay.net/user/login',headers=self.hd,data=data)
+		cookie=response.cookiestring
+		if 'laravel_id' in cookie:mess(u'Login thành công','fptplay.net')#;xrw('fptplay.cookie',cookie)
+		else:mess(u'Login không thành công!','fptplay.net')
+		return cookie
+	
 	def detail(self,s):
 		title=self.fpt2s(xsearch('title="([^"]+?)"',s))
 		if not title:title=self.fpt2s(xsearch('alt="([^"]+?)"',s))
@@ -753,6 +769,55 @@ class fptPlay:
 
 		if '&rsaquo;&rsaquo;' in b:items.append(('[COLOR lime]Các tập tiếp theo ...[/COLOR]',''))
 		return items
+	
+	def liveChannals(self):
+		b=xread('https://fptplay.net/livetv').split('"col-xs-6 col-sm-5 col-md-4">')
+		items=[]
+		for s in [i for i in b if ' class="livetv_header' in i]:
+			i=xsearch('<span class="livetv_header Regular pull-left"[^>]*>(.+?)</span>',s)
+			items.append((self.fpt2s(i),'sep',''))
+			for title,href,img,dir in [self.detail(i) for i in re.findall('(<a class="tv_channel.+?/a>)',s,re.S)]:
+				items.append((title,href,img))
+		return items
+		
+	def liveChannals1(self):
+		b=xread('https://fptplay.net/livetv')
+		items=[]
+		for s in re.findall('(<a class="tv_channel.+?/a>)',b,re.S):
+			title=xsearch('title="(.+?)"',s)
+			href=xsearch('data-href="(.+?)"',s)
+			img=xsearch('data-original="(.+?)\?',s)
+			items.append((self.fpt2s(title),href,img))
+		return items
+		
+	def liveLink(self,url):
+		id=urllib2.os.path.basename(url)
+		if not id:id='vtv3-hd'
+		data='mobile=web&quality=3&type=newchannel&id=%s'%id
+		b=xread('https://fptplay.net/show/getlinklivetv',self.hd,data)
+		try:link=json.loads(b).get('stream')
+		except:link=''
+		return link
+
+class hayhayvn:
+	def __init__(self,c):
+		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://www.hayhaytv.vn/dieu-khoan-su-dung.html'}
+		self.c=c
+		
+	def getLink(self,url):
+		b=xread(url)
+		link=xsearch('file.{,5}"(.+?)"',b);sub=''
+		if link:sub=xsearch("var track.{,5}'(.+?)'",b)
+		else:
+			url='http://www.hayhaytv.vn/getsource/%s'%xsearch("FILM_KEY = '(.+?)'",b)
+			b=xread(url,self.hd)
+			try:j=eval(b)
+			except:j=[]
+			links=[(i.get('file').replace('\\',''),i.get('label')) for i in j]
+			for href,r in ls([(i[0],rsl(i[1])) for i in links]):
+				g=xget(href)
+				if g:link=g.geturl();break
+		return link,sub
 
 class phim3s_net:
 	def __init__(self, username, password):
@@ -788,6 +853,54 @@ class phim3s_net:
 			except:response={}
 			mess(u'%s'%response.get('message','%s thất bại !'%action),'Phim3s.net bookmark')
 			self.fetch('http://phim3s.net/member/logout/')
+
+class kPhim:
+	def __init__(self,c):
+		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://kphim.tv/dieu-khoan-chung.html'}
+		self.c=c
+
+	def detail(self,l):
+		items=[]
+		for s in l:
+			href=xsearch('href="(.+?)"',s)
+			img=xsearch('src="(.+?)"',s)
+			title=xsearch('>(.+?)</h4>',s)
+			t=re.search('>(.+?) <span style=".+?">(.+?)</span>',s)
+			if t: title+=' - '+t.group(1)+' '+t.group(2)
+			elif xsearch('>(.+?)</span>',s):title+=' - '+xsearch('>(.+?)</span>',s)
+			items.append((title,href,img))
+		return items
+	
+	def genre(self,url):
+		items=[]
+		for s in re.findall('(<li style.+?/li>)',xread(url),re.S):
+			href=xsearch('href="(.+?)"',s)
+			img=xsearch('src="(.+?)"',s)
+			t=xsearch('>(.+?)-\d+?</span>',s)
+			title=t+' - ' if t else ''
+			title+=xsearch('"movie-name-1">(.+?)</h3>',s)+' - '+xsearch('"movie-name-2">(.+?)</h4>',s)
+			t=xsearch('<strong> (.+?)</strong></p>',s)
+			if t:title+= ' (%s)'%t
+			items.append((title,href,img))
+		return items
+	
+	def eps(self,url):
+		return re.findall('<a class="btn btn-default" href="(.+?)"> (.+?) </a>',xread(url))
+	
+	def getLink(self,url):
+		b=xread(url)
+		servers=re.findall('poster.+?fid.+?title="video-(\d+?)".+?title="(.+?)">',b)
+		if servers:video_id=servers[0][0]
+		else:video_id=xsearch("fvid='(.+?)'",b)
+		server_id=xsearch('loadNewPlayer\(fsvvideo, (\d.+?),',b)
+		tk=urllib2.hashlib.md5(server_id+'func').hexdigest()[1:]#jquery.min.js?ver=14 mahoahkphim
+		b=xread('http://kphim.tv/embed/%s/%s/%s'%(server_id,video_id,tk),self.hd)
+		
+		j=re.findall('src="([^<]+?)".+?res="([^<]+?)"',b);link=''
+		for href,label in ls([(i[0],rsl(i[1])) for i in j]):
+			try:link=urllib2.urlopen(href).geturl();break
+			except:pass
+		return link
 
 class tvhay:
 	def __init__(self, s):
@@ -2150,15 +2263,30 @@ class phim47com:
 		sub=xsearch('file="([^"]+?)" label="Tiếng Việt"',b)
 		return l,sub
 	
-	def maxLink1(self,url):
-		l=[];all=[];link=''
-		for link in re.findall("playlist':.?'(.+?)'",xread(url)):
-			j=re.findall('<jwplayer:source (.+?)/>',xread(link))
-			l=ls([(xsearch('file="(.+?)"',i),xsearch('label="(.+?)"',i)) for i in j])
-			all+=[(xsearch('file="(.+?)"',i),xsearch('label="(.+?)"',i)) for i in j]
-			link=dl(l[0][0])
-			if link:break
-			else:mess('Checking next link ...','phim47.com')
+	def getEPS(self,url):
+		b=xread(url)
+		#for s in re.findall('id="xemphimus" href="(http://phim47.com.+?)"',b):
+		#	
+	def getLink(self,url):
+		link=sub='';b=xread(url)
+		for s in re.findall("playlist':.?'(.+?)'",b):
+			s=xread(s)
+			sub=xsearch('track file="(.+?)" label="Tiếng Việt"',s)
+			j=re.findall('<jwplayer:source (.+?)/>',s)
+			for href,r in ls([(xsearch('file="(.+?)"',i),rsl(xsearch('label="(.+?)"',i))) for i in j]):
+				g=xget(href.replace('amp;',''))
+				if g:link=g.geturl();break
+		if not link:link=xsearch('iframe.+?src="(http.?://www.youtube.com.+?)"',b)
+		return link,sub
+	
+	def xemnhieu(self,s):
+		items=[]
+		for i in re.findall('<div class="l_episode">(.+?)</span>',s,re.S):
+			title=xsearch('title="(.+?)"',i)
+			href=xsearch('href="(.+?)"',i)
+			img=xsearch('src="(.+?)"',i)
+			items.append((title,href,img))
+		return items	
 
 class vtvgovn:
 	def __init__(self,c):
