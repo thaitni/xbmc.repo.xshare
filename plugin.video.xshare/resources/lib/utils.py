@@ -74,10 +74,17 @@ def xread(url,headers={'User-Agent':'Mozilla/5.0'},data=None):
 	except:b=''
 	return b
 
-def xget(url,data=None,timeout=30):#b.getcode();b.headers.get('Set-Cookie');b.geturl()
-	try:b=urllib2.urlopen(url,data,timeout)
+def xget(url,hd={'User-Agent':'Mozilla/5.0'},data=None,timeout=30):#b.getcode();b.headers.get('Set-Cookie');b.geturl()
+	req=urllib2.Request(url,data,hd)
+	try:b=urllib2.urlopen(req,timeout=timeout)
 	except:b=None
 	return b
+
+def xcheck(url,hd={'User-Agent':'Mozilla/5.0'},data=None,timeout=30):
+	req=urllib2.Request(url,data,hd)
+	try:b=urllib2.urlopen(req,timeout=timeout);l=b.geturl();b.close()
+	except:l=''
+	return l
 
 def get_input(title=u"", default=u""):
 	result = ''
@@ -92,6 +99,7 @@ def xsearch(pattern,string,group=1,flags=0,result=''):
 	except:s=result
 	return s
 
+def xrfa(p,s,f=0):return urllib2.re.findall(p,s,f)
 def fmn(n):
 	try:s=format(int(n), "8,d").replace(',','.').strip()
 	except:s=str(n)

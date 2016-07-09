@@ -682,7 +682,7 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 			if not self.remove_folder('xshare_favourite',i):result=False
 		return result
 
-class fptPlay:
+class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 	def __init__(self):
 		self.hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest'}
 		self.hd['referer']='https://fptplay.net/fptplay/gioi-thieu'
@@ -1694,7 +1694,7 @@ class chiasenhac:
 
 	def favourite(self, url,action='add'):
 		href='http://chiasenhac.vn/mp3/favourite/'+os.path.basename(url).replace('.','_%s.'%action)
-		self.fetch(href)
+		a=self.fetch(href);mess('%s success'%action)
 	
 	def get_favourite(self):
 		response = self.fetch('http://chiasenhac.vn/mp3/favourite')
@@ -2258,30 +2258,49 @@ class phim47com:
 		self.urlhome='http://phim47.com/'
 
 	def maxLink(self,url):
-		b=xread(url);j=re.findall('<jwplayer:source (.+?)/>',b)
+		b=xread(url);j=xrfa('<jwplayer:source (.+?)/>',b)
 		l=ls([(xsearch('file="(.+?)"',i),rsl(xsearch('label="(.+?)"',i))) for i in j])
 		sub=xsearch('file="([^"]+?)" label="Tiếng Việt"',b)
 		return l,sub
 	
 	def getEPS(self,url):
 		b=xread(url)
-		#for s in re.findall('id="xemphimus" href="(http://phim47.com.+?)"',b):
+		#for s in xrfa('id="xemphimus" href="(http://phim47.com.+?)"',b):
 		#	
 	def getLink(self,url):
 		link=sub='';b=xread(url)
-		for s in re.findall("playlist':.?'(.+?)'",b):
+		for s in xrfa("playlist':.?'(.+?)'",b):
 			s=xread(s)
 			sub=xsearch('track file="(.+?)" label="Tiếng Việt"',s)
-			j=re.findall('<jwplayer:source (.+?)/>',s)
+			j=xrfa('<jwplayer:source (.+?)/>',s)
 			for href,r in ls([(xsearch('file="(.+?)"',i),rsl(xsearch('label="(.+?)"',i))) for i in j]):
 				g=xget(href.replace('amp;',''))
 				if g:link=g.geturl();break
 		if not link:link=xsearch('iframe.+?src="(http.?://www.youtube.com.+?)"',b)
 		return link,sub
 	
+	def getDetail(self,s):
+		tm=xsearch('(<span class="thuyetminh">)',s) or xsearch('(title="Audio Việt")',s)
+		series=xsearch('class="bo[^"]*?">(.*?)</span>',s)
+		views=xsearch('>(\d+)</span>',s)
+		href=xsearch('<a href="(.+?)"',s)
+		title=xsearch('alt="(.+?)"',s)
+		img=xsearch('(http://img.phim47.com/[^"]+?\.jpg)',s)
+		if tm:title=title+' [COLOR gold]TM[/COLOR]'
+		if series:title+='[COLOR gold]%s[/COLOR]'%series
+		if views:title+=' [COLOR blue]%s[/COLOR] '%views
+		if 'http://' not in href:href=self.urlhome+href 
+		return title,href,img
+	
+	def getItems(self,s):
+		items=[]
+		for i in [j for j in xrfa('(<li>.+?</li>)',s,re.S) if "menuTitle" in j]:
+			items.append(self.getDetail(i))
+		return items
+			
 	def xemnhieu(self,s):
 		items=[]
-		for i in re.findall('<div class="l_episode">(.+?)</span>',s,re.S):
+		for i in xrfa('<div class="l_episode">(.+?)</span>',s,re.S):
 			title=xsearch('title="(.+?)"',i)
 			href=xsearch('href="(.+?)"',i)
 			img=xsearch('src="(.+?)"',i)
@@ -2472,4 +2491,83 @@ class vtvgovn:
 		u='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=1_by8rxnyv&kalsig=ad9291d0921fec4bcf6bc406a5d0c752'
 		
 		play='http://cdnapi.kaltura.com/html5/html5lib/v2.6.3/mwEmbedFrame.php/p/2111921/uiconf_id/35084022/entry_id/1_rhex2pfs?wid=_2111921&iframeembed=true&playerId=kaltura_player_1411138624&entry_id=1_rhex2pfs&flashvars'
+
+class k88com:
+	def __init__(self,c):
+		self.hd={'User-Agent':'Mozilla/5.0'}
+		self.urlhome='http://www.kenh88.com/'
+		
+	def getDetail(self,s):
+		tap=xsearch('class="process_r">([^<]+?)</span>',s)
+		res=xsearch('class="status">([^<]+?)</span>',s)
+		href='%sxem-phim-online/%s'%(self.urlhome,os.path.basename(xsearch('href="/([^"]+?)"',s)))
+		title=xsearch('href="[^"]+?">([^<].+?)</a>',s)+'-'+xsearch('href="[^"]+?">[^<]+?</a>([^<]+?)</h2>',s)
+		title=' '.join(title.split())
+		if res:title+='[COLOR blue]-%s[/COLOR]'%res
+		if tap:title+='[COLOR gold]-%s[/COLOR]'%tap
+		img=self.urlhome+urllib2.quote(xsearch('src="/([^"]+?)"',s))
+		return tap,href,title,img
 	
+	def episode(self,url):
+		b=xread(url);d={};count=0
+		items=xrfa('(class="server".+?</ul>)',b,re.S)
+		if items:
+			for s in items:
+				count+=1
+				i=xsearch('</i>(.+?)</div>',s).replace(':','')
+				i='No name' if not i else '%d-%s'%(count,i)
+				d[i]=[(self.urlhome+j[0],'Tập '+j[1]) for j in xrfa('<a href="/(.+?)"\s.+?>([^<]+?)</a>',s)]
+		else:
+			d['No name']=[]
+			for s in xrfa("(<div class=''.+?<h2>.+?</div>)",b,re.S):
+				tap,href,title,img=self.getDetail(s)
+				d['No name'].append((tap,href))
+		
+		href=xsearch('class="next" href="/(.+?)\?',b)
+		if href:
+			pages=xsearch('>(\d{,4})</a></li><li><span>',b)
+			#title=namecolor(name,c)+color['trangtiep']+' Trang tiep theo...trang %d/%s[/COLOR]'%(page+1,pages)
+			#addir_info(title,urlhome+href,ico,'',mode,page+1,query,True)
+		return d
+	
+	def getPage(self,url):
+		b=xread(url)
+		s=xrfa("<div class='(.+?)</div>\s",b,re.S)
+		items=[self.getDetail(i.replace('\n','')) for i in s]
+
+		pn=xsearch('class="next" href="/(.+?)\?',b)
+		if pn:
+			pages=xsearch('>(\d{,4})</a></li><li><span>',b)
+			items.append((pages,self.urlhome+pn.replace('/page/','?page='),'pageNext',''))
+		return items
+	
+	def getLink(self,url):
+		response=xread(url);link=''
+		href=xsearch('\{link:.*"(.+?)"\}',response)
+		if len(href)>20:
+			data=urllib.urlencode({'link':href});label=0
+			jp=xread('http://www.kenh88.com/gkphp/plugins/gkpluginsphp.php',data=data)
+			try:j=json.loads(jp).get('link')
+			except:j={}
+			if isinstance(j,unicode):items=[(j,'')]
+			else:items=ls([(i.get('link'),rsl(i.get('label'))) for i in j])
+			for href,r in items:
+				link=xcheck(href.replace('amp;',''))
+				if link:break
+		
+		elif xsearch('src="(.+?docid=.+?)"',response):
+			docid=xsearch('docid=(.+?)&',response)
+			if docid:
+				link='https://docs.google.com/get_video_info?authuser=&eurl=%s&docid=%s'
+				link=link%(urllib.quote_plus(url),docid)
+				response=xread(link)
+				link=xsearch('url_encoded_fmt_stream_map(.+?)\Z',response)
+				link=xsearch('url=(.+?)&type=',urllib.unquote(urllib.unquote(link)))
+		
+		elif xsearch('iframe src="(.+?)"',response):
+			b=xread(xsearch('iframe src="(.+?)"',response))
+			l=re.findall('file: "([^"]+?)"[^"]+label: "([^"]+?)"',b,re.S)
+			for href,r in ls([(i[0],rsl(i[1])) for i in l]):
+				link=xcheck(href.replace('amp;',''))
+				if link:break
+		return link

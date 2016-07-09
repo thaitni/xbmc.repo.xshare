@@ -1,3 +1,6 @@
+[B]Version 3.4.5.2[/B] <09/07/2016>:
+Fix kênh88, CSN
+
 [B]Version 3.4.5.1[/B] <03/07/2016>:
 Fix Kphim, CSN (Search), Phim47 (Google Drive, YT), hayhaytv (sub), fptplay (login - TV)
 
