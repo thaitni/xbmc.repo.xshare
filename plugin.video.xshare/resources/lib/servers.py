@@ -402,7 +402,7 @@ def gibberishAES(string, key=''):
 	
 	return H(string, key) if key else recode(string)
 
-class servers_list:
+class serversList:
 	def __init__(self):
 		self.servers=[('anime47.com', '37'), ('tvhay.org', '41'), ('hdviet.com', '22'), ('fptplay.net', '07'), ('hayhaytv.vn', '23'), ('bilutv.com', '36'), ('phimmoi.net', '24'), ('hdonline.vn', '30'), ('megabox.vn', '17'), ('phim3s.net', '32'), ('phim14.net', '39'), ('kenh88.com', '26'), ('phimdata.com', '27'), ('phimsot.com', '29'), ('phim47.com', '28'), ('phimbathu.com', '43'), ('kphim.tv', '33'), ('phimnhanh.com', '35'), ('dangcaphd.com', '18'), ('phim.media', '40'), ('hdsieunhanh.com', '44'), ('imovies.vn', '48'), ('vuahd.tv', '21'), ('pubvn.tv', '19'), ('vietsubhd.com', '54'), ('mphim.net', '55')]
 		try:self.ordinal=[int(i) for i in xrw('free_servers.dat').split(',')]
@@ -428,6 +428,69 @@ class servers_list:
 		ol=self.ordinal.index([i for i in self.ordinal if i==sl][0])
 		temp=self.ordinal[ol+1];self.ordinal[ol+1]=sl;self.ordinal[ol]=temp
 		xrw('free_servers.dat',','.join(str(i) for i in self.ordinal))
+
+	def search(self,url):
+		try:j=json.loads(xsearch('\((\{.+?\})\)',xread(url)))
+		except:j={}
+		if not j.get('results',{}):
+			mess(u'Tìm gần đúng','i-max.vn')
+			try:j=json.loads(xsearch('\((\{.+?\})\)',xread(url.replace('%22',''))))
+			except:j={}
+			if not j:return []
+		
+		def detail(l):
+			title=l.get('titleNoFormatting','').encode('utf-8')
+			href=l.get('unescapedUrl','').encode('utf-8')
+			try:img=l['richSnippet']['cseImage']['src'].encode('utf-8')
+			except:img=''
+			return title,href,img
+		l=[detail(i) for i in j.get('results',{}) if i.get('titleNoFormatting') and i.get('unescapedUrl')]
+		
+		cursor=j.get('cursor',{});currentPage=cursor.get('currentPageIndex',1000);pages=cursor.get('pages',{})
+		start=''.join(i.get('start','') for i in pages if i.get('label',0)==cursor.get('currentPageIndex')+2)
+		if start:
+			title='[COLOR lime]Page next: %d[/COLOR]'%(cursor.get('currentPageIndex')+2)
+			l.append((title,start,''))
+		return l
+
+class googlesearch:
+	def __init__(self):
+		self.url='https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&'
+		self.url+='rsz=filtered_cse&num=20&hl=vi&prettyPrint=false&source=gcsc&gss=.com&googlehost=www.google.com&'
+		self.url+='callback=google.search.Search.apiary19044&alt=json&cx=%s&start=%s&q=%s'
+	
+	def detail(self,i):
+		title=i.get('titleNoFormatting','').encode('utf-8')
+		href=i.get('unescapedUrl','').encode('utf-8')
+		if not title or not href:return []
+		if '...' in title:
+			s=i.get('richSnippet',{}).get('metatags',{}).get('ogTitle')
+			if s:title=s.encode('utf-8')
+			elif i.get('contentNoFormatting'):
+				s=title.replace('....','...').split('...')[-1]
+				if s:
+					title=i.get('contentNoFormatting').encode('utf-8')
+					title=title.split(s)[0].replace('Thông tin tập tin. ','')+s
+		try:img=i['richSnippet']['cseImage']['src'].encode('utf-8')
+		except:img=''
+		return title,href,img
+	
+	def content(self,cx,start,string):
+		string='+'.join(string.split())
+		try:d=json.loads(xsearch('\((\{.+?\})\)',xread(self.url%(cx,start,'%22'+string+'%22'))))
+		except:d={}
+		if not d.get('results',{}):
+			mess(u'Tìm gần đúng ...','xshare')
+			try:d=json.loads(xsearch('\((\{.+?\})\)',xread(self.url%(cx,start,string))))
+			except:d={}
+		items=[i for i in [self.detail(j) for j in d.get('results',{})] if i]
+		
+		cursor=d.get('cursor',{});currentPage=cursor.get('currentPageIndex',1000);pages=cursor.get('pages',{})
+		start=''.join(i.get('start','') for i in pages if i.get('label',0)==currentPage+2).encode('utf-8')
+		if start:
+			title='[COLOR lime]Page next: %d[/COLOR]'%(currentPage+2)
+			items.append((title,start,currentPage+2))
+		return items
 
 class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageIndex=1
     
@@ -798,6 +861,14 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		try:link=json.loads(b).get('stream')
 		except:link=''
 		return link
+	
+	def fptNodes(self,url):
+		string=xsearch('(<items.+?/items>)',xread(url),1,re.S)
+		from xml.etree.ElementTree import fromstring as xmlnodes
+		try:nodes=[i for i in xmlnodes(string.replace(' & ','')) if i.tag=='item']
+		except:nodes=[]
+		mylist=[m for m in [{i.tag:i.text.encode('utf-8') for i in j if i.text} for j in nodes] if len(m)>=3]
+		return mylist
 
 class hayhayvn:
 	def __init__(self,c):
@@ -945,7 +1016,7 @@ class tvhay:
 			i+=chr(int(w[s:s+2],36))
 		return i
 
-class hdvn:#from resources.lib.servers import hdvn;hdvn=hdvn()
+class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 	def __init__(self):
 		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://www.hdvietnam.com/diendan/','Cookie':xrw('hdvietnam.cookie')}
 		self.token=''
@@ -1223,10 +1294,8 @@ class hdvn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 
 class youtube:
 	def __init__(self,url):#https://www.youtube.com/get_video_info?video_id=xhNy0jnAgzI
-		if 'https://www.youtube.com/watch?v=' in url:url=url+'&spf=navigate-back'
-		else:url='https://www.youtube.com/watch?v=%s&spf=navigate-back'%xsearch('([\w|-]{10,20})',url)
-		try:self.data=json.loads(xread(url))
-		except:self.data=[]
+		self.url=url
+		self.id=xsearch('([\w|-]{10,20})',url)
 	
 	def getMaxlink(self,s):
 		quality='quality' if 'quality=' in s else 'quality_label'
@@ -1236,8 +1305,12 @@ class youtube:
 	
 	def getData(self):
 		fmts1=fmts2='';items=[]
-		if self.data:
-			for i in self.data:
+		if 'https://www.youtube.com/watch?v=' in self.url:url=self.url+'&spf=navigate-back'
+		else:url='https://www.youtube.com/watch?v=%s&spf=navigate-back'%self.id
+		try:data=json.loads(xread(url))
+		except:data=[]
+		if data:
+			for i in data:
 				if not fmts1:fmts1=i.get('data',{}).get('swfcfg',{}).get('args',{}).get('url_encoded_fmt_stream_map','')
 				if not fmts2:fmts2=i.get('data',{}).get('swfcfg',{}).get('args',{}).get('adaptive_fmts','')
 				if fmts1 and fmts2:break
@@ -1247,7 +1320,51 @@ class youtube:
 			
 			if get_setting('resolut')=='Max':items=sorted(items, key=lambda k: int(k[1]),reverse=True)
 			else:items=sorted(items, key=lambda k: int(k[1]))
+		return items
+	
+	def playlist(self,id):
+		url='https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=30&'
+		url+='key=AIzaSyA-Y38JpoUKbdpQgFellPthOgcZTFJwkqY&playlistId=%s'%id
+		b=xread(url)
+		try:j=json.loads(b)
+		except:j={}
+		def detail(l):
+			title=l.get('snippet',{}).get('title').encode('utf-8')
+			id=l.get('snippet',{}).get('resourceId',{}).get('videoId')
+			if not title or not id:return []
+			img=l.get('snippet',{}).get('thumbnails',{}).get('high',{}).get('url','').encode('utf-8')
+			return title,id,img
+		items=[detail(i) for i in j.get('items') if detail(i)]
+		if j.get('nextPageToken'):items.append(('nextPageToken',j.get('nextPageToken').encode('utf-8'),''))
+		return items
 		
+	def search(self,q):
+		url='https://www.googleapis.com/youtube/v3/search?regionCode=VN&type=video&'
+		b=xread(url+'part=snippet&maxResults=30&key=AIzaSyA-Y38JpoUKbdpQgFellPthOgcZTFJwkqY&q='+q)
+		try:j=json.loads(b)
+		except:j={}
+		def detail(l):
+			title=l.get('snippet',{}).get('title').encode('utf-8')
+			id=l.get('id',{}).get('videoId')
+			if not title or not id:return []
+			img=l.get('snippet',{}).get('thumbnails',{}).get('high',{}).get('url','')
+			return title,id,img
+		items=[detail(i) for i in j.get('items',[]) if detail(i)]
+		if j.get('nextPageToken'):items.append(('nextPageToken',j.get('nextPageToken').encode('utf-8'),''))
+		return items
+	
+	def getInfo(self,map='url_encoded_fmt_stream_map'):
+		b=xread('https://www.youtube.com/get_video_info?video_id=%s'%self.id)
+		qsl=urllib2.urlparse.parse_qsl
+		try:p=dict(qsl(b))
+		except:p={}
+		if p.get('status', '')=='fail' or not p.get(map):return []
+		l=p.get(map).split(',')
+		def quality(l):return 'quality' if 'quality' in l else 'quality_label'
+		items=[(i.get('url',''),rsl(i.get(quality(i),''))) for i in [dict(qsl(l[j])) for j in range(len(l))]]
+		if get_setting('resolut')=='Max':items=sorted(items, key=lambda k: int(k[1]),reverse=True)
+		else:items=sorted(items, key=lambda k: int(k[1]))
+		#print items
 		return items
 
 class imovies:
@@ -1354,7 +1471,7 @@ class imovies:
 
 		return items
 
-class imax:#;f=open(r'd:\xoa1.html','w');f.write(b);f.close()
+class iMax:#;f=open(r'd:\xoa1.html','w');f.write(b);f.close()
 	def __init__(self,c):
 		self.hd={'User-Agent':'Mozilla/5.0','Cookie':''}
 		self.c=c
@@ -1666,6 +1783,13 @@ class sieunhanh:
 		return items
 	
 	def maxLink(self,url):
+		hd=self.hd;hd['Referer']=self.urlhome
+		url='http://hdsieunhanh.com/getsource/'+(xsearch('(\d{12,20})',url));print url,hd
+		try:l=ls([(i.get('file'),rsl(i.get('label'))) for i in json.loads(xread(url,hd))])
+		except:l=[]
+		return l
+		
+	def maxLink1(self,url):
 		content=xread(url);link=''
 		s=re.findall("file[^']+?'([^']+?)'[^']+?label:'([^']+?)'",content)
 		if get_setting('resolut')=='Max':
@@ -2509,7 +2633,7 @@ class k88com:
 		return tap,href,title,img
 	
 	def episode(self,url):
-		b=xread(url);d={};count=0
+		b=xread(url.replace('/phim/','/xem-phim-online/'));d={};count=0
 		items=xrfa('(class="server".+?</ul>)',b,re.S)
 		if items:
 			for s in items:

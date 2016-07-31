@@ -1,3 +1,8 @@
+[B]Version 3.4.6[/B] <21/7/2016>:
+Fix phim47 search, phimbathu, phim14, ...
+Bổ sung: youtube.com (beta), support youtube in xml list, search all server list
+Recode google search on fshare, vaphim, 4share, hdvietnam, tenlua
+
 [B]Version 3.4.5.2[/B] <09/07/2016>:
 Fix kênh88, CSN
 

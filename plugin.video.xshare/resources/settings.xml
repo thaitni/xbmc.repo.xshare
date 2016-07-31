@@ -39,15 +39,10 @@
 	<category label="Thông tin khác">
 		<setting id="thumucrieng" type="text" label="[COLOR blue]Mục chia sẻ của tôi trên Fshare[/COLOR] ([COLOR gold]ID MyFshare[/COLOR])" default="RDA4FHXVE2UU"/>
 		<setting id="thumuccucbo" type="folder" label="[COLOR blue]Thư mục cục bộ[/COLOR] ([COLOR gold]MyFolder[/COLOR])" default="" option="writeable"/>
-		<setting id="googlesearch" type="labelenum" label="[COLOR blue]Sử dụng phương thức Google search[/COLOR]" values="API|Web" default="API"/>
-		<setting id="phimmoiresolution" type="labelenum" label="[COLOR blue]Chọn độ phân giải tối đa trên[/COLOR] [COLOR ghostwhite]phimmoi.net[/COLOR]" values="720|1080" default="720"/>
 		<setting id="sodonghienthi" type="labelenum" label="[COLOR blue]Số dòng hiển thị cho 1 trang[/COLOR]" values="20|30|50" default="30"/>
-		<setting id="uploaders" type="text" label='[COLOR blue]DS uploaders yêu thích[/COLOR] (cách nhau: "-")' default="xemaydinh-hungdaita-truoduc-ledung123-cocongidau-invisible9x-love_yejin-coduocgidau-HDCP-linhlee0709-Coti-henryduc96-luanthieugia"/>
 		<setting id="my_nas_url" type="text" label="[COLOR blue]My NAS url[/COLOR]" default="http://buffalonas.com/"/>
 		<setting id="my_nas_up"  type="text" label="[COLOR blue]My NAS user/pass[/COLOR] - có dấu [COLOR red]/[/COLOR] nhé" default="/"/>
 		<setting id="cookie" type="text" label="cookiestring" default="" visible="false"/>
-		<setting id="pagethanked" type="text" label="Trang cuối đã get thank cho xshare" default="0-0-0-0" visible="false"/>
-		<setting id="xshare_favourite" type="text" label="My Favourite folder" visible="false" default=""/>
 	</category>
 	<category label="Các tùy chọn riêng">
 		<setting id="resolut" type="labelenum" label="[COLOR gold]Chọn độ phân giải cho các server free (max/min)[/COLOR]" values="Max|Min" default="Max"/>
@@ -61,6 +56,5 @@
 		<setting id="hdvnfindall" type="bool" label="[COLOR green]Không giới hạn tìm kiếm trên [COLOR red]hdvietnam.com[/COLOR][/COLOR] (All Uploader) (y/n)" default="true"/>
 		<setting id="history" type="bool" label="[COLOR green]Cho phép hiển thị lịch sử tìm kiếm[/COLOR] (y/n)" default="true"/>
 		<setting id="phim18" type="bool" label="[COLOR red]Kích hoạt xem phim 18+[/COLOR] (y/n)" default="false"/>
-		<setting id="thank2xshare" type="bool" label="[COLOR green]Cho phép tự động cảm ơn xshare trong [COLOR red]hdvietnam.com[/COLOR][/COLOR] (y/n)" default="true"/>
 	</category>
 </settings>

@@ -43,14 +43,27 @@ def mess(message='',title='',timeShown=5000):
 		#icon=addon.icon
 		xbmc.executebuiltin((u'XBMC.Notification(%s,%s,%s,%s)'%(s0,s1,timeShown,icon)).encode("utf-8"))
 
+def googleItems(j,link='link',label='label'):#Thu nghiem tren phin14
+	try:l=[(i.get(link),rsl(i.get(label))) for i in j]
+	except:
+		try:l=[(i.get(link),rsl(i.get('type'))) for i in j]
+		except:link=''
+	if link:
+		link=''
+		for href,label in ls(l):
+			link=xcheck(href)
+			if link:break
+	return link
+
 def rsl(s):
 	s=str(s).replace('HDG','').replace('HD','1080').replace('SD','640').replace('large','640').replace('medium','480')
+	s=s.replace('Auto','640')
 	result=xsearch('(\d+)',s)
 	return result if result else '240'
 
 def ls(l):
-	r=True if get_setting('resolut')=='Max' else False
-	l=sorted(l, key=lambda k: int(k[1]),reverse=r)
+	reverse=True if get_setting('resolut')=='Max' else False
+	l=sorted(l, key=lambda k: int(k[1]),reverse=reverse)
 	return l
 
 def namecolor(name,c=''):return '[COLOR %s]%s[/COLOR]'%(c,name) if c else urllib2.re.sub('\[[^\[]+?\]','',name)
