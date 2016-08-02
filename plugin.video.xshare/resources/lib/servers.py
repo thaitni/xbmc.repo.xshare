@@ -602,6 +602,11 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 				items.append((title,link,id,size,date))
 		return {'pagename':pagename,'items':items}
 	
+	def getFile(self,parent,name):
+		url=''.join(i[1] for i in self.get_folder(parent).get('items') if i[0]==name)
+		return xread(self.get_maxlink(url)) if url else ''
+		
+			
 	def myFshare_add(self,url,name):
 		if not self.url_id:mess(u'Hãy set "Thư mục chia sẻ của tôi trên Fshare!"','myFshare');return
 		id=url.split('/')[4]
@@ -867,7 +872,7 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		from xml.etree.ElementTree import fromstring as xmlnodes
 		try:nodes=[i for i in xmlnodes(string.replace(' & ','')) if i.tag=='item']
 		except:nodes=[]
-		mylist=[m for m in [{i.tag:i.text.encode('utf-8') for i in j if i.text} for j in nodes] if len(m)>=3]
+		mylist=[m for m in [dict([(i.tag,i.text) for i in j if i.text]) for j in nodes] if len(m)>=3]
 		return mylist
 
 class hayhayvn:

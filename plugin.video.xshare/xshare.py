@@ -183,15 +183,9 @@ def servers_list(name,url,img,fanart,mode,page,query):#88
 			elif 'phimmoi.net' in href:#doi phi ho
 				href=re.sub('/[^/]+\.html','/',href)
 				addir_info(namecolor(domain+' '+title,'ghostwhite'),href,img,'',m,1,'pmfolder',True)
-					
-				
 			elif 'hdviet.com' in href:mess( href)
-				
 			elif 'Page next:' in title:addir_info(title,url,icon['xshare'],'',mode,page+1,query,True)
-			
-			else:mess( href);print href
-			
-	
+			else:mess( href)
 	else :step=-1 if query=='Up' else 1;srvl.move(url,step);xbmc.executebuiltin("Container.Refresh")
 
 def clean_string(string):
@@ -1352,9 +1346,12 @@ def doc_thumuccucbo(name,url,img,fanart,mode,query):
 				mess(u'Đã đổi tên file/folder: %s'%s2u(url),'MyFolder');xbmc.executebuiltin("Container.Refresh")
 			else:mess(u'Lỗi Rename file/folder!','MyFolder')
 	elif myfolder in url and query!='file':
-		for filename in os.listdir(url):
-			filenamefullpath = u2s(joinpath(url, filename));filename= u2s(filename)
-			size=os.path.getsize(joinpath(url, filename))/1024
+		try:filenames=os.listdir(url)
+		except:mess(u'Không đọc được tên file/folder tiếng Việt');return
+		for filename in filenames:
+			filenamefullpath = u2s(joinpath(url, filename));filename=u2s(filename)
+			try:size=os.path.getsize(joinpath(url, filename))/1024
+			except:mess(u'Không đọc được tên file/folder tiếng Việt');continue
 			if size>1024:size='%dMB'%(size/1024)
 			else:size='%dKB'%size
 			label=filename+' - %s'%size
@@ -6756,7 +6753,7 @@ def television(name,url,img,fanart,mode,page,query,text):
 		#o=make_post('http://hplus.com.vn/user/login/',data=data)
 		#hd['Cookie']=o.cookiestring
 		addir_info(namecolor('Truyền hình FPTplay.net',c),'',fptlive_ico,'',mode,1,'fptlive',True)
-		addir_info(namecolor('Truyền hình FPT IPTV tvboxvn.com',c),'',fptlive_ico,'',mode,1,'fptiptv',True)
+		addir_info(namecolor('Truyền hình FPT IPTV jobdecor.vn',c),'',fptlive_ico,'',mode,1,'fptiptv',True)
 		addir_info(namecolor('Truyền hình FPT IPTV BlogCongDong.Com',c),'',fptlive_ico,'',mode,1,'fptiptv0',True)
 		addir_info(namecolor('Truyền hình VTVGo.vn','blue'),'Home',vtvgo_ico,'',56,1,'Home',True)
 		b=make_request('http://hplus.com.vn/ti-vi-truc-tuyen/kenh-htv',headers=hd,resp='o')
@@ -6829,17 +6826,16 @@ def television(name,url,img,fanart,mode,page,query,text):
 			addir_info(namecolor(fixs(title.strip()),c),href,img,'',mode,1,'hplus_play',text=cookie)
 	
 	elif query=='fptiptv0':
-		b=xread('https://docs.google.com/uc?id=0B5y3DO2sHt1LV0FsbHZ0WklUd2c&export=download')
-		if not b:
-			url='https://drive.google.com/open?id=0B5y3DO2sHt1LdzVmc2dYT3RncDg'
-			url=xsearch('"BlogCongDong.Com.m3u".+?"([^"]+?)"',xread(url))
-			b=xread('https://docs.google.com/uc?id=%s&export=download'%url)
+		from resources.lib.servers import fshare
+		fs=fshare(myaddon.getSetting('usernamef'),myaddon.getSetting('passwordf'))
+		b=fs.getFile('https://www.fshare.vn/folder/GZCI8AHAQJ75','iptv1.m3u')
 		for title,href in re.findall('#EXTINF:0, (.+).\s(.+).',b):
 			addir_info(title,href,img,'',mode,1,'fptiptvPlay')
+		if fs.logged:fs.logout()
 	
 	elif query=='fptiptv':
 		from resources.lib.servers import fptPlay;fpt=fptPlay()
-		if not url:url='http://tvboxvn.com/a/FPT/MenuFPT.xml'
+		if not url:url='https://jobdecor.vn/IPTV/FPT/MenuFPT.xml'
 		for i in fpt.fptNodes(url):
 			title,href,img=namecolor(i.get('title',''),c),i.get('link',''),i.get('thumbnail','')
 			if os.path.splitext(href)[-1].upper()=='.XML':addir_info(title,href,img,'',mode,1,'fptiptv',True)
@@ -7044,7 +7040,6 @@ def myFavourites(name,url,img,fanart,mode,page,query):
 		s='%s,%s,%s,%s,%d,%d,%s,%s'%(name,url,img,fanart,mode,page,query,folder)
 		if fs.myFavourites_add(s):mess('Add a item to MyFavourites success')
 		else:mess('Add a item to MyFavourites Fail!')
-		fs.logout()
 	
 	elif 'Remove' in query:
 		mess('myFavourites removing...','myFavourites')
@@ -7052,7 +7047,7 @@ def myFavourites(name,url,img,fanart,mode,page,query):
 			mess('Remove a item from MyFavourites success')
 			xbmc.executebuiltin("Container.Refresh")
 		else:mess('Remove a item from MyFavourites Fail!')
-	fs.logout()
+	if fs.logged:fs.logout()
 
 def imax(name,url,img,fanart,mode,page,query):
 	def sc(s):
@@ -7766,3 +7761,5 @@ elif mode==99:myaddon.openSettings();end='ok'
 elif mode>100:myFavourites(name,url,img,fanart,mode,page,query)
 if not end or end not in 'no-ok-fail':endxbmc()
 #print json.dumps(a.json,indent=2,ensure_ascii=False)
+#<a id="" href="https://www.youtube.com/watch?v=aaMrZY7BZgw" img="https://i.ytimg.com/vi/aaMrZY7BZgw/hqdefault.jpg" fanart="">The Face Vietnam 2016 - Tập 7 Full | Gương Mặt Thương Hiệu [Official]</a>
+

@@ -1,3 +1,6 @@
+[B]Version 3.4.6.1[/B] <02/8/2016>:
+Fix Error incompatible in Android
+
 [B]Version 3.4.6[/B] <21/7/2016>:
 Fix phim47 search, phimbathu, phim14, ...
 Bổ sung: youtube.com (beta), support youtube in xml list, search all server list
