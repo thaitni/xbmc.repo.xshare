@@ -738,7 +738,7 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		f=[i[0] for i in myFolder if re.search('\d{10,}',i[0])]
 		s=sorted([i.split('.') for i in f], key=lambda m:(m[0],m[1]))
 		k=[]
-		for i in list(set([i[0] for i in s])):
+		for i in sorted(list(set([i[0] for i in s])),reverse=True):
 			try:m=urllib2.base64.urlsafe_b64decode(''.join(j[2] for j in s if j[0]==i))
 			except:m=''
 			if m:k.append(m+','+'-'.join(xsearch('(\w{10,})',j[1]) for j in myFolder if i in j[0]))

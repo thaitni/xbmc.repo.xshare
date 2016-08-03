@@ -309,9 +309,9 @@ def addir(name,link,img='',fanart='',mode=0,page=0,query='',isFolder=False,root=
 	if not root:
 		label='[COLOR lime]Add to My Favourites[/COLOR]'
 		q='Add-'+(query.split('?')[1] if '?' in query else query)+'-'+('F' if isFolder else '')
-		cmd='RunPlugin(plugin://%s/?'%myaddon.getAddonInfo('id');items=list()
-		cmd=cmd+'&name=%s&url=%s&img=%s&fanart=%s&mode=%d&page=%d&query=%s)'
-		cmd=cmd%(xquote(name),xquote(url),xquote(img),xquote(fanart),100+mode,page,xquote(q))
+		cmd='RunPlugin(plugin://%s/?'%myaddon.getAddonInfo('id')#;items=list()
+		cmd=cmd+'name=%s&url=%s&img=%s&fanart=%s&mode=%d&page=%d&query=%s)'
+		cmd=cmd%(xquote(name),xquote(link),xquote(img),xquote(fanart),100+mode,page,xquote(q))
 		command=[(label,cmd)]
 	else:command=[]
 	
@@ -643,6 +643,7 @@ def resolve_url(url,xml=False,name=''):
 	if 'fshare.vn' in urltemp:result=fshare_resolve('https://www.%s'%xsearch('(fshare.vn.+?)\Z',url),xml,name)
 	elif '4share.vn' in urltemp:result=fourshare_resolve(url)
 	elif 'tenlua.vn' in urltemp:result=tenlua_resolve(url,xml)
+	else:result=url
 	return result
 
 def fshare_resolve(url,xml,name=''):
@@ -1301,7 +1302,7 @@ def fshare_page_file(url):
 
 def doc_TrangFshare(name,url,img,fanart,query=''):
 	from resources.lib.servers import fshare
-	if 'favorite' in url:fs=fshare(myaddon.getSetting('usernamef'),myaddon.getSetting('passwordf'))
+	if 'https://www.fshare.vn/files/' in url:fs=fshare(myaddon.getSetting('usernamef'),myaddon.getSetting('passwordf'))
 	else:fs=fshare()
 	folder_detail=fs.get_folder(url)
 	for title,href,iD,size,date in sorted(folder_detail.get('items'), key=lambda k: k[0]):
@@ -1349,6 +1350,7 @@ def doc_thumuccucbo(name,url,img,fanart,mode,query):
 		try:filenames=os.listdir(url)
 		except:mess(u'Không đọc được tên file/folder tiếng Việt');return
 		for filename in filenames:
+			asa=joinpath(url, filename)
 			filenamefullpath = u2s(joinpath(url, filename));filename=u2s(filename)
 			try:size=os.path.getsize(joinpath(url, filename))/1024
 			except:mess(u'Không đọc được tên file/folder tiếng Việt');continue
@@ -1360,7 +1362,7 @@ def doc_thumuccucbo(name,url,img,fanart,mode,query):
 				if file_ext in media_ext:
 					item = xbmcgui.ListItem(label, iconImage=icon['khophim'])
 					query=menuContext(label,filenamefullpath,'','',mode,query,item)
-					xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=filenamefullpath,listitem=item)
+					xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=asa,listitem=item)
 				elif file_ext=='xml':addirs(label,filenamefullpath,icon['khophim'],query='xml')
 				else:addirs(label,filenamefullpath,query='file')
 			else:
@@ -1474,8 +1476,10 @@ def id_2url(name,url,img,mode,page,query):
 		if title and href:make_mySearch(title,href,img,'',mode,'Add');addirs(title,href,img)
 		else:mess(u'Không tìm được link có ID: %s!'%idf);return 'no'
 	elif page == 4:#Mở thư mục chia sẻ trên Fshare
-		title=color['search']+"Mục Link yêu thích của tôi trên Fshare (My fshare favorite)[/COLOR]"
+		title=color['search']+"Mục Link yêu thích của tôi trên Fshare (MyFshare favorite)[/COLOR]"
 		addir(title,"https://www.fshare.vn/files/favorite",img,fanart,mode=90,query='favorite',isFolder=True)
+		title=color['search']+"Thư mục theo dõi của tôi trên Fshare (MyFshare Follow folder)[/COLOR]"
+		addir(title,"https://www.fshare.vn/files/following",img,fanart,mode=90,query='following',isFolder=True)
 		doc_TrangFshare(name,query,iconpath+'fshare.png','')
 	return ''
 

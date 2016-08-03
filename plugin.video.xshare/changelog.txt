@@ -1,3 +1,7 @@
+[B]Version 3.4.6.2[/B] <03/8/2016>:
+Fix My Favourite
+Bổ sung module đọc "Thư mục theo dõi của tôi trên Fshare"
+
 [B]Version 3.4.6.1[/B] <02/8/2016>:
 Fix Error incompatible in Android
 
