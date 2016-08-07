@@ -759,11 +759,11 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 	def fpt2s(self,s):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',i),i) for i in s.split())
 	
 	def login(self):
-		email=get_setting('mail_fptplay');password=get_setting('pass_fptplay')
-		if not email:
+		phone=get_setting('phone');password=get_setting('pass_fptplay')
+		if not phone:
 			mess(u'Bạn đang sử dụng account Fptplay của xshare')
-			email,password=urllib2.base64.b64decode('eHNoYXJlQHRoYW5odGhhaS5uZXQ6YWRkb254c2hhcmU=').split(':')
-		data=urllib.urlencode({'email':email,'password':password})
+			phone,password=urllib2.base64.b64decode('MDkxMzc2MTQ0NDphZGRvbnhzaGFyZQ==').split(':')
+		data=urllib.urlencode({'phone':phone,'password':password});print data
 		cookie=urllib2.HTTPCookieProcessor();opener=urllib2.build_opener(cookie);urllib2.install_opener(opener)
 		#try:b=opener.open(self.hd['referer'])
 		#except:pass
@@ -961,7 +961,10 @@ class kPhim:
 		return items
 	
 	def eps(self,url):
-		return re.findall('<a class="btn btn-default" href="(.+?)"> (.+?) </a>',xread(url))
+		b=xread(url)
+		items=re.findall('<a class="btn btn-default" href="(.+?)"> (.+?) </a>',b)
+		if not items:items=re.findall('<a class="label[^"]+?" href="(.+?)"> (.+?) </a>',b)
+		return items
 	
 	def getLink(self,url):
 		b=xread(url)
@@ -1426,7 +1429,7 @@ class imovies:
 	def getPage(self,url):
 		b=xread(url);items=[]
 		if 'Ooops.Đã Có lỗi xảy ra!' in b:mess(u'Ooops.Đã Có lỗi xảy ra!','imovies.vn')#;return items[]
-		S=[i for i in b.split('<div class="item-content ">') if '<div class="title-movie">' in i]
+		S=[i for i in b.split('<div class="mlii">') if '  <span class="mvn">' in i]
 		for s in S:items.append((self.getDetail(s)))
 		
 		pn=re.search('<li class="active">.+?<li class="">.*?href="(.+?)">(.+?)</a>',b,re.S)

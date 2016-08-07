@@ -10,7 +10,7 @@ try:rows=int(myaddon.getSetting('sodonghienthi'))
 except:rows=30
 tempfolder=xbmc.translatePath('special://temp');phim18=myaddon.getSetting('phim18')
 xbmcplugin.setContent(int(sys.argv[1]), 'movies');homnay=datetime.date.today().strftime("%d/%m/%Y")
-from resources.lib.utils import xsearch,xrw
+from resources.lib.utils import xsearch,xrw,s2c
 
 media_ext=['aif','iff','m3u','m3u8','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp','asf','asx','avi','flv','mov','mp4','mpg','mkv','m4v','rm','swf','vob','wmv','bin','cue','dmg','iso','mdf','toast','vcd','ts','flac','m2ts','dtshd','nrg'];icon={}
 color={'fshare':'[COLOR gold]','vaphim':'[COLOR gold]','phimfshare':'[COLOR khaki]','4share':'[COLOR blue]','tenlua':'[COLOR fuchsia]','fptplay':'[COLOR orange]','trangtiep':'[COLOR lime]','search':'[COLOR lime]','ifile':'[COLOR blue]','hdvietnam':'[COLOR red]','hdviet':'[COLOR darkorange]','xshare':'[COLOR blue]','subscene':'[COLOR green]','chiasenhac':'[COLOR orange]','phimmoi':'[COLOR ghostwhite]','megabox':'[COLOR orangered]','dangcaphd':'[COLOR yellow]','hayhaytv':'[COLOR tomato]','kenh88':'[COLOR cyan]','phimdata':'[COLOR magenta]','phim47':'[COLOR springgreen]','phimsot':'[COLOR orangered]','hdonline':'[COLOR turquoise]','phim3s':'[COLOR lightgray]','kphim':'[COLOR lightgreen]','phimnhanh':'[COLOR chartreuse]','bilutv':'[COLOR hotpink]','pubvn':'[COLOR deepskyblue]','anime47':'[COLOR deepskyblue]','phim14':'[COLOR chartreuse]','taifile':'[COLOR cyan]','phim':'[COLOR orange]','tvhay':'[COLOR gold]','nhacdj':'[COLOR fuchsia]','phimbathu':'[COLOR lightgray]','taiphimhd':'[COLOR blue]','hdsieunhanh':'[COLOR orangered]','vuahd':'[COLOR tomato]','nhaccuatui':'[COLOR turquoise]','imovies':'[COLOR orange]','vietsubhd':'[COLOR cyan]','imax':'[COLOR chartreuse]','mphim':'[COLOR deepskyblue]','vtvgo':'[COLOR green]','youtube':'[COLOR red]'}
@@ -134,9 +134,9 @@ def servers_list(name,url,img,fanart,mode,page,query):#88
 			if (m==0 and 'Page next:' not in title) or not urllib2.os.path.basename(href):continue
 			if domain!='phim.media':domain=domain.split('.')[0]
 			if 'bilutv.com' in href:
-				if '/xem-phim/' in href:addir_info(domain+' '+title,href,img,'',m,1,'play')
+				if '/tag/' in href:addir_info(namecolor(domain+' '+title,'hotpink'),href,img,'',m,1,'page',True)
+				elif '/xem-phim/' in href:addir_info(domain+' '+title,href,img,'',m,1,'folder',True)
 				elif '/phim/' in href:addir_info(namecolor(domain+' '+title,'hotpink'),href,img,'',m,1,'folder',True)
-				elif '/tag/' in href:addir_info(namecolor(domain+' '+title,'hotpink'),href,img,'',m,1,'page',True)
 				else:addir_info(namecolor(domain+' '+title,'hotpink'),href,img,'',m,1,'episodes',True)
 			elif 'hayhaytv.vn' in href:
 				addir_info(namecolor(domain+' '+title,'tomato'),href,img,'',m,1,'eps',True)
@@ -4805,6 +4805,7 @@ def kphim(name,url,img,mode,page,query):
 			addir_info(namecolor(title,c),href,img,'',mode,1,'episode',True)
 	
 	elif query=='episode':
+		name=' '.join(re.sub('\([^\(]+\)|Ep \d+|ep \d+|EP \d+','',name).split())
 		for href,title in kph.eps(url):
 			addir_info('Tập %s - '%title+namecolor(name),href,img,'',mode,1,'play')
 	
@@ -5781,7 +5782,7 @@ def bilutv(name,url,img,mode,page,query):
 			addir_info(title,urlhome+href,img,'',mode,1,query,dir)
 	
 	def get_episodes(body):
-		s=xsearch('(<ul class="list-episode">.+?/ul>)',body,1,re.DOTALL)
+		s=xsearch('(<ul class="list-episode">.+?/ul>)',body,1,re.S)
 		title=' '.join(s for s in re.sub('\[.+?\]','',name).split())
 		items=re.findall('href="(.+?)">(.+?)</a>',s)
 		for href,tap in items:
@@ -5809,7 +5810,9 @@ def bilutv(name,url,img,mode,page,query):
 			except:temp='';pass
 		add_sep_item('--------------Hot--------------');page_items(body)
 			
-		if get_home_page('bilutv.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
+		body=get_home_page('bilutv.html',urlhome,True)
+		if "/cdn-cgi/l/chk_jschl" in body:mess('DDoS protection by CloudFlare','bilutv.com')
+		elif body:xbmc.executebuiltin("Container.Refresh")
 	
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
 	elif query=="INP":
@@ -5886,7 +5889,11 @@ def bilutv(name,url,img,mode,page,query):
 			url=xsearch('<a class="btn-see btn btn-danger" href="/(.+?)"',make_request(url))
 			if urlhome not in url:url=urlhome+url
 		
-		try:c=urllib.unquote(gibberishAES(make_request(url)));link=''
+		b=make_request(url);xrw(r'd:\\xoa.html',b)
+		if "/cdn-cgi/l/chk_jschl" in b:mess('DDoS protection by CloudFlare','bilutv.com');return
+		elif 'Vì lý do bản quyền' in b:mess(u'Vì lý do bản quyền! BiluTV không cập nhật phim này nữa');return
+		
+		try:c=urllib.unquote(gibberishAES(b));link=''
 		except:c=link=''
 		
 		for h in re.findall('"(/episode/getlinkbackup/.+?)"',c):
@@ -7202,29 +7209,10 @@ def imovies(name,url,img,fanart,mode,page,query):
 	if query=='imovies.vn':
 		title=color['search']+"Search trên imovies.vn[/COLOR]"
 		addir_info(title,'imovies.vn',ico,'',mode,1,'search',True)
-		
-		b=xread(urlhome)
-		for href,title in re.findall('<a href="/([^/]+?)" title="([P|V].+?)">',b):
-			if title=='Phim sắp chiếu':title='Rạp phim'
-			q='menu' if 'video' not in href else 'video'
-			addir_info(namecolor(title,c),urlhome+href,ico,'',mode,1,q,True)
-		
-		S=[i for i in b.split('<div class="clearfix">') if '"top-mov"' in i or '<h3 class='in i]
-		
-		for s in S:
-			i=xsearch('<h3.+?>([^<]+?)</',s,1,re.S).strip()
-			if not i:add_sep_item('Top Movies ------------------------')
-			elif 'Phim sắp chiếu' in i:continue
-			else:add_sep_item('%s ------------------------'%i)
-			if 'class="top-mov"' in s:
-				for i in [j for j in s.split('<div class="it">') if '<div class="mo-info">' in j]:dirs(i)
-		
-			elif '"top-prev"' in s:
-				for i in re.findall('(<div class="mvit".+?/div>)',s,re.S):dirs(i)
-		
-			elif 'class="mo-block"' in s or 'id="top-video"' in s:
-				s=re.findall('(<li.+?/li>)',s,re.S)
-				for i in [j for j in s if "name" in j or '"vm"' in j]:dirs(i)
+		m=['Phim Lẻ','Phim Bộ','Thể Loại','Quốc Gia']
+		for i in m:
+			if i=='Phim Bộ':addir_info(namecolor('Phim Bộ',c),'http://imovies.vn/phim-bo',ico,'',mode,1,'phimbo',True)
+			else:addir_info(namecolor(i,c),'',ico,'',mode,1,'mainMenu',True)
 	
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
 	elif url=="imovies.vn" or query=="INP":
@@ -7239,6 +7227,25 @@ def imovies(name,url,img,fanart,mode,page,query):
 		add_sep_item('All search result ------------------------')
 		[dirs(s) for s in imv.getPage('http://imovies.vn/tim-kiem.html?key='+urllib.quote_plus(query))]
 
+	elif query=='mainMenu':
+		b=xread(urlhome)
+		if 'Phim Lẻ' in name:
+			s=xsearch('<a href="/phim-le" title="Phim lẻ">Phim Lẻ</a>(.+?)</ul>',b,1,re.S)
+			for href,title in re.findall('<a href="(.+?)" title=".+?">(.+?)</a>',s):
+				addir_info(namecolor(title,c),'http://imovies.vn'+href,ico,'',mode,1,'page',True)
+		elif 'Thể Loại' in name:
+			s=xsearch('<a href="#" title="Thể Loại">Thể Loại</a>(.+?)</ul>',b,1,re.S)
+			for href,title in re.findall('<a href="(.+?)" title=".+?">(.+?)</a>',s):
+				addir_info(namecolor(s2c(title),c),'http://imovies.vn'+href,ico,'',mode,1,'page',True)
+		elif 'Quốc Gia' in name:
+			s=xsearch('<a href="#" title="Quốc Gia">Quốc Gia</a>(.+?)</ul>',b,1,re.S)
+			for href,title in re.findall('<a href="(.+?)" title=".+?">(.+?)</a>',s):
+				addir_info(namecolor(s2c(title),c),'http://imovies.vn'+href,ico,'',mode,1,'page',True)
+			
+	elif query=='phimbo':
+		b=xread(url)
+		for s in [i for i in b.split('<div class="mt">') if '<span class="na">' in i]:dirs(s)
+			
 	elif query=='menu':
 		b=xread(url)
 		
@@ -7273,7 +7280,7 @@ def imovies(name,url,img,fanart,mode,page,query):
 	
 	elif query=='eps':
 		b=xread(url)
-		for href,epi in re.findall('class=.part-movie. href="(.+?)" title=".+?">(.+?)</a>',b,re.S):
+		for href,epi in re.findall('class=.prm. href="(.+?)" title=".+?">(.+?)</a>',b,re.S):
 			if 'http' not in href:href='http://imovies.vn'+href
 			epi=' '.join(epi.split())
 			addir_info(epi+' '+namecolor(name),href,img,fanart,mode,1,'play')
@@ -7644,6 +7651,30 @@ def youtube(name,url,img,fanart,mode,page,query,text=''):
 	
 	else:play_youtube(url)
 
+def olympicRio(name,url,img,fanart,mode,page,query):
+	c='coral';urlhome='http://www.yan.vn/rio2016/truc-tiep.html';ico=os.path.join(iconpath,'rio2016.png')
+	fanart='http://s1.img.yan.vn/YanNews/2167221/201607/20160725-050829-13724842_10207678560056167_1175159816629294405_o_600x399.jpg'
+	if not os.path.isfile(ico):
+		try:makerequest(ico,xread("http://s1.img.yan.vn/Rio2016/Statics/Images/logo.png"),'wb')
+		except:pass
+	if url=='Home':
+		b=xread('http://www.yan.vn/rio2016/')
+		addir_info(namecolor('Video nổi bật',c),'http://www.yan.vn/rio2016/video.html',ico,fanart,mode,1,'video',True)
+		channels=[]
+		for href in re.findall("channelUrl[^']+'(.+?m3u8)'",b):
+			if href not in channels:
+				channels.append(href)
+				addir_info(namecolor('Channel '+xsearch('-c(\d+)/',href),c),href,ico,fanart,mode,1,'play')
+	elif query=='play':xbmcsetResolvedUrl(url)
+	elif query=='video':
+		b=xread(url)
+		for s in re.findall('<a (href="http://www.yan.vn/rio2016/video/.+?</h)',b,re.S):
+			title,href,img=xsearch('>([^<]+?)</h',s),xsearch('href="(.+?)"',s),xsearch('src="(.+?)"',s)
+			addir_info(namecolor(s2c(title),c),href,img,fanart,mode,1,'playvod')
+	elif query=='playvod':
+		xbmcsetResolvedUrl(xsearch("'([^']+m3u8)'",xread(url)))
+		
+			
 try:#Container.SetViewMode(num) addir:name,link,img,fanart,mode,page,query,isFolder
 	myfolder=s2u(myaddon.getSetting('thumuccucbo'))
 	if not os.path.exists(myfolder):myfolder=joinpath(datapath,'myfolder')
@@ -7749,6 +7780,7 @@ elif mode==53:taiphimhd(name,url,img,fanart,mode,page,query)
 elif mode==54:vietsubhd(name,url,img,fanart,mode,page,query)
 elif mode==55:mphim(name,url,img,fanart,mode,page,query)
 elif mode==56:vtvgo(name,url,img,fanart,mode,page,query)
+elif mode==57:olympicRio(name,url,img,fanart,mode,page,query)
 elif mode==88:servers_list(name,url,img,fanart,mode,page,query)
 elif mode==89:television(name,url,img,fanart,mode,page,query,text)
 elif mode==90:end=doc_TrangFshare(name,url,img,fanart,query)

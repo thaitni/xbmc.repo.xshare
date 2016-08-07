@@ -1,3 +1,7 @@
+[B]Version 3.4.6.3[/B] <07/8/2016>:
+Fix FPTPlay
+Bổ sung module "Olympic Rio 2016"
+
 [B]Version 3.4.6.2[/B] <03/8/2016>:
 Fix My Favourite
 Bổ sung module đọc "Thư mục theo dõi của tôi trên Fshare"

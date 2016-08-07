@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8">
 <a server="MMN" category="Home" mode="101" color="gold" icon="favorite.png">My Favourites</a>
 <a server="MMN" category="GGS" mode="10" color="lime" icon="gsearch.png">Search ([COLOR red]Google[/COLOR] / [COLOR green]Web[/COLOR] / [COLOR blue]Dữ liệu nội bộ[/COLOR])</a>
+<a server="MMN" category="Home" mode="57" color="coral" icon="rio2016.png">[B]Olympic Rio 2016 - yan.vn[/B]</a>
 <a server="MMN" category="Home" mode="89" color="orange" icon="xshare.png">Xem Truyền Hình</a>
 <a server="MMN" category="Home" mode="98" color="red" icon="youtube.png">Youtube [COLOR green](Bản thử nghiệm)[/COLOR]</a>
 <a server="MMN" category="Home" mode="51" color="gold" icon="favorite.png">chiasenhac.com / [COLOR blue]nhaccuatui.com[/COLOR] / [COLOR fuchsia]nhacdj.vn[/COLOR]</a>
