@@ -759,11 +759,11 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 	def fpt2s(self,s):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',i),i) for i in s.split())
 	
 	def login(self):
-		phone=get_setting('phone');password=get_setting('pass_fptplay')
-		if not phone:
+		phone_fptplay=get_setting('phone_fptplay');password=get_setting('pass_fptplay')
+		if not phone_fptplay:
 			mess(u'Bạn đang sử dụng account Fptplay của xshare')
-			phone,password=urllib2.base64.b64decode('MDkxMzc2MTQ0NDphZGRvbnhzaGFyZQ==').split(':')
-		data=urllib.urlencode({'phone':phone,'password':password});print data
+			phone_fptplay,password=urllib2.base64.b64decode('MDkxMzc2MTQ0NDphZGRvbnhzaGFyZQ==').split(':')
+		data=urllib.urlencode({'phone':phone_fptplay,'password':password})
 		cookie=urllib2.HTTPCookieProcessor();opener=urllib2.build_opener(cookie);urllib2.install_opener(opener)
 		#try:b=opener.open(self.hd['referer'])
 		#except:pass
@@ -868,9 +868,13 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		return link
 	
 	def fptNodes(self,url):
-		string=xsearch('(<items.+?/items>)',xread(url),1,re.S)
+		b=xread(url)
+		string=xsearch('(<items.+?/items>)',b,1,re.S)
+		if not string:
+			s=re.findall('<item>(.+?)</item>',b,re.S)
+			string='<items>\n'+'\n'.join(['<item>'+i+'</item>' for i in s if '<item>' not in i])+'\n</items>'
 		from xml.etree.ElementTree import fromstring as xmlnodes
-		try:nodes=[i for i in xmlnodes(string.replace(' & ','')) if i.tag=='item']
+		try:nodes=[i for i in xmlnodes(string.replace('&','&amp;')) if i.tag=='item']
 		except:nodes=[]
 		mylist=[m for m in [dict([(i.tag,i.text) for i in j if i.text]) for j in nodes] if len(m)>=3]
 		return mylist

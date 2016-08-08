@@ -6848,9 +6848,11 @@ def television(name,url,img,fanart,mode,page,query,text):
 		from resources.lib.servers import fptPlay;fpt=fptPlay()
 		if not url:url='https://jobdecor.vn/IPTV/FPT/MenuFPT.xml'
 		for i in fpt.fptNodes(url):
-			title,href,img=namecolor(i.get('title',''),c),i.get('link',''),i.get('thumbnail','')
-			if os.path.splitext(href)[-1].upper()=='.XML':addir_info(title,href,img,'',mode,1,'fptiptv',True)
-			elif 'rtmp' in href or 'udp:' in href:addir_info(title,href,img,'',mode,1,'fptiptvPlay')
+			title,href,img=namecolor(i.get('title',''),c),i.get('link','').replace('amp;',''),i.get('thumbnail','')
+			try:
+				if os.path.splitext(href)[-1].upper()=='.XML':addir_info(u2s(title),href,img,'',mode,1,'fptiptv',True)
+				elif 'rtmp' in href or 'udp:' in href:addir_info(u2s(title),href,img,'',mode,1,'fptiptvPlay')
+			except:print href;pass
 		
 	elif query=='fptlive':
 		from resources.lib.servers import fptPlay;fpt=fptPlay()
@@ -7661,7 +7663,7 @@ def olympicRio(name,url,img,fanart,mode,page,query):
 		b=xread('http://www.yan.vn/rio2016/')
 		addir_info(namecolor('Video nổi bật',c),'http://www.yan.vn/rio2016/video.html',ico,fanart,mode,1,'video',True)
 		channels=[]
-		for href in re.findall("channelUrl[^']+'(.+?m3u8)'",b):
+		for href in re.findall('data-channel="(.+?m3u8)"',b):
 			if href not in channels:
 				channels.append(href)
 				addir_info(namecolor('Channel '+xsearch('-c(\d+)/',href),c),href,ico,fanart,mode,1,'play')

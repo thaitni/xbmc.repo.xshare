@@ -1,3 +1,6 @@
+[B]Version 3.4.6.4[/B] <07/8/2016>:
+Fix FPTPlay Login, Olympic Rio 2016
+
 [B]Version 3.4.6.3[/B] <07/8/2016>:
 Fix FPTPlay
 Bổ sung module "Olympic Rio 2016"

@@ -16,7 +16,7 @@
 		<setting id="passwordv" type="text" option="hidden" label="Password [COLOR deeppink]vuahd.tv[/COLOR]"/>
 		<setting id="userhayhay" type="text" label="User name [COLOR tomato]hayhaytv.vn[/COLOR] (email/Số ĐT)"/>
 		<setting id="passhayhay" type="text" option="hidden" label="Password [COLOR tomato]hayhaytv.vn[/COLOR]"/>
-		<setting id="mail_fptplay" type="text" label="User name [COLOR orange]fptplay.net[/COLOR] (email)"/>
+		<setting id="phone_fptplay" type="text" label="User name [COLOR orange]fptplay.net[/COLOR] (Your Phone Number)"/>
 		<setting id="pass_fptplay" type="text" option="hidden" label="Password [COLOR orange]fptplay.net[/COLOR]"/>
 	</category>
 	<category label="Servers khác">
