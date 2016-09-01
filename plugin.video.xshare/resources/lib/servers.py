@@ -879,21 +879,59 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		mylist=[m for m in [dict([(i.tag,i.text) for i in j if i.text]) for j in nodes] if len(m)>=3]
 		return mylist
 
+class ifile:
+	def __init__(self,c):
+		self.home='http://ifile.tv'
+		self.hd={'User-Agent':'Mozilla/5.0'}
+		self.c=c
+	
+	def detail(self,s):
+		title=xsearch('<font[^<]+>(.+?)<',s).strip()
+		tl=xsearch('<b>Thời lượng</b>:(.+?)<br>',s).strip()
+		if tl:title+=' [COLOR gold]%s[/COLOR]'%tl
+		tl=xsearch('<b>Ngày cập nhật</b>:(.+?)<br>',s).strip()
+		if tl:title+=' [COLOR green]%s[/COLOR]'%tl
+		href=self.home+xsearch('href="(.+?)"',s)
+		img=self.home+xsearch('src="(.+?)"',s)
+		epi=xsearch('<b> Số tập :</b>(.+?)<br/>',s).strip()
+		return title,href,img,epi
+	
+	def page(self,content):
+		s=[i for i in content.split('<div class="box-widget-grid fl-box">') if '<div class="details">' in i]
+		items=[self.detail(i) for i in s]
+		pn=xsearch('<a href="([^<]+?)" title="Next" > Next</a>',content)
+		if pn:items.append(('Page next...',self.home+pn,'',''))
+		return items
+	
+	def eps(self,url):
+		b=xread(url)
+		img=xsearch("<img src= '(.+?)'",b)
+		return [(i,self.home+img) for i in re.findall("'(http://4share.vn[^']+)'",b)]
+
 class hayhayvn:
 	def __init__(self,c):
-		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://www.hayhaytv.vn/dieu-khoan-su-dung.html'}
+		self.hd={'User-Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','Referer':'http://www.hayhaytv.vn'}
 		self.c=c
 		
 	def getLink(self,url):
+		tap=xsearch('-Tap-(\d+)-',url)
+		if tap:tap='_'+tap
+		if '/show-' in url:url='http://www.hayhaytv.vn/getsourceshow/%s'%(xsearch('-(\w+)\.html',url)+tap)
+		else:url='http://www.hayhaytv.vn/getsource/%s'%(xsearch('-(\w+)\.html',url)+tap)
+		b=xread(url,self.hd)
+		try:items=ls([(i.get('file','').replace('\\',''),rsl(i.get('label',''))) for i in eval(b)])
+		except:items=[]
+		return items
+
+	def getLink1(self,url):
 		b=xread(url)
 		link=xsearch('file.{,5}"(.+?)"',b);sub=''
 		if link:sub=xsearch("var track.{,5}'(.+?)'",b)
 		else:
 			url='http://www.hayhaytv.vn/getsource/%s'%xsearch("FILM_KEY = '(.+?)'",b)
 			b=xread(url,self.hd)
-			try:j=eval(b)
-			except:j=[]
-			links=[(i.get('file').replace('\\',''),i.get('label')) for i in j]
+			try:links=[(i.get('file').replace('\\',''),i.get('label')) for i in eval(b)]
+			except:links=[]
 			for href,r in ls([(i[0],rsl(i[1])) for i in links]):
 				g=xget(href)
 				if g:link=g.geturl();break
@@ -1030,54 +1068,110 @@ class tvhay:
 
 class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 	def __init__(self):
-		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://www.hdvietnam.com/diendan/','Cookie':xrw('hdvietnam.cookie')}
-		self.token=''
+		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://www.hdvietnam.com/forums/','Cookie':xrw('hdvietnam.cookie')}
+		self.token='';self.login()
+		self.urlhome='http://www.hdvietnam.com/'
+		url=self.urlhome+'threads/xshare-xbmc-hd-video-and-subtitles-on-fshare-4share-tenlua.997745/page-200'
+		self.body=xread(url,self.hd)
 	
 	def login(self):
 		cookie=urllib2.HTTPCookieProcessor()
 		opener=urllib2.build_opener(cookie)
 		urllib2.install_opener(opener)
-		pw=urllib2.hashlib.md5(addon.getSetting('passwordh')).hexdigest()
-		user=addon.getSetting('usernameh')
-		data ={"vb_login_username":user,"vb_login_md5password":pw,"do":"login"}
-		url='http://www.hdvietnam.com/diendan/login.php?do=login'
-		self.hd={'User-Agent': 'Mozilla/5.0'};hdvncookie=''
-		content=self.getpage(url,urllib.urlencode(data))
-		if re.search('<strong>%s</strong>'%user,content):
+		opener.addheaders=[('User_Agent','Mozilla/5.0')]
+		data='login=%s&register=0&password=%s&cookie_check=1'
+		data=data%(addon.getSetting('usernameh'),addon.getSetting('passwordh'))
+		b=opener.open('http://www.hdvietnam.com/login/login',data)
+		content=b.read()
+		if addon.getSetting('usernameh') in content:
 			hdvncookie=';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar)
 			self.hd['Cookie']=hdvncookie
-			self.token=xsearch('href="login.php[^"]+logouthash=(.+?)"',content)
+			self.token=xsearch('"logout.._xfToken=(.+?)"',content)
 			xrw(os.path.join(xsharefolder,'hdvietnam.cookie'),hdvncookie);
 		else:mess(u'Login không thành công!','hdvietnam.com')
-
+	
 	def data_refresh(self,data):
 		return re.sub('securitytoken=[^&]+','securitytoken='+self.token,data)
 	
-	def getpage(self,url,data=None,loop=False):
-		hd=self.hd
-		content=re.sub('\n\s*|amp;','',re.sub('>\s*<','><',xread(url,hd,data)))
-		#f=open(r'd:\xoa.html','w');f.write(content);f.close()
-		i=re.sub('<[^<]+>','',xsearch('class="blockrow restore">(.+)</div>',content))
-		if i:
-			i=' '.join(i.replace('&nbsp;',' ').replace('!','').replace(',','').split())
-			if 'security token was missing' in i:content=content.replace('do=logout','')
-			elif 'Ðề tài không tồn' in i:mess(i.decode('utf-8'),'HDVietnam.com');return content
-		if loop and ('do=logout' not in content):
-			self.login()
-			if data :data=self.data_refresh(data)
-			return self.getpage(url,data)
-		token=xsearch('href="login.php[^"]+logouthash=(.+?)"',content)
-		if token:self.token=token
-		return content
+	def getpage(self,url):
+		content=xread(url,self.hd).split('"nodeList section sectionMain"')[-1]
+		s=re.findall('<a href="(.+?)" data-description=".+?">(.+?)</a></h3>',content)
+		items=[(self.urlhome+i,j) for i,j in s]
+		return items
+		
+	def forums1(self,url):
+		content=xread(url,self.hd)
+		items=re.findall('data-previewUrl="(.+?)">(.+?)</a>',content)
+		pn=xsearch('<a href="(.+?)" class="text">Ti.+ &gt;</a>',content)
+		if pn:items.append((pn,'[COLOR lime]Trang tiếp theo: %s[/COLOR]'%xsearch('/page-(\d+)',pn)))
+		return [(self.urlhome+i.replace('/preview',''),j) for i,j in items]
 	
-	def getThanks1(self,thanks_data):
-		show_href='http://www.hdvietnam.com/diendan/showthread.php';s=[]
-		thanks_href='http://www.hdvietnam.com/diendan/post_thanks.php'
-		for data in [i.replace('amp;','') for i in thanks_data]:
-			i=self.getpage(thanks_href,data,loop=True)
-			data=self.data_refresh(data).replace('post_thanks_add','whatever')
-			s.append(self.getpage(show_href,data))
-		return '=*='.join(s)
+	def forums(self,url):
+		def cleans(s):return ' '.join(re.sub('<[^<]+?>|\{[^\{]+\}|\[[^\[]+?\]|&#\w+;|amp;','',s).split())
+		def detail(s):
+			id=xsearch('id="thread-(.+?)"',s)
+			timestring=xsearch('data-timestring="(.+?)"',s)
+			if not timestring:
+				datestring=xsearch('<a class="dateTime"><span class="DateTime" title="(.+?)"',s).replace('lúc ','')
+				datestring='[COLOR gold]%s[/COLOR] '%datestring
+			else:datestring='[COLOR gold]%s %s[/COLOR] '%(xsearch('data-datestring="(.+?)"',s),timestring)
+			author='[COLOR blue]%s[/COLOR] '%xsearch('data-author="(.+?)"',s)+datestring
+			title='data-previewUrl="(.+?)/preview">(.+?)</a>'
+			href=self.urlhome+xsearch(title,s,1)
+			title=xsearch(title,s,2)
+			return id,author+cleans(title),href
+		
+		content=xread(url,self.hd).split('<div class="titleBar">')[-1]
+		nodeList=re.findall('<h3 class="nodeTitle"><a href="([^"]+?)"[^<]+?>(.+?)</a></h3>',content)
+		items=[('nodeList','[B]%s[/B]'%title,self.urlhome+href) for href,title in nodeList]
+		for s in [i for i in re.findall('(<li id="thread.+?/li>)',content,re.S) if 'class="sticky"' not in i]:
+			#img=xsearch('<img src="(.+?)"',content)
+			items.append(detail(s))
+		pn=xsearch('<a href="(.+?)" class="text">Ti.+ &gt;</a>',content)
+		if pn:
+			pn=self.urlhome+pn
+			items.append(('pageNext','[COLOR lime]Trang tiếp theo: %s[/COLOR]'%xsearch('/page-(\d+)',pn),pn))
+		return items
+		
+	def threads(self,url):
+		def cleans(s):return ' '.join(re.sub('<[^<]+?>|\{[^\{]+\}|\[[^\[]+?\]|&#\w+;|amp;','',s).split())
+		def srv(link):return [i for i in srvs if i in link]
+		srvs=['fshare.vn','4share.vn','tenlua.vn','subscene.com','phudeviet.org','youtube.com']
+		items=[];morethread=[]
+		def getTitle(title,href,s):
+			t=title
+			if [i for i in srvs if i in title] or not title:
+				title=xsearch('<b>Ðề: (.+?)</b>',s)
+				if not title:
+					title=' '.join(xsearch('<div style="text-align: center".+?>(\w[^<]+?)<',s).split())
+			elif 'download' in title.strip().lower():
+				title=xsearch('class="internalLink">([^<]+?)<',s[s.find(href)-500:])
+				if not title:title=xsearch('<title>(.+?)</title>',content)
+			if not title:title=t
+			title=cleans(title)
+			return title
+		
+		content=xread(url,self.hd)
+		for s in re.findall('(<li id="post-.+?/li>)',content,re.S):
+			img=xsearch('<img src="([^"]+?)" class="',s)
+			if not img:img=xsearch('<img src="(.+?jpg)"',s)
+			i=s
+			while 'header-' in img and 'ogo' not in img:
+				i=i[i.find(img)+10:]
+				img=xsearch('<img src="(.+?jpg)"',i)
+			
+			i=re.findall('<a href="([^"]+?)" target="_blank"[^<]+?>(.+>)',s)
+			i= [(getTitle(title,href,s),href,img) for href,title in i if srv(href)]
+			if i:items+=i
+			else:items+=[('',i,img) for i in re.findall('(http[\w|:|/|\.|\?|=|&|-]+)',s.replace('amp;','')) if srv(i)]
+			
+			j=re.findall('<a href="(http://www.hdvietnam.com/[^"]+?)" class="internalLink">(.+>)',s)
+			j= [(cleans(title),href,img) for href,title in j if 'chuyenlink' not in href and 'tags' not in href]
+			if j:morethread+=j
+		temp=[];list=[]
+		for i in items+morethread:
+			if i[1] not in temp:temp.append(i[1]);list.append(i)
+		return list
 		
 	def getThanks(self,data):
 		show_href='http://www.hdvietnam.com/diendan/showthread.php';s=[]
@@ -1143,138 +1237,6 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 			elif 'phudeviet.org' in i[0]:
 				j=urllib.unquote(xsearch('(phudeviet.org.+)',i[0]))
 				if j and 'http://'+j not in n:temp.append(('http://'+j,i[1]));n.append('http://'+j)
-		
-		items=[(s2(i[1],i[0],content),i[0],s3(i[0],img,content)) for i in temp]
-		items=[i for i in items if 'point fshare' not in i[0].lower()]
-		
-		#CÁC CHỦ ĐỀ CÙNG CHUYÊN MỤC
-		for title,href in re.findall('<a title="(.+?)" href="(.+?)">',chuyenmuc):
-			items.append((title,href,"morethread"))
-		return items#title,href,img
-
-	def getlink2(self,url,buian=''):
-		if '#post' in url:url=url.split('#post')[0]
-		content=self.getpage(url,loop=True)
-		
-		label=' '.join(re.sub('\[[^\[]+\]','',xsearch('<title>(.+?)</title>',content)).split())
-		img=xsearch('<img src="([^"]+?\.jpg)"',content)
-		chuyenmuc=xsearch('<div class="morethread">(.+?)class="postfoot"',content)
-		s=re.findall('(<div class="posthead">.+?class="report")',content)
-		
-		thanks=re.findall('(do=post_thanks_add[^"]+?)"','\n'.join(i for i in s if 'id="hide_fieldset"' in i))
-		s.append(self.getThanks(thanks))
-			
-		s='=*='.join(s)
-		s=s.replace('\\t','').replace('\\r','').replace('\\n','').replace('amp;','').replace('&gt;','-')
-		content=' '.join(s.split())
-		
-		srv=['fshare.vn','4share.vn','tenlua.vn','subscene.com','hdvietnam.com']
-		def s1(s):return [j for j in srv if j in s.lower()]
-		temp=re.findall('<a href="([^"]+?)" target="_blank">(.+?)</a>',content)
-		temp1=[i for i in temp if s1(i[0])];n=[i[0] for i in temp1]
-		temp=[i for i in re.findall('>(http[^<]+?)<',content) if '...' not in i and s1(i)]
-		temp1+=[(i,'') for i in temp if i not in n];n=[];temp=[]
-		for i in temp1:
-			if 'chuyenlink.php' not in i[0] and 'members' not in i[0] and i[0] not in n:
-				temp.append(i);n.append(i[0])
-		
-		def s2(string,href,c):#get title
-			if buian:
-				c=' '.join(i for i in c.split('=*=') if href in i)#Lay session co href
-				p=c.find(href);i=0;s=''
-				pattern='<div style="text-align[^"]+"><b><font size="\d">([^<]+?)</font></b>'
-				while (len(s)<10 or 'dung ẩn' in s) and (p-i)>0:
-					i+=100;s=xsearch(pattern,c[p-i:p]).strip()
-			else:
-				s=' '.join(i for i in re.sub('<[^<]+>','',string).split())
-				if not s or 'http' in s:
-					c=' '.join(i for i in c.split('=*=') if href in i)#Lay session co href
-					p=c.find(href);i=0;s=''
-					while (len(s)<10 or 'dung ẩn' in s) and (p-i)>0 and i<500:
-						i+=50;s=xsearch('>([^<]+)<',c[p-i:p]).strip()
-			return s if s else href
-		
-		def s3(href,img,c):#get img
-			c=' '.join(i for i in c.split('=*=') if href in i)#Lay session co href
-			p=c.find(href);i=0;s=''
-			while not s and (p-i)>0:
-				i+=100;s=xsearch('src="([^"]+)"',c[p-i:p])
-				if not 'attachment.php' in s:s=''
-			if not s:s=img
-			return s
-		
-		items=[(s2(i[1],i[0],content),i[0],s3(i[0],img,content)) for i in temp]
-		items=[i for i in items if 'point fshare' not in i[0].lower()]
-		
-		#CÁC CHỦ ĐỀ CÙNG CHUYÊN MỤC
-		for title,href in re.findall('<a title="(.+?)" href="(.+?)">',chuyenmuc):
-			items.append((title,href,"morethread"))
-		return items#title,href,img
-
-	def getlink1(self,url,buian=''):
-		if '#post' in url:url=url.split('#post')[0]
-		url='%s%s&styleid=9'%(url,'&mode=threaded' if '?' in url else '?mode=threaded')
-		content=self.getpage(url,loop=True)
-		if not content:
-			mess('Xshare retry get room ...')
-			url=url.replace('mode=threaded','mode=linear')
-			content=self.getpage(url,loop=True)
-		
-		label=' '.join(re.sub('\[[^\[]+\]','',xsearch('<title>(.+?)</title>',content)).split())
-		img=xsearch('<img src="([^"]+?\.jpg)"',content)
-		chuyenmuc=xsearch('<div class="morethread">(.+?)class="postfoot"',content)
-		s=re.findall('(pd\[.+)',content)
-		if not s:s=re.findall('(<div class="posthead">.+?<div class="postfoot">)',content,re.DOTALL)
-		
-		thanks=re.findall('(do=post_thanks_add[^"]+?)"','\n'.join(i for i in s if 'id="hide_fieldset"' in i))
-		show_href='http://www.hdvietnam.com/diendan/showthread.php'
-		thanks_href='http://www.hdvietnam.com/diendan/post_thanks.php'
-		for data in [i.replace('amp;','') for i in thanks]:
-			i=self.getpage(thanks_href,data,loop=True)
-			#token=xsearch('href="login.php[^"]+logouthash=(.+?)"',i)
-			#data=re.sub('securitytoken=[^&]+','securitytoken='+token,data.replace('post_thanks_add','whatever'))
-			data=self.data_refresh(data).replace('post_thanks_add','whatever')
-			s.append(self.getpage(show_href,data))
-			#temp=self.getpage(post_thanks,data.replace('post_thanks_add','post_thanks_remove_user'))
-			
-		s='=*='.join(s)
-		s=s.replace('\\t','').replace('\\r','').replace('\\n','').replace('amp;','').replace('&gt;','-')
-		content=' '.join(s.split())
-		#f=open(r'd:\xoa.html','w');f.write(content);f.close()
-		srv=['fshare.vn','4share.vn','tenlua.vn','subscene.com','hdvietnam.com']
-		def s1(s):return [j for j in srv if j in s.lower()]
-		temp=re.findall('<a href="([^"]+?)" target="_blank">(.+?)</a>',content)
-		temp1=[i for i in temp if s1(i[0])];n=[i[0] for i in temp1]
-		temp=[i for i in re.findall('>(http[^<]+?)<',content) if '...' not in i and s1(i)]
-		temp1+=[(i,'') for i in temp if i not in n];n=[];temp=[]
-		for i in temp1:
-			if 'chuyenlink.php' not in i[0] and 'members' not in i[0] and i[0] not in n:
-				temp.append(i);n.append(i[0])
-		
-		def s2(string,href,c):#get title
-			if buian:
-				c=' '.join(i for i in c.split('=*=') if href in i)#Lay session co href
-				p=c.find(href);i=0;s=''
-				pattern='<div style="text-align[^"]+"><b><font size="\d">([^<]+?)</font></b>'
-				while (len(s)<10 or 'dung ẩn' in s) and (p-i)>0:
-					i+=100;s=xsearch(pattern,c[p-i:p]).strip()
-			else:
-				s=' '.join(i for i in re.sub('<[^<]+>','',string).split())
-				if not s or 'http' in s:
-					c=' '.join(i for i in c.split('=*=') if href in i)#Lay session co href
-					p=c.find(href);i=0;s=''
-					while (len(s)<10 or 'dung ẩn' in s) and (p-i)>0 and i<500:
-						i+=50;s=xsearch('>([^<]+)<',c[p-i:p]).strip()
-			return s if s else href
-		
-		def s3(href,img,c):#get img
-			c=' '.join(i for i in c.split('=*=') if href in i)#Lay session co href
-			p=c.find(href);i=0;s=''
-			while not s and (p-i)>0:
-				i+=100;s=xsearch('src="([^"]+)"',c[p-i:p])
-				if not 'attachment.php' in s:s=''
-			if not s:s=img
-			return s
 		
 		items=[(s2(i[1],i[0],content),i[0],s3(i[0],img,content)) for i in temp]
 		items=[i for i in items if 'point fshare' not in i[0].lower()]
@@ -1795,11 +1757,13 @@ class sieunhanh:
 		return items
 	
 	def maxLink(self,url):
+		tap=xsearch('-Tap-(\d+)-',url)
+		if tap:tap='_'+tap
 		hd=self.hd;hd['Referer']=self.urlhome
-		url='http://hdsieunhanh.com/getsource/'+(xsearch('(\d{12,20})',url));print url,hd
-		try:l=ls([(i.get('file'),rsl(i.get('label'))) for i in json.loads(xread(url,hd))])
-		except:l=[]
-		return l
+		url='http://hdsieunhanh.com/getsource/%s'%(xsearch('-(\w+)\.html',url)+tap)
+		try:items=ls([(i.get('file'),rsl(i.get('label'))) for i in json.loads(xread(url,hd))])
+		except:items=[]
+		return items
 		
 	def maxLink1(self,url):
 		content=xread(url);link=''
@@ -2387,7 +2351,7 @@ class mphim:
 			items=ls([(i.get('file'),rsl(i.get('label'))) for i in s.get('sources')])
 		except:mess('Get maxLink error !')
 		return items
-		
+
 class phim47com:
 	def __init__(self,c):
 		self.hd={'User-Agent':'Mozilla/5.0'}
@@ -2627,6 +2591,15 @@ class vtvgovn:
 		u='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=1_by8rxnyv&kalsig=ad9291d0921fec4bcf6bc406a5d0c752'
 		
 		play='http://cdnapi.kaltura.com/html5/html5lib/v2.6.3/mwEmbedFrame.php/p/2111921/uiconf_id/35084022/entry_id/1_rhex2pfs?wid=_2111921&iframeembed=true&playerId=kaltura_player_1411138624&entry_id=1_rhex2pfs&flashvars'
+
+class phimMedia:
+	def maxLink(self,url):
+		body=xread(url)
+		s=xsearch('sources: (\[[^\[]+?\])',body)
+		for i in re.findall('(\w+):.?"',s):s=s.replace("%s:"%i,'"%s":'%i)
+		try:items=ls([(i.get('file',''),rsl(i.get('label',''))) for i in eval(s)])
+		except:items=[]
+		return items
 
 class k88com:
 	def __init__(self,c):
