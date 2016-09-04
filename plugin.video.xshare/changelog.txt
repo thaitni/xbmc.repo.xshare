@@ -1,3 +1,6 @@
+[B]Version 3.4.7.1[/B] <04/9/2016>:
+Fix HDVietnam search, youtube search, Fadio fptplay.net
+
 [B]Version 3.4.7[/B] <01/9/2016>:
 Fix HDVietnam and "Cac servers khac"
 

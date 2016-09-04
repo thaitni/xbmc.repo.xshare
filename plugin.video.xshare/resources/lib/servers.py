@@ -581,25 +581,28 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		body=response.body if response and response.status==200 else ''
 		pagename=xsearch('<title>(.+?)</title>',body).replace('Fshare - ','')
 		items=list()
-		for content in re.findall('<div class="pull-left file_name(.+?)<div class="clearfix"></div>',body,re.S):
-			item=re.search('data-id="(.+?)".+?href="(.+?)".+?title="(.+?)"',content)
-			if item:
-				size=xsearch('<div class="pull-left file_size align-right">(.+?)</div>',content).strip()
-				id=item.group(1);type='file' if 'file' in item.group(2) else 'folder';title=item.group(3)
-				if type=='file':link='https://www.fshare.vn/file/%s'%id
-				elif re.search('(\w{10,20} )',title):
-					iD=xsearch('(\w{10,20} )',title)
-					if 'FOLDER' in iD:link='https://www.fshare.vn/folder/%s'%iD.replace('FOLDER','')
-					elif 'FILE' in iD:link='https://www.fshare.vn/file/%s'%iD.replace('FILE','')
-					else:
-						link='https://www.fshare.vn/folder/%s'%iD
-						try:
-							if self.fetch(link).status!=200:link='https://www.fshare.vn/file/%s'%iD
-						except:pass
-					title=' '.join(s for s in title[title.find(' '):].split())
-				else:link='https://www.fshare.vn/folder/%s'%id;title=' '.join(s for s in title.split())
-				date=xsearch('"pull-left file_date_modify align-right">(.+?)</div>',content).strip()
-				items.append((title,link,id,size,date))
+		if body:
+			for content in re.findall('<div class="pull-left file_name(.+?)<div class="clearfix"></div>',body,re.S):
+				item=re.search('data-id="(.+?)".+?href="(.+?)".+?title="(.+?)"',content)
+				if item:
+					size=xsearch('<div class="pull-left file_size align-right">(.+?)</div>',content).strip()
+					id=item.group(1);type='file' if 'file' in item.group(2) else 'folder';title=item.group(3)
+					if type=='file':link='https://www.fshare.vn/file/%s'%id
+					elif re.search('(\w{10,20} )',title):
+						iD=xsearch('(\w{10,20} )',title)
+						if 'FOLDER' in iD:link='https://www.fshare.vn/folder/%s'%iD.replace('FOLDER','')
+						elif 'FILE' in iD:link='https://www.fshare.vn/file/%s'%iD.replace('FILE','')
+						else:
+							link='https://www.fshare.vn/folder/%s'%iD
+							try:
+								if self.fetch(link).status!=200:link='https://www.fshare.vn/file/%s'%iD
+							except:pass
+						title=' '.join(s for s in title[title.find(' '):].split())
+					else:link='https://www.fshare.vn/folder/%s'%id;title=' '.join(s for s in title.split())
+					date=xsearch('"pull-left file_date_modify align-right">(.+?)</div>',content).strip()
+					items.append((title,link,id,size,date))
+				elif xsearch('(Số lượng: 0)',body):mess('Folder %s is empty'%url,'Fshare.vn')
+		else:mess('Folder %s find not found'%url,'Fshare.vn')
 		return {'pagename':pagename,'items':items}
 	
 	def getFile(self,parent,name):
@@ -819,8 +822,9 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		if not href:href=xsearch('data-href="(.+?)"',s)
 		if 'Đang diễn ra' in s:dir=None
 		img=xsearch('src="([^"]+?\.jpg)',s)
-		if not img:img=xsearch('data-original="([^"]+?\.jpg)',s)
-		if not img:img=xsearch('data-original="([^"]+?\.png)',s)
+		if not img:
+			img=xsearch('data-original="([^"]+?\.jpg)',s)
+			if not img:img=xsearch('data-original="([^"]+?\.png)',s)
 		return title,href,img,dir
 	
 	def eps(self,url,page):
@@ -1134,7 +1138,7 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 		return items
 		
 	def threads(self,url):
-		def cleans(s):return ' '.join(re.sub('<[^<]+?>|\{[^\{]+\}|\[[^\[]+?\]|&#\w+;|amp;','',s).split())
+		def cleans(s):return ' '.join(re.sub('<[^<]+?>|\{[^\{]+\}|\[[^\[]+?\]|&#\w+;|amp;|<','',s).split())
 		def srv(link):return [i for i in srvs if i in link]
 		srvs=['fshare.vn','4share.vn','tenlua.vn','subscene.com','phudeviet.org','youtube.com']
 		items=[];morethread=[]
@@ -1160,7 +1164,7 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 				i=i[i.find(img)+10:]
 				img=xsearch('<img src="(.+?jpg)"',i)
 			
-			i=re.findall('<a href="([^"]+?)" target="_blank"[^<]+?>(.+>)',s)
+			i=re.findall('<a href="([^"]+?)" target="_blank"[^<]+?>(.+?)/a>',s)
 			i= [(getTitle(title,href,s),href,img) for href,title in i if srv(href)]
 			if i:items+=i
 			else:items+=[('',i,img) for i in re.findall('(http[\w|:|/|\.|\?|=|&|-]+)',s.replace('amp;','')) if srv(i)]
@@ -1269,6 +1273,8 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 class youtube:
 	def __init__(self,url):#https://www.youtube.com/get_video_info?video_id=xhNy0jnAgzI
 		self.url=url
+		self.yt3='https://www.googleapis.com/youtube/v3/'
+		self.key='AIzaSyA-Y38JpoUKbdpQgFellPthOgcZTFJwkqY'
 		self.id=xsearch('([\w|-]{10,20})',url)
 	
 	def getMaxlink(self,s):
@@ -1297,8 +1303,8 @@ class youtube:
 		return items
 	
 	def playlist(self,id):
-		url='https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=30&'
-		url+='key=AIzaSyA-Y38JpoUKbdpQgFellPthOgcZTFJwkqY&playlistId=%s'%id
+		#xread(self.yt3+'search?part=snippet&eventType=live&type=video&key=%s&channelId=%s'%(self.key,id))
+		url=self.yt3+'playlistItems?part=snippet&maxResults=30&key=%s&playlistId=%s'%(self.key,id)
 		b=xread(url)
 		try:j=json.loads(b)
 		except:j={}
@@ -1312,14 +1318,15 @@ class youtube:
 		if j.get('nextPageToken'):items.append(('nextPageToken',j.get('nextPageToken').encode('utf-8'),''))
 		return items
 		
-	def search(self,q):
-		url='https://www.googleapis.com/youtube/v3/search?regionCode=VN&type=video&'
-		b=xread(url+'part=snippet&maxResults=30&key=AIzaSyA-Y38JpoUKbdpQgFellPthOgcZTFJwkqY&q='+q)
+	def search(self,type,q):#type=video/channel/playlist
+		url=self.yt3+'search?regionCode=VN&type=%s&part=snippet&maxResults=30&key=%s&q=%s'
+		b=xread(url%(type,self.key,q))
+		xrw(r'd:\xoa.json',b)
 		try:j=json.loads(b)
 		except:j={}
 		def detail(l):
 			title=l.get('snippet',{}).get('title').encode('utf-8')
-			id=l.get('id',{}).get('videoId')
+			id=l.get('id',{}).get(type+'Id')
 			if not title or not id:return []
 			img=l.get('snippet',{}).get('thumbnails',{}).get('high',{}).get('url','')
 			return title,id,img
@@ -1340,6 +1347,102 @@ class youtube:
 		else:items=sorted(items, key=lambda k: int(k[1]))
 		#print items
 		return items
+	'''
+	xread('http://www.youtube.com/oembed?format=json&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DK6dPBLFIkSk')-->
+	{
+	  "provider_url": "https://www.youtube.com/", 
+	  "title": "\u0110\u1ea5u tr\u01b0\u1eddng ti\u1ebfu l\u00e2m | t\u1eadp 21: Duy Kh\u01b0\u01a1ng l\u00ean ng\u00f4i v\u00f4 \u0111\u1ecbch trong ph\u00fat ch\u00f3t", 
+	  "type": "video", 
+	  "html": "<iframe width=\"480\" height=\"270\" src=\"https://www.youtube.com/embed/K6dPBLFIkSk?feature=oembed\" frameborder=\"0\" allowfullscreen></iframe>", 
+	  "author_name": "\u0110\u1ea4U TR\u01af\u1edcNG TI\u1ebeU L\u00c2M", 
+	  "height": 270, 
+	  "thumbnail_width": 480, 
+	  "width": 480, 
+	  "version": "1.0", 
+	  "author_url": "https://www.youtube.com/channel/UCA3GtNtuKvcj6VrwZ5Gpx9g", 
+	  "provider_name": "YouTube", 
+	  "thumbnail_url": "https://i.ytimg.com/vi/K6dPBLFIkSk/hqdefault.jpg", 
+	  "thumbnail_height": 360
+	}
+	xread(self.yt3+'search?part=snippet&eventType=live&type=video&key=%s&channelId=%s'%(self.key,id))-->
+	{
+	  "regionCode": "VN", 
+	  "kind": "youtube#searchListResponse", 
+	  "etag": "\"I_8xdZu766_FSaexEaDXTIfEWc0/5CBTLqAljkleRxf7AKXJbv3nMRg\"", 
+	  "pageInfo": {
+		"resultsPerPage": 5, 
+		"totalResults": 2
+	  }, 
+	  "items": [
+		{
+		  "snippet": {
+			"thumbnails": {
+			  "default": {
+				"url": "https://i.ytimg.com/vi/nQGFfByipmg/default_live.jpg", 
+				"width": 120, 
+				"height": 90
+			  }, 
+			  "high": {
+				"url": "https://i.ytimg.com/vi/nQGFfByipmg/hqdefault_live.jpg", 
+				"width": 480, 
+				"height": 360
+			  }, 
+			  "medium": {
+				"url": "https://i.ytimg.com/vi/nQGFfByipmg/mqdefault_live.jpg", 
+				"width": 320, 
+				"height": 180
+			  }
+			}, 
+			"title": "STREAMING TOP CALCIO 24", 
+			"channelId": "UCURGpU4lj3dat246rysrWsw", 
+			"publishedAt": "2016-05-22T15:55:39.000Z", 
+			"liveBroadcastContent": "live", 
+			"channelTitle": "TelelombardiaWeb", 
+			"description": ""
+		  }, 
+		  "kind": "youtube#searchResult", 
+		  "etag": "\"I_8xdZu766_FSaexEaDXTIfEWc0/rgm9VLHmxrNpkzeQH3PmZ9ofsQ0\"", 
+		  "id": {
+			"kind": "youtube#video", 
+			"videoId": "nQGFfByipmg"
+		  }
+		}, 
+		{
+		  "snippet": {
+			"thumbnails": {
+			  "default": {
+				"url": "https://i.ytimg.com/vi/VKbmf7jupyg/default_live.jpg", 
+				"width": 120, 
+				"height": 90
+			  }, 
+			  "high": {
+				"url": "https://i.ytimg.com/vi/VKbmf7jupyg/hqdefault_live.jpg", 
+				"width": 480, 
+				"height": 360
+			  }, 
+			  "medium": {
+				"url": "https://i.ytimg.com/vi/VKbmf7jupyg/mqdefault_live.jpg", 
+				"width": 320, 
+				"height": 180
+			  }
+			}, 
+			"title": "STREAMING MILANOW", 
+			"channelId": "UCURGpU4lj3dat246rysrWsw", 
+			"publishedAt": "2016-05-22T15:57:14.000Z", 
+			"liveBroadcastContent": "live", 
+			"channelTitle": "TelelombardiaWeb", 
+			"description": ""
+		  }, 
+		  "kind": "youtube#searchResult", 
+		  "etag": "\"I_8xdZu766_FSaexEaDXTIfEWc0/_djxE1lkdxbIqTcNgqYttODGPUk\"", 
+		  "id": {
+			"kind": "youtube#video", 
+			"videoId": "VKbmf7jupyg"
+		  }
+		}
+	  ]
+	}	
+	'''
 
 class imovies:
 	def __init__(self,c):

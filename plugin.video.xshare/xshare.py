@@ -1477,33 +1477,6 @@ def read_all_filexml(fn="vaphim.xml",string_search='',lists=[],index=[]):
 		for id_tip,id_htm,category,img,fanart,url,name in lists:index.append((id_htm))
 	return lists,index
 
-def googleapis_search(url,query,mode):
-	if '?' not in query:start='0'
-	else:start=query.split('?')[1];query=query.split('?')[0]
-	if url=='hdvietnam.com':url_search='https://www.googleapis.com/customsearch/v1element?rsz=filtered_cse&num=20&key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&source=gcsc&gss=.com&cx=006389339354059003744:dxv8n47myyg&googlehost=www.google.com&sig=23952f7483f1bca4119a89c020d13def&nocache&start=%s&q=%s';ico=icon['hdvietnam']
-	elif url=='phimfshare.com':url_search='https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&rsz=filtered_cse&num=20&hl=vi&prettyPrint=false&source=gcsc&gss=.com&googlehost=www.google.com&sig=23952f7483f1bca4119a89c020d13def&cx=005609294674567689888:qyuk9aoqwmg&nocache&start=%s&q=%s';ico=icon['phimfshare']
-	else:return list()
-	url_search=url_search%(start,urllib.quote_plus(query))
-	result=make_request(url_search,resp='j');items=list()
-	if not result:return list()
-	for item in result.get("results",dict()):
-		href=urllib.unquote(item.get('url'))
-		if not href:continue
-		name=remove_tag(item.get('titleNoFormatting'))
-		if len(name.split())<2:name=os.path.basename(item['url'])
-		img=get_dict(item,['richSnippet','cseThumbnail','src'])
-		if not img:img=ico
-		fanart=get_dict(item,['richSnippet','cseImage','src'])
-		items.append((name,href,img,fanart,0,1,'get_link_post'))
-	page_dict=get_dict(result,['cursor','pages']);label=list();pages=0
-	if page_dict:label=[s.get('label') for s in page_dict if s.get('start')==start]
-	if label:label=label[0]+1;start=[s.get('start') for s in page_dict if s.get('label')==label]
-	for item in page_dict:pages=item.get('label') if item.get('label',0)>pages else pages
-	if label and start:
-		label=color['trangtiep']+'Trang tiep theo...trang %d/%d[/COLOR]'%(label,pages)
-		items.append((label,url,ico,'',mode,4,query+'?'+start[0]))
-	return items
-
 def xshare_search(name,url,query,mode,page,items=[]):#13
 	def trang_search(string):
 		if len(string.split('?'))==3:p=string.split('?')[2];trang=string.split('?')[1];string=string.split('?')[0]
@@ -1537,11 +1510,19 @@ def xshare_search(name,url,query,mode,page,items=[]):#13
 			name=color['trangtiep']+'Tiep theo %s...trang %s[/COLOR]'%(page_tag.group(1),page_tag.group(3))
 			addir_info(name,url,icon[url.split('.')[0]],'',mode,4,'%s?%s?%s'%(query,trang,p),True)
 	
-	elif url in 'phimfshare.com hdvietnam.com':
-		items=googleapis_search(url,query,mode)
-		if not items:return
-		for name,url,img,fanart,mode,page,query in items:
-			addir_info(name,url,img,fanart,mode,page,query)
+	elif url=='hdvietnam.com':
+		#https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&rsz=filtered_cse&num=10&hl=en&prettyPrint=false&source=gcsc&gss=.com&sig=8bdfc79787aa2b2b1ac464140255872c&cx=012570864823441480940:ui9zm9vpdyq&q=phap%20su&googlehost=www.google.com&callback=google.search.Search.apiary6840&nocache=1472952908361
+		from resources.lib.servers import googlesearch;ggs=googlesearch()
+		if '*#*' in query:start=query.split('*#*')[1];query=query.split('*#*')[0]
+		else:start='0'
+		for title,href,img in ggs.content('012570864823441480940:ui9zm9vpdyq',start,query):
+			if 'Page next:' in title:
+				page=img;start=href;query=query+'*#*'+start
+				addir_info(title,url,icon['hdvietnam'],'',mode,page,query,True)
+			else:
+				if '/threads/' in href or 'showthread.php' in href or '/diendan/' in href:q='threads';m=1
+				else:q='forums';m=1
+				addir_info(title,href,icon['hdvietnam'],'',m,1,q,True)
 	
 	elif url=='tenlua.vn':#get_dict(dict,key_list=list(),result='')
 		query,trang,p=trang_search(query)
@@ -2245,12 +2226,18 @@ def fptplay(name,url,img,mode,page,query):
 		for href,title in i:
 			addir_info(namecolor(fpt.fpt2s(title),c),href,ico,'',mode,1,"page",True)
 		
-		add_sep_item('FPT Play giới thiệu -----------------------------------------')
-		faddir([fpt.detail(i) for i in re.findall('(<li class="banner".+?/li>)',b,re.S)])
+		s=re.findall('(<li class="banner".+?/li>)',b,re.S)
+		if s:
+			add_sep_item('FPT Play giới thiệu -----------------------------------------')
+			faddir([fpt.detail(i) for i in s])
 				
 	elif query=='page':
 		b=xread(url)
-		faddir([fpt.detail(i) for i in b.split('list_img') if '<div class="title">' in i])
+		if '<div class="title">' in b:faddir([fpt.detail(i) for i in b.split('list_img') if '<div class="title">' in i])
+		elif  '<div class="col-xs-4 col-sm-15 list_img">' in b:
+			s=b.split('<div class="col-xs-4 col-sm-15 list_img">')
+			faddir([fpt.detail(i) for i in s if 'https://fptplay.net/xem-video/' in i])
+		else:print 'Chua xu ly .......................'
 		
 		pn=xsearch('id="paging_(.+?)_',b)
 		if pn:
@@ -2909,7 +2896,8 @@ def play_youtube(url,map='url_encoded_fmt_stream_map',loop=True):
 			try:o=urllib2.urlopen(href);link=o.geturl();o.close()
 			except:pass
 			if link:break
-		if link:
+		if link:#http://forum.kodi.tv/showthread.php?tid=200877
+			#link='https://r7---sn-42u-nboll.googlevideo.com/videoplayback?dur=2652.560&shardbypass=yes&lmt=1472645429594451&hcs=yes&sver=3&clen=813997644&gir=yes&signature=69981203BCD0D3DFA01CDEC3E7B798D15E3162F0.C7E9286B64E429BF491782CEEBFC074E786FE500&pcm2cms=yes&initcwndbps=1782500&key=yt6&mime=video%2Fwebm&expire=1472849428&upn=QvI5j5zIwlk&id=o-AE7MMGslm-FlXQ_00knGO3f7aYOzgeM0tpLzmsUxp43S&pl=21&ms=au&mv=m&mt=1472826765&itag=248&mm=31&ip=42.114.21.3&ipbits=0&sparams=clen%2Cdur%2Cgir%2Chcs%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpcm2cms%2Cpl%2Crequiressl%2Cshardbypass%2Csource%2Cupn%2Cexpire&requiressl=yes&source=youtube&mn=sn-42u-nboll'
 			xbmcsetResolvedUrl(link,re.sub(' \[COLOR.+?/COLOR\]','',name)+'Maxlink')
 			mess('Xshare playing on youtube.com')
 		else:mess('Get maxspeed link fail!','youtube.com')
@@ -6364,28 +6352,13 @@ def addir_info(name,url,img,fanart='',mode=0,page=1,query='',isFolder=False,text
 		elif 'hdvietnam.com' in url:name='%sHDVN[/COLOR] %s'%(color['hdvietnam'],name);mode=8
 		elif 'taiphimhd.com' in url:name='%sTPHD[/COLOR] %s'%(color['taiphimhd'],name);mode=53
 		elif 'youtube.com' in url:
-			name='[COLOR red]YT[/COLOR] %s'%(name);mode=98
 			if 'watch?' in url:isfolder=False
-			else:query= 'channel'
+			elif mode !=98:query= 'channel'
+			if mode !=98:name='[COLOR red]YT[/COLOR] %s'%(name);mode=98
 		return u2s(name),url,mode,query,isfolder
 	
 	def get_menu(menu,url):
 		lists=list()
-		'''
-		if menu.has_key('muctheodoi'):
-			inf=menu.get('muctheodoi')
-			if [s for s in inf['server'] if s in url] and inf['action']=='Add':
-				lists.append(('Add to Mục đang theo dõi',{'query':'muctheodoi_Add'}))
-			elif [s for s in inf['server'] if s in url] and inf['action']=='Remove':
-				lists.append(('Remove from Mục đang theo dõi',{'query':'muctheodoi_Remove'}))
-		
-		#if menu.has_key('MyFavourites'):
-		#	inf=menu.get('MyFavourites')
-		#	if [s for s in inf['server'] if s in url] and inf['action']=='Add':
-		#		lists.append(('Add to MyFavourites',{'query':'Add','mode':98}))
-		#	if [s for s in inf['server'] if s in url] and inf['action']=='Remove':
-		#		lists.append(('Remove from MyFavourites',{'query':'Remove','mode':98}))
-		'''
 		if menu.has_key('MyFshare'):
 			inf=menu.get('MyFshare')
 			if [s for s in inf['server'] if s in url] and inf['action']=='Add':
@@ -7063,7 +7036,7 @@ def youtube(name,url,img,fanart,mode,page,query,text=''):
 	
 	if query=='Home':
 		title=namecolor('Search trên youtube.com','lime')
-		addir_info(title,'youtube.com',ico,'',mode,1,'search',True)
+		addir_info(title,'youtube.com',ico,'',mode,1,'videoSearch',True)
 
 		#b=xread('https://www.youtube.com/')
 		b=xread('https://www.youtube.com/feed/trending');items=[];text=[]
@@ -7080,20 +7053,29 @@ def youtube(name,url,img,fanart,mode,page,query,text=''):
 		addir_info(namecolor('Channels','red'),'',ico,'',mode,1,'channels',True,text=str(text))
 		for title,id,img in items:addir_info(title,id,img,'',mode,1,'play')
 			
-	elif query=="search":make_mySearch('',url,'','',mode,'get')
-	elif url=="youtube.com" or query=="INP":
+	elif query=="videoSearch":make_mySearch('',url,'','',mode,'get')
+	elif url=="youtube.com" or query=="INP" or url=='channelSearch':
 		if query=="INP":
 			query=make_mySearch('',url,'','','','Input')
 			if not query:return 'No'
-		if 'Page next:' not in name:page=1
+		#if 'Page next:' not in name:page=1
 		from resources.lib.servers import youtube;yt=youtube(url)
-		if ':' not in query:q=urllib.quote_plus(query)
+		if ':' not in query:q=urllib.quote_plus(query);page=1
 		else:q=query.split(':')[1];query=query.split(':')[0];q=urllib.quote_plus(query)+'&pageToken=%s'%q
-		for title,id,img in yt.search(q):
+
+		if url=='youtube.com':
+			type='video';u='';qr='play';fd=False
+			if page==1:
+				title='[B][COLOR lime]Search Channels:[/COLOR] [COLOR gold]%s[/COLOR][/B]'%query
+				#addir_info(title,'channelSearch',img,'',mode,1,query,True)
+		elif url=='channelSearch':type='channel';u='/channel/';qr='channel';fd=True
+		else:type='playlist'
+		
+		for title,id,img in yt.search(type,q):
 			if title=='nextPageToken':
 				title=namecolor('Page next: %d'%(page+1),'lime')
 				addir_info(title,"youtube.com",ico,'',mode,page+1,'%s:%s'%(query,id),True)
-			else:addir_info(title,id,img,'',mode,1,'play')
+			else:addir_info(title,u+id,img,'',mode,1,qr,fd)
 	
 	elif query=='playlist':
 		if ':' in url:q=url.split(':')[1];url=url.split(':')[0];q=url+'&pageToken=%s'%q
@@ -7273,3 +7255,4 @@ elif mode==98:make_favourites(name,url,img,fanart,mode,query)
 elif mode==99:myaddon.openSettings();end='ok'
 elif mode>100:myFavourites(name,url,img,fanart,mode,page,query)
 if not end or end not in 'no-ok-fail':endxbmc()
+#623,894
