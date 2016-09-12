@@ -759,13 +759,12 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		self.hd['referer']='https://fptplay.net/fptplay/gioi-thieu'
 		self.hd['Cookie']=xrw('fptplay.cookie') if filetime('fptplay.cookie')<30 else self.login()
 		
-	def fpt2s(self,s):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',i),i) for i in s.split())
-	
 	def login(self):
 		phone_fptplay=get_setting('phone_fptplay');password=get_setting('pass_fptplay')
-		if not phone_fptplay:
-			mess(u'Bạn đang sử dụng account Fptplay của xshare')
-			phone_fptplay,password=urllib2.base64.b64decode('MDkxMzc2MTQ0NDphZGRvbnhzaGFyZQ==').split(':')
+		if not phone_fptplay:#'MDkxODc3ODAxMzpoaWV1aGllbi52bg=='
+			mess(u'Bạn đang sử dụng account Fptplay của hieuhien.vn')
+			#phone_fptplay,password=urllib2.base64.b64decode('MDkxMzc2MTQ0NDphZGRvbnhzaGFyZQ==').split(':')
+			phone_fptplay,password=urllib2.base64.b64decode('MDkxODc3ODAxMzpoaWV1aGllbi52bg==').split(':')
 		data=urllib.urlencode({'phone':phone_fptplay,'password':password})
 		cookie=urllib2.HTTPCookieProcessor();opener=urllib2.build_opener(cookie);urllib2.install_opener(opener)
 		#try:b=opener.open(self.hd['referer'])
@@ -779,40 +778,9 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		else:mess(u'Login không thành công!','fptplay.net')
 		return cookie
 	
-	def login5(self):
-		email=get_setting('mail_fptplay');password=get_setting('pass_fptplay')
-		if not email:
-			mess(u'Bạn đang sử dụng account Fptplay của xshare')
-			email,password=urllib2.base64.b64decode('eHNoYXJlQHRoYW5odGhhaS5uZXQ6YWRkb254c2hhcmU=').split(':')
-		data=urllib.urlencode({'email':email,'password':password})
-		cookie=urllib2.HTTPCookieProcessor();opener=urllib2.build_opener(cookie)
-		opener.addheaders=self.hd.items();url='https://fptplay.net/user/login'
-		try:
-			opener.open(self.hd['referer'])
-			urllib2.install_opener(opener)
-			urllib2.urlopen(url,data)
-		except:pass
-		cookie=xcookie(cookie)
-		if 'laravel_id' in cookie:mess(u'Login thành công','fptplay.net');xrw('fptplay.cookie',cookie)
-		else:mess(u'Login không thành công!','fptplay.net')
-		return cookie
-	
-	def login0(self):
-		email=get_setting('mail_fptplay');password=get_setting('pass_fptplay')
-		if not email:
-			mess(u'Bạn đang sử dụng account Fptplay của xshare')
-			email,password=urllib2.base64.b64decode('eHNoYXJlQHRoYW5odGhhaS5uZXQ6YWRkb254c2hhcmU=').split(':')
-		data={'email':email,'password':password}
-		response=urlfetch.get('https://fptplay.net/tai-khoan');self.hd['Cookie']=response.cookiestring
-		response=urlfetch.post('https://fptplay.net/user/login',headers=self.hd,data=data)
-		cookie=response.cookiestring
-		if 'laravel_id' in cookie:mess(u'Login thành công','fptplay.net')#;xrw('fptplay.cookie',cookie)
-		else:mess(u'Login không thành công!','fptplay.net')
-		return cookie
-	
 	def detail(self,s):
-		title=self.fpt2s(xsearch('title="([^"]+?)"',s))
-		if not title:title=self.fpt2s(xsearch('alt="([^"]+?)"',s))
+		title=vnu(xsearch('title="([^"]+?)"',s))
+		if not title:title=vnu(xsearch('alt="([^"]+?)"',s))
 		label=' '.join(re.findall('<p[^<]*?>(.+?)</p>',s))+title
 		dir=True if 'tập' in (title+label).lower() else False
 		if xsearch('(\d+/\d+)',label):dir=True;title+=' [COLOR blue]%s[/COLOR]'%xsearch('(\d+/\d+)',label)
@@ -837,7 +805,7 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 			if 'phụđề' in title.replace(' ','').lower():title='[COLOR green]PĐ[/COLOR] '+title
 			elif 'thuyếtminh' in title.replace(' ','').lower():title='[COLOR blue]TM[/COLOR] '+title
 			href=xsearch('(\w{20,30})',xsearch('href="(.+?)"',s))+'?'+xsearch('id="episode_(\d{1,4})"',s)
-			items.append((self.fpt2s(title),href))
+			items.append((vnu(title),href))
 
 		if '&rsaquo;&rsaquo;' in b:items.append(('[COLOR lime]Các tập tiếp theo ...[/COLOR]',''))
 		return items
@@ -847,7 +815,7 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		items=[]
 		for s in [i for i in b if ' class="livetv_header' in i]:
 			i=xsearch('<span class="livetv_header Regular pull-left"[^>]*>(.+?)</span>',s)
-			items.append((self.fpt2s(i),'sep',''))
+			items.append((vnu(i),'sep',''))
 			for title,href,img,dir in [self.detail(i) for i in re.findall('(<a class="tv_channel.+?/a>)',s,re.S)]:
 				items.append((title,href,img))
 		return items
@@ -859,16 +827,17 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 			title=xsearch('title="(.+?)"',s)
 			href=xsearch('data-href="(.+?)"',s)
 			img=xsearch('data-original="(.+?)\?',s)
-			items.append((self.fpt2s(title),href,img))
+			items.append((vnu(title),href,img))
 		return items
 		
 	def liveLink(self,url):
 		id=urllib2.os.path.basename(url)
 		if not id:id='vtv3-hd'
 		data='mobile=web&quality=3&type=newchannel&id=%s'%id
-		b=xread('https://fptplay.net/show/getlinklivetv',self.hd,data)
+		b=xread('https://fptplay.net/show/getlinklivetv',self.hd,data)#;print self.hd
 		try:link=json.loads(b).get('stream')
 		except:link=''
+		if link:link+='|User-Agent=xshare'
 		return link
 	
 	def fptNodes(self,url):
@@ -1270,179 +1239,272 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 		else:result=False;mess('Link subscription remove not found!','HDVietnam.com')
 		return result
 
-class youtube:
-	def __init__(self,url):#https://www.youtube.com/get_video_info?video_id=xhNy0jnAgzI
-		self.url=url
-		self.yt3='https://www.googleapis.com/youtube/v3/'
+class youtube:#https://www.youtube.com/watch?v=rZftpdEKzeY
+	class signature:
+		def __init__(self,json=1):
+			if json==1:
+				self.json = {'actions': [
+				{'params': ['%SIG%'], 'func': 'list'}, {'params': ['%SIG%', 0, 3],'func': 'splice'}, 
+				{'params': ['%SIG%', 2], 'func': 'swap'}, {'params': ['%SIG%', 0, 2],'func': 'splice'}, 
+				{'params': ['%SIG%', 46], 'func': 'swap'}, {'params': ['%SIG%', 0, 1],'func': 'splice'}, 
+				{'params': ['%SIG%', 31], 'func': 'swap'}, {'params': ['%SIG%', 27],'func': 'swap'}, 
+				{'params': ['%SIG%'], 'func': 'join'}]}
+			elif json==2:
+				self.json={'actions': [
+				{'params': ['%SIG%'], 'func': 'list'}, {'params': ['%SIG%', 0, 2], 'func': 'splice'},
+				{'params': ['%SIG%'],'func': 'reverse'}, {'params': ['%SIG%', 0, 2], 'func': 'splice'}, 
+				{'params': ['%SIG%', 31],'func': 'swap'}, {'params': ['%SIG%', 6], 'func': 'swap'}, 
+				{'params': ['%SIG%'],'func': 'reverse'}, {'params': ['%SIG%', 0, 2], 'func': 'splice'}, 
+				{'params': ['%SIG%'], 'func': 'join'}]}
+			else:
+				self.json={'actions': [
+				{'params': ['%SIG%'], 'func': 'list'}, {'params': ['%SIG%', 19], 'func': 'swap'}, 
+				{'params': ['%SIG%'], 'func': 'reverse'}, {'params': ['%SIG%', 0, 1], 'func': 'splice'}, 
+				{'params': ['%SIG%'], 'func': 'reverse'}, {'params': ['%SIG%', 0, 1], 'func': 'splice'}, 
+				{'params': ['%SIG%', 7], 'func': 'swap'}, {'params': ['%SIG%'], 'func': 'reverse'}, 
+				{'params': ['%SIG%', 38], 'func': 'swap'}, {'params': ['%SIG%', 0, 3], 'func': 'splice'},
+				{'params': ['%SIG%'], 'func': 'join'}]}
+
+		def makeSign(self, s):
+			for action in self.json['actions']:
+				func = '_'+action['func']
+				params = action['params']
+				if func == '_return':break
+
+				for i in range(len(params)):
+					param = params[i]
+					if param == '%SIG%':
+						param = s
+						params[i] = param
+						break
+
+				method = getattr(self, func)
+				if method:s = method(*params)
+			return s
+
+		def _join(self, s):return ''.join(s)
+		def _list(self, s):return list(s)
+		def _splice(self, s, a, b):del s[a:b];return s
+		def _swap(self, s, b):c=s[0]; s[0]=s[b%len(s)]; s[b]=c; return s
+		def _reverse(self, signature):return signature[::-1]
+	def __init__(self):
+		self.url='https://www.googleapis.com/youtube/v3/%s?regionCode=VN&hl=vi&maxResults=50&order=date&key=AIzaSyA-Y38JpoUKbdpQgFellPthOgcZTFJwkqY&%s'
 		self.key='AIzaSyA-Y38JpoUKbdpQgFellPthOgcZTFJwkqY'
-		self.id=xsearch('([\w|-]{10,20})',url)
 	
-	def getMaxlink(self,s):
-		quality='quality' if 'quality=' in s else 'quality_label'
-		L=[(urllib.unquote(n.get('url')),rsl(n.get(quality,''))) for n in [dict([m.split('=') for m in k]) for k in [j.split('&') for j in [i for i in s.split(',')]]]]
-		
-		return L
-	
-	def getData(self):
-		fmts1=fmts2='';items=[]
-		if 'https://www.youtube.com/watch?v=' in self.url:url=self.url+'&spf=navigate-back'
-		else:url='https://www.youtube.com/watch?v=%s&spf=navigate-back'%self.id
-		try:data=json.loads(xread(url))
-		except:data=[]
-		if data:
-			for i in data:
-				if not fmts1:fmts1=i.get('data',{}).get('swfcfg',{}).get('args',{}).get('url_encoded_fmt_stream_map','')
-				if not fmts2:fmts2=i.get('data',{}).get('swfcfg',{}).get('args',{}).get('adaptive_fmts','')
-				if fmts1 and fmts2:break
-			
-			if fmts1:items=self.getMaxlink(fmts1)
-			if fmts2:items+=self.getMaxlink(fmts2)
-			
-			if get_setting('resolut')=='Max':items=sorted(items, key=lambda k: int(k[1]),reverse=True)
-			else:items=sorted(items, key=lambda k: int(k[1]))
-		return items
-	
-	def playlist(self,id):
-		#xread(self.yt3+'search?part=snippet&eventType=live&type=video&key=%s&channelId=%s'%(self.key,id))
-		url=self.yt3+'playlistItems?part=snippet&maxResults=30&key=%s&playlistId=%s'%(self.key,id)
-		b=xread(url)
-		try:j=json.loads(b)
+	def ytRead(self,url):
+		try:j=json.loads(xread(url))
 		except:j={}
-		def detail(l):
-			title=l.get('snippet',{}).get('title').encode('utf-8')
-			id=l.get('snippet',{}).get('resourceId',{}).get('videoId')
-			if not title or not id:return []
-			img=l.get('snippet',{}).get('thumbnails',{}).get('high',{}).get('url','').encode('utf-8')
-			return title,id,img
-		items=[detail(i) for i in j.get('items') if detail(i)]
-		if j.get('nextPageToken'):items.append(('nextPageToken',j.get('nextPageToken').encode('utf-8'),''))
-		return items
+		#xrw(r'd:\xoa.json',json.dumps(j,indent=2))
+		return j
+	
+	def getItems(self,url,nextPageToken):
+		def publishedDay(day):
+			d=xsearch('-(\d+-\d+)',day)
+			d='%s/%s'%(d.split('-')[1],d.split('-')[0])
+			y=xsearch('(\d{4})',day)
+			if y and y<year:d+='/%s'%y[2:]
+			return d
 		
-	def search(self,type,q):#type=video/channel/playlist
-		url=self.yt3+'search?regionCode=VN&type=%s&part=snippet&maxResults=30&key=%s&q=%s'
-		b=xread(url%(type,self.key,q))
-		xrw(r'd:\xoa.json',b)
-		try:j=json.loads(b)
-		except:j={}
-		def detail(l):
-			title=l.get('snippet',{}).get('title').encode('utf-8')
-			id=l.get('id',{}).get(type+'Id')
-			if not title or not id:return []
-			img=l.get('snippet',{}).get('thumbnails',{}).get('high',{}).get('url','')
-			return title,id,img
-		items=[detail(i) for i in j.get('items',[]) if detail(i)]
-		if j.get('nextPageToken'):items.append(('nextPageToken',j.get('nextPageToken').encode('utf-8'),''))
+		def duration(i):
+			s=i.get('contentDetails',{}).get('duration','')
+			t=int(xsearch('(\d*)H',s,result='0'))*3600
+			t+=int(xsearch('(\d*)M',s,result='0'))*60
+			t+=int(xsearch('(\d*)S',s,result='0'))
+			return 'duration:'+str(t)
+			
+		year=urllib2.time.strftime("%Y")
+		j=self.ytRead(url)
+		items=[];publishedAt=''
+		KIND=j.get('kind','').replace('youtube#','')
+		if KIND=='videoListResponse':
+			try:
+				id=j.get('items')[0].get('snippet').get('channelId','')
+				items.append(('Playlists',id,'','playlists',str(int(year)+1)))
+			except:pass
+		print 'getItems:url=%s,  nextPageToken=%s'%(url,nextPageToken)
+		for i in j.get('items',[]):
+			kind=i.get('kind','').replace('youtube#','').encode('utf-8')
+			img=i.get('snippet',{}).get('thumbnails',{}).get('high',{}).get('url','').encode('utf-8')
+			if kind=='guideCategory':
+				title=i.get('snippet',{}).get('title','').encode('utf-8')
+				id=i.get('id','').encode('utf-8')
+			elif kind=='channel':
+				title=i.get('snippet',{}).get('localized',{}).get('title','').encode('utf-8')
+				id='UU'+i.get('id','').encode('utf-8')[2:]
+			elif kind=='playlist':
+				title=i.get('snippet',{}).get('localized',{}).get('title','').encode('utf-8')
+				id=i.get('id','').encode('utf-8')
+				publishedAt=i.get('snippet',{}).get('publishedAt','').encode('utf-8')
+				if title:title='[COLOR blue]%s[/COLOR] %s'%(publishedDay(publishedAt),title)
+			elif kind=='video':
+				title=i.get('snippet',{}).get('localized',{}).get('title','').encode('utf-8')
+				id=i.get('id','').encode('utf-8')
+				publishedAt=i.get('snippet',{}).get('publishedAt','').encode('utf-8')
+				if title:title='[COLOR blue]%s[/COLOR] %s%s'%(publishedDay(publishedAt),title,duration(i))
+			
+			if not title or not id or 'sex' in title:continue
+			else:items.append((title,id,img,kind,publishedAt))
+		
+		items=[(i[0],i[1],i[2],i[3]) for i in sorted(items, key=lambda k: k[4],reverse=True)]
+		if not nextPageToken:nextPageToken=j.get('nextPageToken')
+		if nextPageToken:items.append(('nextPageToken',nextPageToken.encode('utf-8'),'',''))
+		return items
+			
+	def getElements(self,id,kind):
+		url=self.url
+		nextPageToken=''
+		if kind=='guideCategoryListResponse':
+			url=url%('guideCategories','part=snippet')
+			return self.getItems(url,nextPageToken)
+		elif kind=='guideCategory':
+			url=url%('channels','part=snippet%2Clocalizations%2CcontentDetails&categoryId='+id)
+			return self.getItems(url,nextPageToken)
+		elif kind=='playlists':
+			href=url%('playlists','part=snippet&channelId='+id)
+			j=self.ytRead(href)
+			nextPageToken=j.get('nextPageToken')
+			ids=','.join(i.get('id').encode('utf-8') for i in j.get('items',[]))
+			url=url%('playlists','part=snippet%2CcontentDetails&'+urllib.urlencode({'id':ids}))
+			return self.getItems(url,nextPageToken)
+		elif kind=='playlist':
+			href=url%('playlistItems','part=snippet&playlistId='+id)
+			j=self.ytRead(href)
+			nextPageToken=j.get('nextPageToken')
+			ids=','.join(i.get('snippet',{}).get('resourceId',{}).get('videoId','').encode('utf-8') for i in j.get('items',[]))
+			url=url%('videos','part=snippet%2CcontentDetails&'+urllib.urlencode({'id':ids}))
+			return self.getItems(url,nextPageToken)
+		elif kind=='channel':
+			href=url%('playlistItems','part=snippet&playlistId='+id)
+			j=self.ytRead(href)
+			nextPageToken=j.get('nextPageToken')
+			ids=','.join(i.get('snippet',{}).get('resourceId',{}).get('videoId','').encode('utf-8') for i in j.get('items',[]))
+			url=url%('videos','part=snippet%2CcontentDetails&'+urllib.urlencode({'id':ids}))
+			return self.getItems(url,nextPageToken)
+		elif kind=='searchListResponse':#type=video/channel/playlist
+			href=url%('search','type=video&part=snippet&q='+urllib.quote_plus(id))#id:stringsearch
+			j=self.ytRead(href)
+			nextPageToken=j.get('nextPageToken')
+			ids=','.join(i.get('id',{}).get('videoId','').encode('utf-8') for i in j.get('items',[]))
+			url=url%('videos','part=snippet%2CcontentDetails&'+urllib.urlencode({'id':ids}))
+		elif kind=='searchPlayLists':
+			url=url%('search','type=playlist&part=snippet&q='+urllib.quote_plus(id))
+		elif kind=='searchChannels':
+			url=url%('search','type=channel&part=snippet&q='+urllib.quote_plus(id))
+		elif kind=='channelOfSearch':
+			href=url%('playlists','part=snippet&channelId='+id)
+			j=self.ytRead(href)
+			nextPageToken=j.get('nextPageToken')
+			#ids=','.join(i.get('id').encode('utf-8') for i in j.get('items',[]))
+			id=[i.get('id').encode('utf-8') for i in j.get('items',[])][0]
+			url=url%('playlistItems','snippet&playlistId='+id)#urllib.urlencode({'id':ids}))
+		elif kind=='guideCategory' or kind=='channels':
+			url=url%('channels','part=snippet%2Clocalizations%2CcontentDetails&categoryId='+id)
+		print url
+		return [k for k in self.details(url,nextPageToken) if k[0]]
+	
+	def details(self,url,nextPageToken=''):
+		j=self.ytRead(url)
+		items=[];publishedAt=''
+		KIND=j.get('kind','').replace('youtube#','')
+		year=urllib2.time.strftime("%Y")
+		for i in j.get('items',[]):
+			title,id,img,kind=['']*4
+			kind=i.get('kind','').replace('youtube#','').encode('utf-8')
+			img=i.get('snippet',{}).get('thumbnails',{}).get('high',{}).get('url','').encode('utf-8')
+			if KIND=='guideCategoryListResponse':
+				title=i.get('snippet',{}).get('title','').encode('utf-8')
+				id=i.get('id','').encode('utf-8')
+			elif KIND=='channelListResponse':
+				title=i.get('snippet',{}).get('localized',{}).get('title','').encode('utf-8')
+				id=i.get('contentDetails',{}).get('relatedPlaylists',{}).get('uploads','').encode('utf-8')
+			elif KIND=='playlistListResponse':
+				title=i.get('snippet',{}).get('localized',{}).get('title','').encode('utf-8')
+				count=i.get('contentDetails',{}).get('itemCount')
+				if not count:continue
+				title+=' [COLOR gold]%s video(s)[/COLOR]'%count
+				id=i.get('id','').encode('utf-8')
+			elif KIND=='searchListResponse':
+				title=i.get('snippet',{}).get('title','').encode('utf-8')
+				if i.get('id',{}).get('kind','').replace('youtube#','')=='playlist':
+					kind+='Playlist'
+					id=i.get('id',{}).get('playlistId','').encode('utf-8')
+				elif i.get('id',{}).get('kind','').replace('youtube#','')=='channel':
+					kind+='Channel'
+					id=i.get('id',{}).get('channelId','').encode('utf-8')
+			elif KIND=='videoListResponse' or KIND=='searchResult':
+				def duration(s):
+					t=int(xsearch('(\d*)H',s,result='0'))*3600
+					t+=int(xsearch('(\d*)M',s,result='0'))*60
+					t+=int(xsearch('(\d*)S',s,result='0'))
+					return str(t)
+				d=i.get('contentDetails',{}).get('duration','')
+				title=i.get('snippet',{}).get('localized',{}).get('title','').encode('utf-8')
+				publishedAt=i.get('snippet',{}).get('publishedAt','').encode('utf-8')
+				if title:
+					t=xsearch('-(\d+-\d+)',publishedAt)
+					t='%s/%s'%(t.split('-')[1],t.split('-')[0])
+					y=xsearch('(\d{4})',publishedAt)
+					if y and y<year:t+='/%s'%y[2:]
+					title='[COLOR blue]%s[/COLOR] '%t+title
+					title=title+'duration:'+duration(d)
+				id=i.get('id','').encode('utf-8')
+			if id and 'sex' not in title:items.append((title,id,img,kind,publishedAt))
+		items=[(i[0],i[1],i[2],i[3]) for i in sorted(items, key=lambda k: k[4],reverse=True)]
+		if not nextPageToken:nextPageToken=j.get('nextPageToken')
+		if nextPageToken:items.append(('nextPageToken',nextPageToken.encode('utf-8'),'',''))
 		return items
 	
-	def getInfo(self,map='url_encoded_fmt_stream_map'):
-		b=xread('https://www.youtube.com/get_video_info?video_id=%s'%self.id)
-		qsl=urllib2.urlparse.parse_qsl
+	def getDL(self,url,map):
+		def ytCheckLink(l):
+			if not l:link='Video not found!'
+			else:
+				link=''
+				for href,label in l:
+					print href,label
+					link=xcheck(href)
+					if link:break
+			return link
+		
+		def getData1(id):
+			b=xread('https://www.youtube.com/watch?v='+id)
+			s=xsearch('"url_encoded_fmt_stream_map":"(.+?)"',b).replace('\\u0026', '&').split(',')
+		def getData(id):
+			url='https://www.youtube.com/watch?v=%s&spf=navigate-back'%id
+			try:data=json.loads(xread(url))
+			except:data=[]
+			items=[];link=''
+			if data:
+				fmts=''
+				for i in data:
+					fmts=i.get('data',{}).get('swfcfg',{}).get('args',{}).get(map,'')
+					if fmts:break
+				if fmts:
+					qsl=urllib2.urlparse.parse_qsl
+					l=[dict(qsl(i)) for i in fmts.split(',')]
+					q='quality' if l[0].has_key('quality') else 'quality_label'
+					def makeItems(d,sig):
+						try:
+							sign=self.signature(sig)
+							r=d.get('url','')+'&signature='+sign.makeSign(d.get('s','')),rsl(d.get(q,''))
+						except:r='',''
+						return r
+					sig=1
+					while sig<4:
+						link=ytCheckLink(ls([makeItems(i,sig) for i in l]))
+						if link:break
+						else:sig+=1
+			return link
+	
+		id=xsearch('([\w|-]{10,20})',url)
+		b=xread('https://www.youtube.com/get_video_info?video_id=%s'%id)
+		qsl=urllib2.urlparse.parse_qsl;items=[]
 		try:p=dict(qsl(b))
 		except:p={}
-		if p.get('status', '')=='fail' or not p.get(map):return []
-		l=p.get(map).split(',')
-		def quality(l):return 'quality' if 'quality' in l else 'quality_label'
-		items=[(i.get('url',''),rsl(i.get(quality(i),''))) for i in [dict(qsl(l[j])) for j in range(len(l))]]
-		if get_setting('resolut')=='Max':items=sorted(items, key=lambda k: int(k[1]),reverse=True)
-		else:items=sorted(items, key=lambda k: int(k[1]))
-		#print items
-		return items
-	'''
-	xread('http://www.youtube.com/oembed?format=json&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DK6dPBLFIkSk')-->
-	{
-	  "provider_url": "https://www.youtube.com/", 
-	  "title": "\u0110\u1ea5u tr\u01b0\u1eddng ti\u1ebfu l\u00e2m | t\u1eadp 21: Duy Kh\u01b0\u01a1ng l\u00ean ng\u00f4i v\u00f4 \u0111\u1ecbch trong ph\u00fat ch\u00f3t", 
-	  "type": "video", 
-	  "html": "<iframe width=\"480\" height=\"270\" src=\"https://www.youtube.com/embed/K6dPBLFIkSk?feature=oembed\" frameborder=\"0\" allowfullscreen></iframe>", 
-	  "author_name": "\u0110\u1ea4U TR\u01af\u1edcNG TI\u1ebeU L\u00c2M", 
-	  "height": 270, 
-	  "thumbnail_width": 480, 
-	  "width": 480, 
-	  "version": "1.0", 
-	  "author_url": "https://www.youtube.com/channel/UCA3GtNtuKvcj6VrwZ5Gpx9g", 
-	  "provider_name": "YouTube", 
-	  "thumbnail_url": "https://i.ytimg.com/vi/K6dPBLFIkSk/hqdefault.jpg", 
-	  "thumbnail_height": 360
-	}
-	xread(self.yt3+'search?part=snippet&eventType=live&type=video&key=%s&channelId=%s'%(self.key,id))-->
-	{
-	  "regionCode": "VN", 
-	  "kind": "youtube#searchListResponse", 
-	  "etag": "\"I_8xdZu766_FSaexEaDXTIfEWc0/5CBTLqAljkleRxf7AKXJbv3nMRg\"", 
-	  "pageInfo": {
-		"resultsPerPage": 5, 
-		"totalResults": 2
-	  }, 
-	  "items": [
-		{
-		  "snippet": {
-			"thumbnails": {
-			  "default": {
-				"url": "https://i.ytimg.com/vi/nQGFfByipmg/default_live.jpg", 
-				"width": 120, 
-				"height": 90
-			  }, 
-			  "high": {
-				"url": "https://i.ytimg.com/vi/nQGFfByipmg/hqdefault_live.jpg", 
-				"width": 480, 
-				"height": 360
-			  }, 
-			  "medium": {
-				"url": "https://i.ytimg.com/vi/nQGFfByipmg/mqdefault_live.jpg", 
-				"width": 320, 
-				"height": 180
-			  }
-			}, 
-			"title": "STREAMING TOP CALCIO 24", 
-			"channelId": "UCURGpU4lj3dat246rysrWsw", 
-			"publishedAt": "2016-05-22T15:55:39.000Z", 
-			"liveBroadcastContent": "live", 
-			"channelTitle": "TelelombardiaWeb", 
-			"description": ""
-		  }, 
-		  "kind": "youtube#searchResult", 
-		  "etag": "\"I_8xdZu766_FSaexEaDXTIfEWc0/rgm9VLHmxrNpkzeQH3PmZ9ofsQ0\"", 
-		  "id": {
-			"kind": "youtube#video", 
-			"videoId": "nQGFfByipmg"
-		  }
-		}, 
-		{
-		  "snippet": {
-			"thumbnails": {
-			  "default": {
-				"url": "https://i.ytimg.com/vi/VKbmf7jupyg/default_live.jpg", 
-				"width": 120, 
-				"height": 90
-			  }, 
-			  "high": {
-				"url": "https://i.ytimg.com/vi/VKbmf7jupyg/hqdefault_live.jpg", 
-				"width": 480, 
-				"height": 360
-			  }, 
-			  "medium": {
-				"url": "https://i.ytimg.com/vi/VKbmf7jupyg/mqdefault_live.jpg", 
-				"width": 320, 
-				"height": 180
-			  }
-			}, 
-			"title": "STREAMING MILANOW", 
-			"channelId": "UCURGpU4lj3dat246rysrWsw", 
-			"publishedAt": "2016-05-22T15:57:14.000Z", 
-			"liveBroadcastContent": "live", 
-			"channelTitle": "TelelombardiaWeb", 
-			"description": ""
-		  }, 
-		  "kind": "youtube#searchResult", 
-		  "etag": "\"I_8xdZu766_FSaexEaDXTIfEWc0/_djxE1lkdxbIqTcNgqYttODGPUk\"", 
-		  "id": {
-			"kind": "youtube#video", 
-			"videoId": "VKbmf7jupyg"
-		  }
-		}
-	  ]
-	}	
-	'''
+		l=[dict(qsl(i)) for i in p.get(map,'').split(',')]
+		q='quality' if l[0].has_key('quality') else 'quality_label'
+		link=ytCheckLink(ls([(i.get('url',''),rsl(i.get(q,''))) for i in l]))
+		if not link or link=='Video not found!':link=getData(id)
+		return link
 
 class imovies:
 	def __init__(self,c):
@@ -2564,7 +2626,7 @@ class vtvgovn:
 		return self.liveGoList(url)
 	
 	def live(self,url):
-		return xsearch("file\": '(.+?)'",xread(url,self.hd))
+		return xsearch('(http.+?m3u8)',xread(url,self.hd))
 
 	def detail(self,s):
 		title=xsearch('title="(.+?)"',s)
@@ -2595,7 +2657,7 @@ class vtvgovn:
 		return items
 	
 	def vodLink(self,url):
-		return xsearch("file\": '(.+?)'",xread(url))
+		return xsearch('(http.+?m3u8)',xread(url,self.hd))
 	
 	def golive(self,url,l='04'):
 		c='VTV6' if url=='1_rhex2pfs' else 'VTV3'

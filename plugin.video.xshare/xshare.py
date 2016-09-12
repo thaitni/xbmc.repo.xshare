@@ -10,7 +10,7 @@ try:rows=int(myaddon.getSetting('sodonghienthi'))
 except:rows=30
 tempfolder=xbmc.translatePath('special://temp');phim18=myaddon.getSetting('phim18')
 xbmcplugin.setContent(int(sys.argv[1]), 'movies');homnay=datetime.date.today().strftime("%d/%m/%Y")
-from resources.lib.utils import xsearch,xrw,s2c
+from resources.lib.utils import xsearch,xreadc,xrw,s2c,vnu
 
 media_ext=['aif','iff','m3u','m3u8','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp','asf','asx','avi','flv','mov','mp4','mpg','mkv','m4v','rm','swf','vob','wmv','bin','cue','dmg','iso','mdf','toast','vcd','ts','flac','m2ts','dtshd','nrg'];icon={}
 color={'fshare':'[COLOR gold]','vaphim':'[COLOR gold]','phimfshare':'[COLOR khaki]','4share':'[COLOR blue]','tenlua':'[COLOR fuchsia]','fptplay':'[COLOR orange]','trangtiep':'[COLOR lime]','search':'[COLOR lime]','ifile':'[COLOR blue]','hdvietnam':'[COLOR red]','hdviet':'[COLOR darkorange]','xshare':'[COLOR blue]','subscene':'[COLOR green]','chiasenhac':'[COLOR orange]','phimmoi':'[COLOR ghostwhite]','megabox':'[COLOR orangered]','dangcaphd':'[COLOR yellow]','hayhaytv':'[COLOR tomato]','kenh88':'[COLOR cyan]','phimdata':'[COLOR magenta]','phim47':'[COLOR springgreen]','phimsot':'[COLOR orangered]','hdonline':'[COLOR turquoise]','phim3s':'[COLOR lightgray]','kphim':'[COLOR lightgreen]','phimnhanh':'[COLOR chartreuse]','bilutv':'[COLOR hotpink]','pubvn':'[COLOR deepskyblue]','anime47':'[COLOR deepskyblue]','phim14':'[COLOR chartreuse]','taifile':'[COLOR cyan]','phim':'[COLOR orange]','tvhay':'[COLOR gold]','nhacdj':'[COLOR fuchsia]','phimbathu':'[COLOR lightgray]','taiphimhd':'[COLOR blue]','hdsieunhanh':'[COLOR orangered]','vuahd':'[COLOR tomato]','nhaccuatui':'[COLOR turquoise]','imovies':'[COLOR orange]','vietsubhd':'[COLOR cyan]','imax':'[COLOR chartreuse]','mphim':'[COLOR deepskyblue]','vtvgo':'[COLOR green]','youtube':'[COLOR red]'}
@@ -281,7 +281,9 @@ def xbmcsetResolvedUrl(url,name='',img=''):
 		if name!='Maxlink':name=name.replace('Maxlink','');item.setInfo('video', {'Title':name})
 		else:item.setInfo('video', {'Title':urllib.unquote(os.path.basename(url))})
 		name=''
-	xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item);endxbmc()
+	if url:xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item);endxbmc()
+	else:xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, item);return 'fail'
+	
 	if myaddon.getSetting('autoload_sub')=='true' and name!='xshare':
 		if name:url=name
 		urltitle=urllib.unquote(os.path.splitext(os.path.basename(url))[0]).lower()
@@ -2138,20 +2140,6 @@ def get_home_page(fn,url='',update=False,hd=hd):
 def fptplay(name,url,img,mode,page,query):
 	ico=icon['fptplay'];c=xsearch('([a-z]+)',color['fptplay'])
 	
-	def login():
-		email=myaddon.getSetting('mail_fptplay');password=myaddon.getSetting('pass_fptplay')
-		if not email:
-			email,password=urllib2.base64.b64decode('eHNoYXJlQHRoYW5odGhhaS5uZXQ6YWRkb254c2hhcmU=').split(':')
-		response=make_request('https://fptplay.net/tai-khoan',resp='o');hd['Cookie']=response.cookiestring
-		response=make_post('https://fptplay.net/user/login',headers=hd,data={'email':email,'password':password})
-		if 'state=fail' not in response.headers.get('location'):
-			mess(u'Login thành công','fptplay.net');hd['Cookie']=f=response.cookiestring
-			response=make_request('https://fptplay.net/tai-khoan',hd,resp='o')
-			f=f+':'+xsearch('name="_token".+?content="(.+?)"',response.body)
-			makerequest(joinpath(xsharefolder,'fptplay.cookie'),f,'w')
-		else:mess(u'Login không thành công!','fptplay.net');f=': '
-		return f
-	
 	def faddir(i):
 		for title,href,img,dir in i:
 			if not title:continue
@@ -2189,11 +2177,10 @@ def fptplay(name,url,img,mode,page,query):
 		j='class="box_header Regular" href="javascript:void(0)"'
 		for s in [i for i in re.findall('(<section>.+?</section>)',b,re.S) if j in i]:
 			i=xsearch('<span class="pull-left">(.+?)</span>',s)
-			add_sep_item('%s -----------------------------------------'%fpt.fpt2s(i))
+			add_sep_item('%s -----------------------------------------'%vnu(i))
 			faddir([fpt.detail(i) for i in re.findall('(<li class="slide_img enyo".+?/li>)',s,re.S)])
 		
 		if get_home_page('fptplay.html','https://fptplay.net',True):xbmc.executebuiltin("Container.Refresh")
-		if checkupdate('fptplay.cookie',30,xsharefolder):login()
 		
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
 	elif query=="INP" or url=="fptplay.net":
@@ -2214,7 +2201,7 @@ def fptplay(name,url,img,mode,page,query):
 			if 'sep' in href:add_sep_item('%s -----------------------------------------'%title)
 			else:addir_info(namecolor(title,c),os.path.basename(href),img,'',mode,1,'playTV')
 			
-	elif query=='playTV':#stream('https://fptplay.net/show/getlinklivetv',url)
+	elif query=='playTV':
 		link=fpt.liveLink(url)
 		if link:xbmcsetResolvedUrl(link)
 		else:mess('Get channel link fail!') 
@@ -2224,7 +2211,7 @@ def fptplay(name,url,img,mode,page,query):
 		i=re.findall('<a class="box_header Regular" href="(.+?)"><span class="pull-left">(.+?)</span></a>',b)
 		if not i:return fptplay(name,url,img,mode,page,'page')
 		for href,title in i:
-			addir_info(namecolor(fpt.fpt2s(title),c),href,ico,'',mode,1,"page",True)
+			addir_info(namecolor(vnu(title),c),href,ico,'',mode,1,"page",True)
 		
 		s=re.findall('(<li class="banner".+?/li>)',b,re.S)
 		if s:
@@ -2245,8 +2232,9 @@ def fptplay(name,url,img,mode,page,query):
 			addir_info('[COLOR lime]Page next: %d[/COLOR]'%(page+1),pn,ico,'',mode,page+1,"pageNext",True)
 	
 	elif query=='pageNext':
-		b=xread('https://fptplay.net/show/more',hd,url)
+		b=xread('https://fptplay.net/show/more',hd,url)#;xrw(r'd:\xoa1.html',b)
 		s=[i for i in b.split('list_img') if '<div class="title">' in i]
+		if not s:s=re.findall('(<a href.+?/a>)',b,re.S)
 		faddir([fpt.detail(i) for i in s])
 		
 		if len(s)==30:
@@ -2884,25 +2872,6 @@ def hdviet(name,url,img,mode,page,query):
 			name='%sTrang tiếp theo: trang %s/%s[/COLOR]'%(color['trangtiep'],pagenext,pageend)
 			addir(name,pages[0][0],img,fanart,mode,page,query,True)
 		xbmc.executebuiltin('Container.SetViewMode(504)')
-
-#def play_youtube(url,map='adaptive_fmts',loop=True):
-def play_youtube(url,map='url_encoded_fmt_stream_map',loop=True):
-	#https://www.youtube.com/get_video_info?video_id=xhNy0jnAgzI
-	from resources.lib.servers import youtube;yt=youtube(url);link=''
-	if loop:items=yt.getInfo(map)
-	else:items=yt.getData()
-	if items:
-		for href,label in items:
-			try:o=urllib2.urlopen(href);link=o.geturl();o.close()
-			except:pass
-			if link:break
-		if link:#http://forum.kodi.tv/showthread.php?tid=200877
-			#link='https://r7---sn-42u-nboll.googlevideo.com/videoplayback?dur=2652.560&shardbypass=yes&lmt=1472645429594451&hcs=yes&sver=3&clen=813997644&gir=yes&signature=69981203BCD0D3DFA01CDEC3E7B798D15E3162F0.C7E9286B64E429BF491782CEEBFC074E786FE500&pcm2cms=yes&initcwndbps=1782500&key=yt6&mime=video%2Fwebm&expire=1472849428&upn=QvI5j5zIwlk&id=o-AE7MMGslm-FlXQ_00knGO3f7aYOzgeM0tpLzmsUxp43S&pl=21&ms=au&mv=m&mt=1472826765&itag=248&mm=31&ip=42.114.21.3&ipbits=0&sparams=clen%2Cdur%2Cgir%2Chcs%2Cid%2Cinitcwndbps%2Cip%2Cipbits%2Citag%2Clmt%2Cmime%2Cmm%2Cmn%2Cms%2Cmv%2Cpcm2cms%2Cpl%2Crequiressl%2Cshardbypass%2Csource%2Cupn%2Cexpire&requiressl=yes&source=youtube&mn=sn-42u-nboll'
-			xbmcsetResolvedUrl(link,re.sub(' \[COLOR.+?/COLOR\]','',name)+'Maxlink')
-			mess('Xshare playing on youtube.com')
-		else:mess('Get maxspeed link fail!','youtube.com')
-	else:mess('Video not found!','youtube.com')
-	if not link and loop:return play_youtube(url,loop=False)
 
 def hayhaytv(name,url,img,fanart,mode,page,query):
 	ico=os.path.join(iconpath,'hayhaytv.png');c='tomato';urlhome='http://www.hayhaytv.vn/'
@@ -6326,7 +6295,6 @@ def television(name,url,img,fanart,mode,page,query,text):
 		xbmcsetResolvedUrl(link)
 
 def addir_info(name,url,img,fanart='',mode=0,page=1,query='',isFolder=False,text='',info={},art={},menu={}):
-	def xquote(href):return urllib.quote_plus(href)
 	def get_mode(url,name,mode,query,isfolder=True):
 		if 'fshare.vn/' in url:
 			id=xsearch('(\w{10,20})',url)
@@ -6419,10 +6387,11 @@ def addir_info(name,url,img,fanart='',mode=0,page=1,query='',isFolder=False,text
 			elif 'Remove' in inf['action']:
 				lists.append(('Remove from My Favourites',{'query':inf['action'],'mode':101}))
 		
-		if menu.has_key('youtube'):#menu={'youtube':{'action':'channel','url':channel,,'mode':mode}}
+		if menu.has_key('youtube'):
+		#menu={'youtube':{'name':'Open this PlayList','action':'playlist','url':playlistId,'mode':mode}}
 			inf=menu.get('youtube')
-			if inf['action']=='channel':
-				lists.append((inf['name'],{'url':inf['url'],'mode':inf['mode'],'query':'channel'}))
+			if 'playlist' in inf['action']:
+				lists.append((inf['name'],{'url':inf['url'],'query':'playlist','mode':inf['mode']}))
 		
 		if menu.has_key('servers_list'):
 			inf=menu.get('servers_list')
@@ -6445,18 +6414,20 @@ def addir_info(name,url,img,fanart='',mode=0,page=1,query='',isFolder=False,text
 	if not info:info={"title":name}
 	if not art:art={"fanart":fanart}
 	item=xbmcgui.ListItem(label=name,iconImage=img,thumbnailImage=img)
-	#item.setInfo(type="Video",infoLabels=info)
+	item.setInfo(type="video",infoLabels=info)
 	item.setArt(art)
 	if not isFolder:item.setProperty('IsPlayable', 'true')
-	li='%s?name=%s&url=%s&img=%s&fanart=%s&mode=%d&page=%d&query=%s&text=%s'
-	li=li%(sys.argv[0],xquote(name),xquote(url),xquote(img),xquote(fanart),mode,page,xquote(query),xquote(text))
+
+	q={'name':name,'url':url,'img':img,'fanart':fanart,'mode':mode,'page':page,'query':query,'text':text}
+	li=sys.argv[0]+'?'+urllib.urlencode(q)
+	
 	if not menu:menu=add_menu(url)
 	if not menu.get('myFavourites'):
 		menu['myFavourites']={'action':'Add-'+query+'-'+('F' if isFolder else ''),'mode':100+mode}
 	menu=get_menu(menu,url)
 	
 	if menu:
-		cmd='RunPlugin(plugin://%s/?'%myaddon.getAddonInfo('id');items=list()
+		cmd='RunPlugin(plugin://'+myaddon.getAddonInfo('id')+'?%s)';items=list()
 		for label,info in menu:#menu=[(label,{'query':x,...})]
 			if info.has_key('name'):name=info.get('name')
 			if info.has_key('url'):url=info.get('url')
@@ -6465,8 +6436,10 @@ def addir_info(name,url,img,fanart='',mode=0,page=1,query='',isFolder=False,text
 			if info.has_key('mode'):mode=info.get('mode')
 			if info.has_key('page'):page=info.get('page')
 			query=info.get('query')
-			command=cmd+'&name=%s&url=%s&img=%s&fanart=%s&mode=%d&page=%d&query=%s)'
-			command=command%(xquote(name),xquote(url),xquote(img),xquote(fanart),mode,page,xquote(query))
+			
+			q={'name':name,'url':url,'img':img,'fanart':fanart,'mode':mode,'page':page,'query':query}
+			command=cmd%urllib.urlencode(q)
+			
 			if 'Remove' in query:label='[COLOR red]%s[/COLOR]'%label
 			else:'[COLOR lime]%s[/COLOR]'%label
 			items.append(('[COLOR lime]%s[/COLOR]'%label,command))
@@ -7028,78 +7001,242 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 		try:xbmcsetResolvedUrl(vtv.vodLink(url))
 		except:mess('Get maxspeed link fail !','VTVgo.vn')
 
+def play_youtube(url):
+	from resources.lib.servers import youtube;yt=youtube()
+	link=yt.getDL(url,'url_encoded_fmt_stream_map')
+	if link=='Video not found!':mess(link,'youtube.com')
+	elif not link:mess('Get Link failed','Xshare Notification')
+	else:
+		xbmcsetResolvedUrl(link,re.sub(' \[COLOR.+?/COLOR\]','',name)+'Maxlink')
+		mess('Youtube playing on Xshare')
+
 def youtube(name,url,img,fanart,mode,page,query,text=''):
-	ico=os.path.join(iconpath,'youtube.png');urlhome='https://www.youtube.com/';c='red'
+	ico=os.path.join(iconpath,'youtube.png');urlhome='https://www.youtube.com/';c='red'#cyan turquoise
 	if not os.path.isfile(ico):
 		try:makerequest(ico,xread('https://www.youtube.com/yt/brand/media/image/YouTube-logo-full_color.png'),'wb')
 		except:pass
 	
+	def channelPage(url,ajax=False):
+		b=xread(url)
+		if ajax:
+			try:j=json.loads(b)
+			except:j={}
+			b=j.get('content_html','').encode('utf-8')
+			pn=j.get('load_more_widget_html','').encode('utf-8')
+			pn=xsearch('data-uix-load-more-href="(.+?)"',pn).replace('amp;','')
+		else:pn=xsearch('data-uix-load-more-href="(.+?)"',b).replace('amp;','')
+		
+		string='<li class="channels-content-item yt-shelf-grid-item">'
+		for s in [i for i in b.split(string) if 'data-context-item-id' in i]:addirVideo(s)
+		
+		if pn:
+			title=namecolor('Page next: %d'%(page+1),'lime')
+			addir_info(title,'https://www.youtube.com'+pn,ico,'',mode,page+1,'channelAjax',True)
+		
+	def addirVideo(s,menu={}):
+		def s2s(s):#string to seconds
+			def n(i):
+				try:j=int(i)
+				except:j=0
+				return j
+			s=s.split(':')
+			if len(s)>2:i=n(s[0])*3600+n(s[1])*60+n(s[2])
+			elif len(s)>1:i=n(s[0])*60+n(s[1])
+			else:i=n(s[0])
+			return i
+			
+		title=xsearch('dir="ltr" title="(.+?)"',s,result=xsearch('dir="ltr">([^<]+?)<',s)).strip()
+		href=xsearch('<a href="(.+?)"',s).replace('amp;','')
+		if not title or not href:return
+		view=xsearch('<li>([\d|\.]+?) lượt xem</li>',s)
+		if not view:view=xsearch('class="yt-lockup-meta-info".+>([\d|\.]+).*</li><li>',s)
+		if view:title+=' [COLOR gold]%s[/COLOR]'%view
+		t=xsearch('class="yt-lockup-meta-info".+?>([^<]+?)</li></ul>',s)
+		if not t or 'lượt' in t:
+			t=xsearch('class="yt-lockup-meta-info".+?>([^<]+?)</li></li>',s)
+		if t:title='[COLOR blue]%s[/COLOR] %s'%(t,title)
+		duration=s2s(xsearch('>(\d*:?\d*:\d*)</span>',s,result='0').replace('.','').strip())
+		href='https://www.youtube.com'+href
+		img=xsearch('thumb="(.+?\.jpg)',s,result=xsearch('src="(.+?\.jpg)',s))
+		if not duration:addir_info(title,href,img,'',mode,1,'video',menu=menu)
+		else:addir_info(title,href,img,'',mode,1,'video',info={'title': title,'duration':duration},menu=menu)
+
+	def playlistItemsPage(url,cookie=''):
+		b=xreadc(url,cookie)
+		c=xsearch('xshare(.+)',b);b=b.replace('xshare'+c,'')
+		if c:cookie=c
+		if '/browse_ajax' in url:
+			try:j=json.loads(b)
+			except:j={}
+			b=j.get('content_html','').encode('utf-8')
+			pn=j.get('load_more_widget_html','').encode('utf-8')
+			pn=xsearch('data-uix-load-more-href="(.+?)"',pn).replace('amp;','')
+		else:pn=xsearch('data-uix-load-more-href="(.+?)"',b).replace('amp;','')
+		
+		string='<div class="feed-item-main-content">';menu={}#menu={'servers_list':{'action':'Down'}}
+		strings=[i for i in b.split(string) if '"shelf-wrapper clearfix"' in i]
+		playlists=[]
+		for S in strings:
+			s=xsearch('(<a href="/playlist\?list=.+?/a>)',S,1,re.S)
+			playlistId=xsearch('<a href="/playlist\?list=(.+?)"',s)
+			title=xsearch('<span class="" >(.+?)</span>',s)
+			img=xsearch('thumb="(.+?\.jpg)',S,result=xsearch('src="(.+?\.jpg)',S))
+			if playlistId and title:playlists.append((title,playlistId,img))
+		if playlists:
+			title=namecolor('Playlists ','deepskyblue')+name
+			addir_info(title,'',img,'',mode,1,'lists',True,text=str(playlists))
+			
+		for S in strings:
+			string='<div class="yt-lockup-dismissable">'
+			for s in [i for i in S.split(string) if '<div class="yt-lockup-thumbnail"' in i]:
+				addirVideo(s,menu)
+
+		if pn:
+			title=namecolor('Page next: %d'%(page+1),'lime')
+			addir_info(title,'https://www.youtube.com'+pn,ico,'',mode,page+1,'playlistItemsPage'+cookie,True)
+	
+	def playlistsPage(url,cookie=''):
+		b=xreadc(url,cookie)
+		c=xsearch('xshare(.+)',b);b=b.replace('xshare'+c,'')
+		if c:cookie=c
+		if '/browse_ajax' in url:
+			try:j=json.loads(b)
+			except:j={}
+			b=j.get('content_html','').encode('utf-8')
+			pn=j.get('load_more_widget_html','').encode('utf-8')
+			pn=xsearch('data-uix-load-more-href="(.+?)"',pn).replace('amp;','')
+		else:pn=xsearch('data-uix-load-more-href="(.+?)"',b).replace('amp;','')
+		
+		for s in re.findall('(<h2.+?/h2>)',b,re.S):
+			title=xsearch('<span class="" >(.+?)</span>',s)
+			id=xsearch('href="/playlist\?list=(.+?)"',s)
+			if not id or not title:continue
+			addir_info(namecolor(title,'turquoise'),id,img,'',mode,1,'playlist',True)
+		
+		if pn:
+			title=namecolor('Page next: %d'%(page+1),'lime')
+			addir_info(title,'https://www.youtube.com'+pn,ico,'',mode,page+1,'playlistsPage'+cookie,True)
+		
+	def playlistPage(url):
+		b=xread(url)
+		if '/browse_ajax' in url:
+			try:j=json.loads(b)
+			except:j={}
+			b=j.get('content_html','').encode('utf-8')
+			pn=j.get('load_more_widget_html','').encode('utf-8')
+			pn=xsearch('data-uix-load-more-href="(.+?)"',pn).replace('amp;','')
+		else:pn=xsearch('data-uix-load-more-href="(.+?)"',b).replace('amp;','')
+		
+		string='<li class="channels-content-item yt-shelf-grid-item">'
+		for s in [i for i in b.split(string) if '"yt-lockup-thumbnail"' in i]:
+			title=xsearch('dir="ltr" title="(.+?)"',s,result=xsearch('dir="ltr">([^<]+?)<',s)).strip()
+			href=xsearch('href="/playlist\?list=(.+?)"',s).replace('amp;','')
+			if not title or not href:continue
+			videos=xsearch('<b>(\d+)</b>',s)
+			if videos:title+=' [COLOR gold]%s video(s)[/COLOR]'%videos
+			img=xsearch('src="(.+?\.jpg)',s,result=xsearch('thumb="(.+?\.jpg)',s))
+			addir_info(namecolor(title,'turquoise'),href,img,'',mode,1,'playlist',True)
+		
+		if pn:
+			title=namecolor('Page next: %d'%(page+1),'lime')
+			addir_info(title,'https://www.youtube.com'+pn,ico,'',mode,page+1,'playlistPage',True)
+	
+	def getElements(url,query):
+		from resources.lib.servers import youtube;yt=youtube()
+		link=re.sub('&pageToken=.*','',url)
+		items=yt.getElements(url,query)
+		if page==1 and query=='searchListResponse':
+			title=namecolor('[B]%s Playlists Search[/B]'%url,'deepskyblue')
+			addir_info(title,url,img,'',mode,1,'searchPlayLists',True)
+			title=namecolor('[B]%s channels Search[/B]'%url,'gold')
+			addir_info(title,url,img,'',mode,1,'searchChannels',True)
+		for title,id_,img_,query_ in items:
+			if not img_:img_=ico
+			if title=='nextPageToken':
+				title=namecolor('Page next: %d'%(page+1),'lime')
+				addir_info(title,link+'&pageToken='+id_,img_,'',mode,page+1,query,True)
+			elif 'duration:' in title:
+				duration=title.split('duration:')[1]
+				title=title.split('duration:')[0]
+				addir_info(title,id_,img_,'',mode,1,query_,info={'title': title,'duration':duration})
+			else:addir_info(namecolor(title,'deepskyblue'),id_,img_,'',mode,1,query_,True)
+	
 	if query=='Home':
 		title=namecolor('Search trên youtube.com','lime')
 		addir_info(title,'youtube.com',ico,'',mode,1,'videoSearch',True)
+		title=namecolor('Videos Phổ biến trên YouTube - Việt Nam','gold')
+		url=urlhome+'channel/UCy3AjyBptEC4ODn-JeOp4JQ/videos?lang=vi&regionCode=VN&hl=vi'
+		addir_info(title,url,ico,'',mode,1,'home',True)
+		title=namecolor('PlayLists Phổ biến trên YouTube - Việt Nam','gold')
+		url=urlhome+'channel/UCy3AjyBptEC4ODn-JeOp4JQ/playlists?lang=vi&regionCode=VN&hl=vi'
+		addir_info(title,url,ico,'',mode,1,'home',True)
 
-		#b=xread('https://www.youtube.com/')
-		b=xread('https://www.youtube.com/feed/trending');items=[];text=[]
-		for s in [j for j in b.split('"expanded-shelf-content-item-wrapper"') if '"expanded-shelf-content-item"' in j]:
-			title=xsearch('title="([^"]+?)".+</a>',s)
-			id=xsearch('<a href="/watch\?v=([^"]+?)"',s)
-			img=xsearch('(http[^ ]+\.jpg)',s)
-			channel=xsearch('<a href="(/channel/[^"]+?)"[^<]+?>([^<]+?)</a>',s);menu={}
-			if channel:
-				label=xsearch('<a href="(/channel/[^"]+?)"[^<]+?>([^<]+?)</a>',s,2)
-				menu={'youtube':{'action':'channel','name':label,'url':channel,'mode':mode}}
-				text.append((label,channel,img))
-			items.append((title,id,img))
-		addir_info(namecolor('Channels','red'),'',ico,'',mode,1,'channels',True,text=str(text))
-		for title,id,img in items:addir_info(title,id,img,'',mode,1,'play')
+		b=xread('https://www.youtube.com?lang=vi&regionCode=VN&hl=vi')
+		s=re.findall('(<a class="guide-item[^<]+?>)',b,re.S)
+		for s in [i for i in s if '/feed/' in i or '/channel/' in i]:
+			title=xsearch('title="(.+?)"',s)
+			href='https://www.youtube.com'+xsearch('href="(.+?)"',s)
+			addir_info(namecolor('[B]%s[/B]'%title,'blue'),href,ico,'',mode,1,'home',True)
+		addir_info(namecolor('[B]Youtube world channels[/B]','green'),'',ico,'',mode,1,'guideCategoryListResponse',True)
 			
 	elif query=="videoSearch":make_mySearch('',url,'','',mode,'get')
-	elif url=="youtube.com" or query=="INP" or url=='channelSearch':
+	elif url=="youtube.com" or query=="INP":# or url=='channelSearch':
 		if query=="INP":
 			query=make_mySearch('',url,'','','','Input')
 			if not query:return 'No'
-		#if 'Page next:' not in name:page=1
-		from resources.lib.servers import youtube;yt=youtube(url)
-		if ':' not in query:q=urllib.quote_plus(query);page=1
-		else:q=query.split(':')[1];query=query.split(':')[0];q=urllib.quote_plus(query)+'&pageToken=%s'%q
+		page=1
+		getElements(query,'searchListResponse')
+	elif query=='searchPlayLists':getElements(url,query)
+	elif query=='searchChannels':getElements(url,query)
+	elif query=='searchResultPlaylist':getElements(url,'playlist')
+	elif query=='searchResultChannel':getElements(url,'playlists')
+		
+	elif query=='home' and '/feed/' in url:
+		b=xread(url+'?regionCode=VN&hl=vi&lang=vi')
+		
+		string='<li class="expanded-shelf-content-item-wrapper">'
+		strings=[j for j in b.split(string) if '"expanded-shelf-content-item"' in j]
+		items=[]
+		for s in strings:
+			i=xsearch('(<div class="yt-lockup-byline".+?/div>)',s)
+			title=xsearch('>([^<]+)</a>',i)
+			href=xsearch('href="(.+?)"',i)
+			img=xsearch('thumb="(.+?\.jpg)',s,result=xsearch('src="(.+?\.jpg)',s))
+			if title and href:items.append((title,'https://www.youtube.com'+href+'/videos',img))
+		if items:
+			title=namecolor('Channels ','deepskyblue')+name
+			addir_info(title,'',img,'',mode,1,'lists',True,text=str(items))
 
-		if url=='youtube.com':
-			type='video';u='';qr='play';fd=False
-			if page==1:
-				title='[B][COLOR lime]Search Channels:[/COLOR] [COLOR gold]%s[/COLOR][/B]'%query
-				#addir_info(title,'channelSearch',img,'',mode,1,query,True)
-		elif url=='channelSearch':type='channel';u='/channel/';qr='channel';fd=True
-		else:type='playlist'
-		
-		for title,id,img in yt.search(type,q):
-			if title=='nextPageToken':
-				title=namecolor('Page next: %d'%(page+1),'lime')
-				addir_info(title,"youtube.com",ico,'',mode,page+1,'%s:%s'%(query,id),True)
-			else:addir_info(title,u+id,img,'',mode,1,qr,fd)
+		for s in strings:addirVideo(s)
 	
-	elif query=='playlist':
-		if ':' in url:q=url.split(':')[1];url=url.split(':')[0];q=url+'&pageToken=%s'%q
-		else:q=url
-		from resources.lib.servers import youtube;yt=youtube(q)
-		for title,id,img in yt.playlist(url):
-			if title=='nextPageToken':
-				title=namecolor('Page next: %d'%(page+1),'lime')
-				addir_info(title,url+':'+id,ico,'',mode,page+1,query,True)
-			else:addir_info(title,id,img,'',mode,1,'play')
-		
-	elif query=='channel':
-		b=xread('https://www.youtube.com%s/playlists'%url)
-		for s in [j for j in b.split('"channels-content-item yt-shelf-grid-item"') if '"yt-lockup-thumbnail"' in j]:
-			title=xsearch('<a.+?title="([^"]+?)"',s)
-			id=xsearch('href="/playlist\?list=([^"]+?)"',s)
-			img=xsearch('(http[^ ]+\.jpg)',s)
-			addir_info(namecolor(title,'deepskyblue'),id,img,'',mode,1,'playlist',True)
+	elif query=='home' and '/channel/' in url and '/videos' in url:
+		href='https://www.youtube.com/channel/UCy3AjyBptEC4ODn-JeOp4JQ/featured'
+		addir_info(namecolor('PlayLists','deepskyblue'),href,img,'',mode,1,'home',True)
+		channelPage(url)
+	elif query=='home' and '/channel/' in url and '/featured' in url:playlistsPage(url)
+	elif query=='home' and '/user/' in url and '/videos' in url:channelPage(url)
+	elif query=='home' and '/channel/' in url and '/playlists' in url:playlistPage(url)
+	elif query=='home' and '/channel/' in url:playlistItemsPage(url)
+	elif query=='channelAjax':channelPage(url,True)
+	elif query=='playlistPage':playlistPage(url)
+	elif 'playlistsPage' in query:playlistsPage(url,query.replace('playlistsPage',''))
+	elif 'playlistItemsPage' in query:playlistItemsPage(url,query.replace('playlistItemsPage',''))
+	elif query=='lists':
+		try:l=eval(text)
+		except:l=[]
+		for title,url,img in l:
+			if 'https:' in url:addir_info(title,url,img,'',mode,1,'home',True)
+			else:addir_info(title,url,img,'',mode,1,'playlist',True)
+	
+	elif query in 'searchListResponse-guideCategoryListResponse-channel-playlists-playlistItems':
+		getElements(url,query)
 		
 	elif query=='channels':
 		for title,id,img in eval(text):
 			addir_info(namecolor(title,'deepskyblue'),id,img,'',mode,1,'channel',True)
 	
-	else:play_youtube(url)
+	elif query=='video' or query=='play':play_youtube(url)
+	else:mess('Not things')
 
 def ifiletv(name,url,img,fanart,mode,page,query):
 	urlhome='http://ifile.tv';ico=icon['ifiletv'];c='blue'

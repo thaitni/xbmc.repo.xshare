@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import xbmc, xbmcaddon, urllib2
-
+re=urllib2.re
+os=urllib2.os
 #addon=addon()
 addon= xbmcaddon.Addon()
 profile=xbmc.translatePath(addon.getAddonInfo('profile'))
-datapath=urllib2.os.path.join(profile,'data')
+datapath=os.path.join(profile,'data')
 tempfolder=xbmc.translatePath('special://temp')
-xsharefolder=urllib2.os.path.join(tempfolder,'xshare')
-icon=urllib2.os.path.join(profile,'icon','icon.png')
+xsharefolder=os.path.join(tempfolder,'xshare')
+icon=os.path.join(profile,'icon','icon.png')
 
 class myaddon:
     def __init__(self):
@@ -23,13 +24,13 @@ class myaddon:
 		self.data_path		= xbmc.translatePath(self.info('profile'))
 		self.temp_path		= xbmc.translatePath('special://temp')
 
-		self.data_folder	= urllib2.os.path.join(self.data_path,'data')
-		self.icon_folder	= urllib2.os.path.join(self.data_path,'icon')
-		self.icon			= urllib2.os.path.join(self.icon_folder,'icon.png')
+		self.data_folder	= os.path.join(self.data_path,'data')
+		self.icon_folder	= os.path.join(self.data_path,'icon')
+		self.icon			= os.path.join(self.icon_folder,'icon.png')
 
 def filetime(fn):#return hour
-	fn=urllib2.os.path.join(xsharefolder,fn)
-	t=urllib2.os.path.getmtime(fn) if urllib2.os.path.isfile(fn) else 0
+	fn=os.path.join(xsharefolder,fn)
+	t=os.path.getmtime(fn) if os.path.isfile(fn) else 0
 	return int((urllib2.time.time()-t)/600)
 	
 def get_setting(name):return addon.getSetting(name)
@@ -43,7 +44,7 @@ def mess(message='',title='',timeShown=5000):
 		#icon=addon.icon
 		xbmc.executebuiltin((u'XBMC.Notification(%s,%s,%s,%s)'%(s0,s1,timeShown,icon)).encode("utf-8"))
 
-def googleItems(j,link='link',label='label'):#Thu nghiem tren phin14
+def googleItems(j,link='link',label='label'):#Thu nghiem tren phim14
 	try:l=[(i.get(link),rsl(i.get(label))) for i in j]
 	except:
 		try:l=[(i.get(link),rsl(i.get('type'))) for i in j]
@@ -66,9 +67,9 @@ def ls(l):
 	l=sorted(l, key=lambda k: int(k[1]),reverse=reverse)
 	return l
 
-def namecolor(name,c=''):return '[COLOR %s]%s[/COLOR]'%(c,name) if c else urllib2.re.sub('\[[^\[]+?\]','',name)
+def namecolor(name,c=''):return '[COLOR %s]%s[/COLOR]'%(c,name) if c else re.sub('\[[^\[]+?\]','',name)
 def xrw(fn,s=''):
-	fn=urllib2.os.path.join(xsharefolder,fn)
+	fn=os.path.join(xsharefolder,fn)
 	try:
 		if s:f=open(fn,'w');f.write(s);s=fn
 		else:f=open(fn);s=f.read()
@@ -84,6 +85,18 @@ def xcookie(cookie=None):
 def xread(url,headers={'User-Agent':'Mozilla/5.0'},data=None):
 	req=urllib2.Request(url,data,headers)
 	try:res=urllib2.urlopen(req, timeout=30);b=res.read();res.close()
+	except:b=''
+	return b
+
+def xreadc(url,c=''):
+	cookie=urllib2.HTTPCookieProcessor()
+	opener=urllib2.build_opener(cookie)
+	urllib2.install_opener(opener)
+	opener.addheaders=[('User_Agent','Mozilla/5.0')]
+	if c:opener.addheaders=[('Cookie',c)]
+	try:
+		o=opener.open(url);b=o.read();o.close()
+		b+='xshare%s'%';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar)
 	except:b=''
 	return b
 
@@ -108,22 +121,27 @@ def get_input(title=u"", default=u""):
 	return result.strip()
 
 def xsearch(pattern,string,group=1,flags=0,result=''):
-	try:s=urllib2.re.search(pattern,string,flags).group(group)
+	try:s=re.search(pattern,string,flags).group(group)
 	except:s=result
 	return s
 
-def xrfa(p,s,f=0):return urllib2.re.findall(p,s,f)
+def xrfa(p,s,f=0):return re.findall(p,s,f)
 def fmn(n):
 	try:s=format(int(n), "8,d").replace(',','.').strip()
 	except:s=str(n)
 	return s
 
+def vnu(s):
+	dic={'&Aacute;':'Á','&aacute;':'á','&Agrave;':'À','&agrave;':'à','&acirc;':'â','&atilde;':'ã','&Egrave;':'È','&egrave;':'è','&Eacute;':'É','&eacute;':'é','&ecirc;':'ê','&Ograve;':'Ò','&ograve;':'ò','&Oacute;':'Ó','&oacute;':'ó','&Ocirc;':'Ô','&ocirc;':'ô','&otilde;':'õ','&Uacute;':'Ú','&uacute;':'ú','&Ugrave;':'Ù','&ugrave;':'ù','&Igrave;':'Ì','&igrave;':'ì','&Iacute;':'Í','&iacute;':'í','&Yacute;':'Ý','&yacute;':'ý'}
+	for i in dic:s=s.replace(i,dic.get(i))
+	return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',i),i) for i in s.split())
+
 def s2u(s):return s.decode('utf-8') if isinstance(s,str) else s
 def u2s(s):return s.encode('utf-8') if isinstance(s,unicode) else s
-def unescape(string):return ' '.join(urllib2.re.sub('&.+;',xsearch('&(\w).+;',s,1),s) for s in string.split())
+def unescape(string):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',s,1),s) for s in string.split())
 def s2c(s):
-	def sc(s):i=xsearch('&#(\d+);',s);return urllib2.re.sub('&#\d+;',d.get(i,''),s) if i else s
+	def sc(s):i=xsearch('&#(\d+);',s);return re.sub('&#\d+;',d.get(i,''),s) if i else s
 	d={'192':'À','193':'Á','194':'Â','195':'Ă','202':'Ê','204':'Ì','205':'Í','211':'Ó','212':'Ô','217':'Ù','218':'Ú','224':'à','225':'á','226':'â','227':'ă','232':'è','233':'é','234':'ê','235':'ẽ','236':'ì','237':'í','242':'ò','243':'ó','244':'ô','245':'ỏ','249':'ù','250':'ú','253':'ý'}
 	return ' '.join(sc(i) for i in s.split())
 def s2c1(s):
-	return ' '.join(urllib2.re.sub('&#\d+;',unichr(int(xsearch('&#(\d+);',i))),i) if xsearch('&#(\d+);',i) else i for i in s.split())
+	return ' '.join(re.sub('&#\d+;',unichr(int(xsearch('&#(\d+);',i))),i) if xsearch('&#(\d+);',i) else i for i in s.split())
