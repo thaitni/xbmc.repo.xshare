@@ -31,7 +31,7 @@ class myaddon:
 def filetime(fn):#return hour
 	fn=os.path.join(xsharefolder,fn)
 	t=os.path.getmtime(fn) if os.path.isfile(fn) else 0
-	return int((urllib2.time.time()-t)/600)
+	return int((urllib2.time.time()-t)/3600)
 	
 def get_setting(name):return addon.getSetting(name)
 def set_setting(name,value):addon.setSetting(name,value)

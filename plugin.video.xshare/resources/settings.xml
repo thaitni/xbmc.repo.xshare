@@ -29,6 +29,7 @@
 		<setting id="csn_u" type="text" label="User name [COLOR green]chiasenhac.com[/COLOR]"/>
 		<setting id="csn_p" type="text" option="hidden" label="Password [COLOR green]chiasenhac.com[/COLOR]"/>
 		<setting id="csn_s" type="labelenum" label="[COLOR green]Tìm kiếm theo[/COLOR]" values="Tên bài hát/Ca sĩ|Ca sĩ|Sáng tác|Tên Album|Lời bài hát" default="Tên bài hát/Ca sĩ"/>
+		<setting id="csn_l" type="bool" label="" default="false" visible="false"/>
 		<setting id="userphimmoi" type="text" label="User name [COLOR ghostwhite]phimmoi.net[/COLOR]"/>
 		<setting id="passphimmoi" type="text" option="hidden" label="Password [COLOR ghostwhite]phimmoi.net[/COLOR]"/>
 		<setting id="p3s_u" type="text" label="User name [COLOR lightgray]phim3s.net[/COLOR]"/>
