@@ -18,6 +18,7 @@
 		<setting id="passhayhay" type="text" option="hidden" label="Password [COLOR tomato]hayhaytv.vn[/COLOR]"/>
 		<setting id="phone_fptplay" type="text" label="User name [COLOR orange]fptplay.net[/COLOR] (Your Phone Number)"/>
 		<setting id="pass_fptplay" type="text" option="hidden" label="Password [COLOR orange]fptplay.net[/COLOR]"/>
+		<setting id="country_fptplay" type="select" label="Country code [COLOR orange]fptplay.net[/COLOR]" values="FR (33)|DE (49)|JP (81)|HK (852)|RU (7)|LA (856)|TW (886)|NZ (64)|TH (66)|CN (86)|CA (1)|VN (84)|AU (61)|GB (44)|IN (91)|ID (62)|MM (95)|MY (60)|KH (855)|US (1)|KR (82)|SG (65)|IL (972)" default="VN (84)"/>
 	</category>
 	<category label="Servers khác">
 		<setting id="userhdviet" type="text" label="User name [COLOR darkorange]hdviet.com[/COLOR] (email/Số ĐT)"/>

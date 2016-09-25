@@ -782,11 +782,12 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		
 	def login(self):
 		phone_fptplay=get_setting('phone_fptplay');password=get_setting('pass_fptplay')
+		conutry=re.sub('\(.+?\)','',get_setting('country_fptplay')).strip()
 		if not phone_fptplay:#'MDkxODc3ODAxMzpoaWV1aGllbi52bg=='
 			mess(u'Bạn đang sử dụng account Fptplay của hieuhien.vn')
 			#phone_fptplay,password=urllib2.base64.b64decode('MDkxMzc2MTQ0NDphZGRvbnhzaGFyZQ==').split(':')
 			phone_fptplay,password=urllib2.base64.b64decode('MDkxODc3ODAxMzpoaWV1aGllbi52bg==').split(':')
-		data=urllib.urlencode({'phone':phone_fptplay,'password':password})
+		data=urllib.urlencode({'phone':phone_fptplay,'password':password,'country_code':conutry})
 		cookie=urllib2.HTTPCookieProcessor();opener=urllib2.build_opener(cookie);urllib2.install_opener(opener)
 		#try:b=opener.open(self.hd['referer'])
 		#except:pass
@@ -798,6 +799,21 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		if 'laravel_id' in cookie:mess(u'Login thành công','fptplay.net');xrw('fptplay.cookie',cookie)
 		else:mess(u'Login không thành công!','fptplay.net')
 		return cookie
+	
+	def login1(self):
+		import Cookie
+		phone_fptplay=get_setting('phone_fptplay');password=get_setting('pass_fptplay')
+		conutry=re.sub('\(.+?\)','',get_setting('country_fptplay')).strip()
+		data=urllib.urlencode({'phone':phone_fptplay,'password':password,'country_code':conutry})
+		headers={'Host': 'fptplay.net', 'Content-Type': 'application/x-www-form-urlencoded'}
+		conn = urllib2.httplib.HTTPSConnection('fptplay.net')
+		conn.request('POST', '/user/login',data,headers)
+		response=conn.getresponse()
+		cookie=Cookie.SimpleCookie(response.getheader('set-cookie'))
+		cookie='; '.join(i.key+'='+i.value for i in cookie.values())
+		if 'laravel_id' in cookie:mess(u'Login thành công','fptplay.net');xrw('fptplay.cookie',cookie)
+		else:mess(u'Login không thành công!','fptplay.net')
+		return 
 	
 	def detail(self,s):
 		title=vnu(xsearch('title="([^"]+?)"',s))
@@ -2600,8 +2616,12 @@ class vtvgovn:
 		url='http://cdnapi.kaltura.com/api_v3/index.php?service=multirequest&apiVersion=3.1&expiry=86400&clientTag=kwidget%3Av2.44&format=1&ignoreNull=1&action=null&1:service=session&1:action=startWidgetSession&1:widgetId=_2111921&2:ks=%7B1%3Aresult%3Aks%7D&2:service=playlist&2:action=execute&2:id=1_by8rxnyv&kalsig=ad9291d0921fec4bcf6bc406a5d0c752'
 		return self.liveGoList(url)
 	
-	def live(self,url):
-		return xsearch('(http.+?m3u8)',xread(url,self.hd))
+	def live(self,id):
+		url='http://vtvgo.vn/get-program-channel?epg_id=%s&type=1'%id
+		try:link=json.loads(xread(url,self.hd)).get('data','')
+		except:link=''
+		print link
+		return link
 
 	def detail(self,s):
 		title=xsearch('title="(.+?)"',s)

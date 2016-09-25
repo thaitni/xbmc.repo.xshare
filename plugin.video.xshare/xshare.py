@@ -65,7 +65,7 @@ def s2u(s):return s.decode('utf-8') if isinstance(s,str) else s
 def unescape(string):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',s),s) for s in string.split())
 def u2s(s):return s.encode('utf-8') if isinstance(s,unicode) else s
 def printdict(mydict):print json.dumps(mydict,indent=2);return ''
-def add_sep_item(label):addir_info('[COLOR lime]--%s--[/COLOR]'%label,'',icon['xshare'],'',100,1,'')
+def add_sep_item(label):addir_info('[COLOR lime]%s[/COLOR]'%label,'',icon['xshare'],'',100,1,'')
 def labelsearch(label):return '%s%s[/COLOR]'%(color['search'],label)
 def namecolor(name,c=''):return '[COLOR %s]%s[/COLOR]'%(c,name) if c else re.sub('\[[^\[]+?\]','',name)
 
@@ -2244,15 +2244,33 @@ def fptplay(name,url,img,fanart,mode,page,query,text=''):
 	
 	elif query=='category':
 		b=xread(url)
+		schedule=xsearch('(<div class="calendar".+?class="footer">)',b,1,re.S)#Lịch thi đấu Ngoai hang Anh
 		i=re.findall('<a class="box_header Regular" href="(.+?)"><span class="pull-left">(.+?)</span></a>',b)
-		if not i:return fptplay(name,url,img,mode,page,'page')
+		if not i:
+			i=re.findall('<h3 class="grouptitle">(.+?)</h3>\s+?<a href="(.+?)"',b)
+			if i:i=((j[1],j[0]) for j in i)
+			else:return fptplay(name,url,img,'',mode,page,'page')
 		for href,title in i:
 			addir_info(namecolor(vnu(title),c),href,ico,'',mode,1,"page",True)
 		
-		s=re.findall('(<li class="banner".+?/li>)',b,re.S)
+		s=re.findall('(<li.+?/li>)',xsearch('(<ul class="slide_banner".+?/ul>)',b,1,re.S),re.S)
 		if s:
 			add_sep_item('FPT Play giới thiệu -----------------------------------------')
 			faddir([fpt.detail(i) for i in s])
+		
+		if schedule:
+			add_sep_item('Lịch thi đấu - Kết quả ====================================')
+			s=[i for i in schedule.split('<div class="list-match">') if 'href=' in i]
+			for i in s:
+				date=re.sub('<.+?>','',xsearch('<p class="date">(.+?)</p>',i))#.decode('utf-8')
+				if date:add_sep_item('------------------------------ %s'%date)
+				for j in re.findall('(<a.+?/a>)',i,re.S):
+					title=xsearch('<p>(.+?)</p>',j)
+					if not title:continue
+					title='[COLOR gold]%s[/COLOR]'%title
+					if '-' in title:title='[COLOR green]%s[/COLOR]'%('  <%s>  '%title).join(re.findall('alt="(.+?)"',j))
+					else:title=title+'  '+'[COLOR orange]%s[/COLOR]'%'  <->  '.join(re.findall('alt="(.+?)"',j))
+					add_sep_item(title)
 				
 	elif query=='page':
 		b=xread(url)
@@ -7051,7 +7069,9 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 		except:mess('Get maxspeed link fail !','VTVgo.vn')
 	
 	elif query=='live':
-		try:xbmcsetResolvedUrl(vtv.live(url))
+		id=xsearch('-(\d+)\.html',url)
+		if not id:id=xsearch('/(\d+)\.jpg',img)
+		try:xbmcsetResolvedUrl(vtv.live(id))
 		except:mess('Get maxspeed liveTV link fail !','VTVgo.vn')
 	
 	elif query=='play':
@@ -7286,14 +7306,14 @@ def youtube(name,url,img,fanart,mode,page,query,text=''):
 			if 'https:' in url:addir_info(title,url,img,'',mode,1,'home',True)
 			else:addir_info(title,url,img,'',mode,1,'playlist',True)
 	
-	elif query in 'searchListResponse-guideCategoryListResponse-channel-playlists-playlistItems':
+	elif query and query in 'searchListResponse-guideCategoryListResponse-channel-playlists-playlistItems':
 		getElements(url,query)
 		
 	elif query=='channels':
 		for title,id,img in eval(text):
 			addir_info(namecolor(title,'deepskyblue'),id,img,'',mode,1,'channel',True)
 	
-	elif query=='video' or query=='play':play_youtube(url)
+	elif query=='video' or query=='play' or '/watch' in url:play_youtube(url)
 	else:mess('Not things')
 
 def ifiletv(name,url,img,fanart,mode,page,query):
