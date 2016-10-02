@@ -1098,7 +1098,7 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 			hdvncookie=';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar)
 			self.hd['Cookie']=hdvncookie
 			self.token=xsearch('"logout.._xfToken=(.+?)"',content)
-			xrw(os.path.join(xsharefolder,'hdvietnam.cookie'),hdvncookie);
+			xrw('hdvietnam.cookie',hdvncookie)
 		else:mess(u'Login không thành công!','hdvietnam.com')
 	
 	def data_refresh(self,data):
@@ -1707,7 +1707,7 @@ class taiphim:
 		try:
 			a=self.fetch(url,hd);hd['Cookie']=a.cookiestring;a=self.fetch(url,hd,data);self.hd['Cookie']=a.cookiestring
 			if a.status==303:
-				xrw(os.path.join(xsharefolder,'taiphimhd.cookie'),self.hd['Cookie'])
+				xrw('taiphimhd.cookie',self.hd['Cookie'])
 				print '---------------------------- Login OK'
 		except:pass
 	
@@ -2321,26 +2321,30 @@ class vietsubhd:
 			filmID=xsearch("filmInfo.filmID = parseInt\('(.+?)'\)",b)
 			episodeID=xsearch("filmInfo.episodeID = parseInt\('(.+?)'\)",b)
 		s=xread('http://www.vietsubhd.com/ajaxload',data='NextEpisode=1&EpisodeID=%s&filmID=%s'%(episodeID,filmID))
-		link=xsearch('link:"(.+?)"',self.decode(s))
+		#link=xsearch('link:"(.+?)"',self.decode(s))
+		link=xsearch('link:"(.+?)"',s)
 		b=xread('http://www.vietsubhd.com/gkphp/plugins/gkpluginsphp.php',data='link=%s'%link);items=[]
 		
-		try:
-			j=json.loads(b)#;print j
-			if j.get('link'):
-				if type(j.get('link'))==unicode:items=[(j.get('link'),'720')]
-				else:items=[(i.get('link'),rsl(i.get('label'))) for i in j.get('link')]
-			elif j.get('list'):
-				for j in j.get('list',[]):
-					for i in j.get('link'):items.append((i.get('link'),rsl(i.get('label'))))
-		except:items=[]
-		r=True if get_setting('resolut')=='Max' else False;items=sorted(items, key=lambda k: int(k[1]),reverse=r)
-		#print items
-		return items
+		try:j=json.loads(b)#;print j
+		except:j={}
+		if j.get('link'):
+			if type(j.get('link'))==unicode:items=[(j.get('link'),'720')]
+			else:items=[(i.get('link'),rsl(i.get('label'))) for i in j.get('link')]
+		elif j.get('list'):
+			for j in j.get('list',[]):
+				for i in j.get('link'):items.append((i.get('link'),rsl(i.get('label'))))
+		r=True if get_setting('resolut')=='Max' else False
+		items=sorted(items, key=lambda k: int(k[1]),reverse=r)
+		link=''
+		for href,label in items:
+			link=xcheck(href)
+			if link:break
+		return link
 		
 class hdonline:
 	def __init__(self,c):
 		self.c=c;self.home='http://hdonline.vn'
-		cookie=xrw(os.path.join(xsharefolder,'hdonline.cookie'))
+		cookie=xrw('hdonline.cookie')
 		self.userID=xsearch('userID=(\d+)',cookie)
 		self.hd={'User-Agent':'Mozilla/5.0','Accept': 'json','Cookie':cookie,'Referer': self.home}
 	
@@ -2452,7 +2456,7 @@ class hdonline:
 class mphim:
 	def __init__(self,c):
 		self.c=c;self.home='http://mphim.net'
-		cookie=xrw(os.path.join(xsharefolder,'mphim.cookie'))
+		cookie=xrw('mphim.cookie')
 		self.userID=xsearch('userID=(\d+)',cookie)
 		self.hd={'User-Agent':'Mozilla/5.0','Accept': 'json','Cookie':cookie,'Referer': self.home}
 	
@@ -2838,3 +2842,188 @@ class k88com:
 				link=xcheck(href.replace('amp;',''))
 				if link:break
 		return link
+
+class fcinenet:
+	def __init__(self):
+		self.hd={'User-Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest'}
+		self.cookie=xrw('fcine.cookie')
+		if not self.cookie or filetime('fcine.cookie')>1:self.cookie=self.login()
+	
+	def login(self):
+		auth=addon.getSetting('fcine_user');pw=addon.getSetting('fcine_pass')
+		headers={'Cookie':'ips4_IPSSessionFront=xshare'}
+		url='http://fcine.net/login/'
+		try:cookie=urllib2.urlopen(urllib2.Request(url,'',headers)).read()
+		except:cookie=''
+		csrfKey=xsearch('name="csrfKey" value="(.+?)"',cookie)
+		data={'csrfKey':csrfKey,'auth':auth,'password':pw,
+			  'login__standard_submitted':'1','remember_me':'0','remember_me_checkbox':'1'}
+		cookie=urllib2.HTTPCookieProcessor()
+		opener=urllib2.build_opener(cookie)
+		urllib2.install_opener(opener)
+		opener.addheaders=headers.items()
+		try:opener.open(url,urllib.urlencode(data))
+		except:pass
+		cookie=';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar if 'ips4' in i.name)
+		if 'ips4_pass_hash' in cookie:
+			mess(u'Login thành công','fcine.net')
+			xrw('fcine.cookie',cookie)
+		else:mess(u'Login không thành công!','fcine.net')
+		return cookie
+	
+	def lisItem(self,s):
+		S=re.findall('(<div class="esnList_item".+?/ul>)',s,re.S)
+		if not S:S=re.findall('(<li.+?/li>)',s,re.S)
+		items=[]
+		for s in S:
+			title=xsearch("title='(.+?)'",s,result=xsearch('title="(.+?)"',s)).replace('&#039;',"'")
+			href=xsearch('href="(.+?)"',s)
+			if not title or not href:continue
+			if 'HDRip.png' in s:title+=' [COLOR orange]HDRip[/COLOR]'
+			elif 'Bluray.png' in s:title+=' [COLOR orange]Bluray[/COLOR]'
+			elif 'WEBrip.png' in s:title+=' [COLOR orange]WEBrip[/COLOR]'
+			elif 'WEB-DL.png' in s:title+=' [COLOR orange]WEB-DL[/COLOR]'
+			img=xsearch('src="(.+?)"',s)
+			items.append((title,href,img))
+		return items
+	
+	def pageItems(self,url):
+		b=xread(url,self.hd).replace('\\n','').replace('\\t','').replace('\\r','')
+		try:j=json.loads(b)
+		except:j={}
+		items=self.lisItem(j.get('rows','').encode('utf-8'))
+		
+		pagination=j.get('pagination','').replace('&amp;','&').encode('utf-8')
+		p=xsearch("data-page='(\d+)' data-ipsTooltip title='Next page'",pagination)
+		if p:
+			href=xsearch("href='([^']+?)' data-page='%s'"%p,pagination)
+			title='[COLOR lime]Page next: %s[/COLOR]'%p
+			if href:items.append((title,href+'&listResort=1',''))
+		return items
+	
+	def getFshare(self,url):
+		url='http://fcine.net/?controller=view&do=toggleFields&id=%s'%xsearch('/view/(\d+)-',url)
+		b=xread(url,{'Cookie':self.cookie,'X-Requested-With':'XMLHttpRequest'})
+		try:j=json.loads(b.replace('\\n','').replace('\\t','').replace('\\r',''))
+		except:j={}
+		s=j.get('html','').encode('utf-8')
+		def check(s):return '<strong>Phụ đề:</strong>' in s or '<strong>Tải phim:</strong>' in s
+		s=''.join(i for i in s.split('<li class="ipsDataItem">') if check(i))
+		return [i for i in re.findall('href="(.+?)"[^<]*?>.+?>([^<]+?)<',s) if i[0] and i[1]]
+	
+	def getLink(self,url):
+		b=xread(url+'?area=online',{'Cookie':self.cookie})
+		s=xsearch('(<video.+?/video>)',b.replace('&amp;','&'),1,re.S)
+		link=''
+		for href,label in ls(re.findall('src="(.+?)".+?data-res="(.+?)"',s)):
+			link=xcheck(href)
+			if link:break
+		if not link:mess(u'Get Link không thành công! Hãy thử lại','fcine.net')
+		return link
+
+class taiphimhdnet:
+	def __init__(self):
+		self.cookie=xrw('taiphimhdnet.cookie')
+		if not self.cookie or filetime('taiphimhdnet.cookie')>240:self.cookie=self.login()
+		self.hd={'User-Agent':'Mozilla/5.0','Cookie':self.cookie}#,'X-Requested-With':'XMLHttpRequest'}
+		self.home='http://taiphimhd.net'
+	
+	def trueLink(self,link):
+		if self.home not in link:link=self.home+link
+		return link.replace('&amp;','&')
+	
+	def login(self):
+		name=addon.getSetting('taiphimhdnet_user');pw=addon.getSetting('taiphimhdnet_pass')
+		data=urllib.urlencode({'name':name,'pass':pw,'form_id':'user_login'})
+		url='http://taiphimhd.net/user?destination=http://taiphimhd.net'
+		cookie=urllib2.HTTPCookieProcessor()
+		opener=urllib2.build_opener(cookie)
+		urllib2.install_opener(opener)
+		try:
+			res=urllib2.urlopen(urllib2.Request(url,data,{'User-Agent': 'xshare'}))
+			cookie=';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar)
+			xrw('taiphimhdnet.cookie',cookie)
+			mess(u'Login thành công','taiphimhd.net')
+		except:cookie='';mess(u'Login không thành công!','taiphimhd.net')
+		return cookie
+	
+	def getLinks(self,url):
+		b=xread(url,self.hd)
+		items=[]
+		for s in re.findall('(<div class="dlphimhdvip".+?/ul>)',b,re.S):
+			if '>FSHARE<' in s:
+				p='http://taiphimhd.net/get-link.html#'
+				for m in ['<li>'+i for i in s.split('<li>') if 'href="' in i]:
+					title=xsearch('<li>(.+?)<a',m).replace(':','').strip()
+					href=xsearch('href="(.+?)"',m).replace(p,'').strip()
+					if title and href:
+						label=re.sub('<.+?>|\|','',xsearch('<b>(.+?)</b>',m)).strip()
+						if label:title=label
+						items.append((title,href))
+			else:
+				for href,title in re.findall('href="(.+?)">(.+?)</a>',s):
+					items.append(('[COLOR lime]Phụ đề:[/COLOR] '+title,href))
+		
+		for href in list(set(re.findall('(https?://subscene.com/[\w|/|-]+)',b))):
+			items.append(('[COLOR lime]Phụ đề[/COLOR] ',href))
+		return items
+
+	def getDetail(self,b):
+		items=[]
+		s=xsearch('(<div class="search_solr".+?class="pager")',b,1,re.S)
+		for s in s.split('<div class="search_solr"'):
+			title=xsearch('<a class="search_title"[^<]+>(.+?)</a>',s,1,re.S).strip()
+			href=xsearch('href="(.+?)"',s)
+			if not title or not href:continue
+			i=xsearch('(<span>Chia sẻ bởi.+?</span>)',s)
+			if i:
+				j='[COLOR gold]%s[/COLOR]'%xsearch('class="sb_date">(.+?)<',i)
+				j+='-[COLOR orange]%s[/COLOR] '%xsearch('>([^<]+?)</a>',i)
+				title=j+title
+			img=xsearch('src="(.+?)"',s)
+			items.append((s2c(title),self.trueLink(href),img))
+		return items
+	
+	def pageNext(self,b,p):
+		href=xsearch('<li class="pager-next"><a href="([^"]+?)"',b)
+		if href:
+			href=self.trueLink(href)
+			item=('[COLOR lime]Trang tiếp theo ...%d[/COLOR]'%(p+1),href)
+		else:item=''
+		return item
+	
+	def detail(self,s):
+		title=xsearch('title="([^"]+?)"',s,result=xsearch('<a href="[^"]+?">([^>]+?)</a>',s))
+		href=xsearch('href="(.+?)"',s)
+		img=xsearch('src="(.+?)"',s)
+		if title and href:
+			i=xsearch('<div class="left">([^<]+?)</div>',s)
+			if i:title='[COLOR gold]%s[/COLOR] '%i+title
+			i=xsearch('Lượt xem.+>([\d|,]+)</',s).replace(',','.')
+			if i:title+=' [COLOR gold]%s[/COLOR]'%i
+			if self.home not in href:href=self.home+href
+			result=s2c(title),href,img
+		else:result=''
+		return result
+	
+	def xemnhieu(self,l,d,p):
+		l='_phimbo' if l=='phimbo' else ''
+		url='http://taiphimhd.net/views/ajax?js=1&view_display_id=block_1&view_path=home&view_base_path='
+		url+='phim-xem-nhieu-%s.html&view_name=view_phim_xemnhieu_%s%s&page=%d'%(d,d,l,p-1)
+		b=xread(url)
+		try:s=eval(re.sub('"status".+?,','',b)).get('display')
+		except:s=''
+		a='<div class="field-content">'
+		items=[i for i in [self.detail(i) for i in s.split('"item-list"')[0].split(a)] if i]
+		
+		pn=xsearch('<li class="pager-next"><a href="(.+?)"',s).replace('&amp;','&')
+		if pn:items.append(('[COLOR lime]Trang tiếp theo (%s)...%d[/COLOR]'%(d,p+1),self.trueLink(pn),''))
+		return items
+	
+	def download(self,url):
+		try:res=urllib2.urlopen(urllib2.Request(url,headers=self.hd))
+		except:res=''
+		if res:b=res.read(500*1024)
+		else:b=''
+		return b
+

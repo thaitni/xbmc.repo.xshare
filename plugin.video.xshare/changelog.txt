@@ -1,3 +1,7 @@
+[B]Version 3.4.8.0[/B] <02/10/2016>:
+Fix fptpaly, hdsieunhanh phimbathu vietsubhd 
+Bổ sung fcine.net, taiphimhd.net
+
 [B]Version 3.4.7.4[/B] <25/9/2016>:
 Fix fptpaly, Youtube xml
 

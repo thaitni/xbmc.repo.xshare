@@ -37,6 +37,10 @@
 		<setting id="p3s_p" type="text" option="hidden" label="Password [COLOR lightgray]phim3s.net[/COLOR]"/>
 		<setting id="hdo_u" type="text" label="User name [COLOR turquoise]hdonline.vn[/COLOR]"/>
 		<setting id="hdo_p" type="text" option="hidden" label="Password [COLOR turquoise]hdonline.vn[/COLOR]"/>
+		<setting id="fcine_user" type="text" label="User name [COLOR orangered]fcine.net[/COLOR]"/>
+		<setting id="fcine_pass" type="text" option="hidden" label="Password [COLOR orangered]fcine.net[/COLOR]"/>
+		<setting id="taiphimhdnet_user" type="text" label="User name [COLOR FF2976BB]taiphimhd.net[/COLOR]"/>
+		<setting id="taiphimhdnet_pass" type="text" option="hidden" label="Password [COLOR FF2976BB]taiphimhd.net[/COLOR]"/>
 	</category>
 	<category label="Thông tin khác">
 		<setting id="thumucrieng" type="text" label="[COLOR blue]Mục chia sẻ của tôi trên Fshare[/COLOR] ([COLOR gold]ID MyFshare[/COLOR])" default="RDA4FHXVE2UU"/>
@@ -57,6 +61,7 @@
 		<setting id="autodel_sub" type="bool" label="[COLOR green]Tự động xóa thư mục SubsFolder[/COLOR] (y/n)" default="true"/>
 		<setting id="hdvnfindall" type="bool" label="[COLOR green]Không giới hạn tìm kiếm trên [COLOR red]hdvietnam.com[/COLOR][/COLOR] (All Uploader) (y/n)" default="true"/>
 		<setting id="history" type="bool" label="[COLOR green]Cho phép hiển thị lịch sử tìm kiếm[/COLOR] (y/n)" default="true"/>
+		<setting id="fcinefshare" type="bool" label="[COLOR green]Sử dung link Fshare trên Fcine.net[/COLOR] (y/n)" default="false"/>
 		<setting id="phim18" type="bool" label="[COLOR red]Kích hoạt xem phim 18+[/COLOR] (y/n)" default="false"/>
 	</category>
 </settings>
