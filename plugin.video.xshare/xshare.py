@@ -142,13 +142,15 @@ def servers_list(name,url,img,fanart,mode,page,query):#88
 			if (m==0 and 'Page next:' not in title) or not urllib2.os.path.basename(href):continue
 			if domain!='phim.media':domain=domain.split('.')[0]
 			if 'bilutv.com' in href:
+				#print 'bilutv',m,href
+				title=re.sub('Tập \d+ |tập \d+ ','',title)
 				if '/tag/' in href:addir_info(namecolor(domain+' '+title,'hotpink'),href,img,'',m,1,'page',True)
-				elif '/xem-phim/' in href:addir_info(domain+' '+title,href,img,'',m,1,'folder',True)
-				elif '/phim/' in href:addir_info(namecolor(domain+' '+title,'hotpink'),href,img,'',m,1,'folder',True)
+				elif 'phim/' in href:addir_info(namecolor(domain+' '+title,'hotpink'),href,img,'',m,1,'folder',True)
 				else:addir_info(namecolor(domain+' '+title,'hotpink'),href,img,'',m,1,'episodes',True)
 			elif 'hayhaytv.vn' in href:
 				addir_info(namecolor(domain+' '+title,'tomato'),href,img,'',m,1,'eps',True)
 			elif 'phimbathu.com' in href:
+				title=' '.join(re.sub('Xem|xem|Phim|phim|Tập \d+|tập \d+','',title).split())
 				addir_info(namecolor(domain+' '+title,'lightgray'),href,img,'',m,1,'episodes',True)
 			elif 'phim47.com' in href:
 				if '/xem-online/' in href:addir_info(domain+' '+title,href,img,'',m,1,'p47_play')
@@ -158,7 +160,8 @@ def servers_list(name,url,img,fanart,mode,page,query):#88
 				#addir_info(namecolor(domain+' '+title,'lightgray'),href,img,'',m,1,'episodes',True)
 			elif 'phim14.net' in href:
 				if '/tag/' in href:addir_info(namecolor(domain+' '+title,'chartreuse'),href,img,'',m,1,'page',True)
-				elif '/phim/' in href:
+				elif '/phim/' in href or ' Tập' in title:
+					title=re.sub(' Tập \d+|Xem ','',title)
 					addir_info(namecolor(domain+' '+title,'chartreuse'),href,img,'',m,1,'episodes',True)
 				else:addir_info(domain+' '+title,href,img,'',m,1,'play')
 			elif 'tvhay.org' in href:
@@ -167,7 +170,7 @@ def servers_list(name,url,img,fanart,mode,page,query):#88
 				addir_info(namecolor(domain+' '+title,'lightgray'),href,img,'',m,1,"get_server",True)
 			elif 'hdonline.vn' in href:
 				if '/tag1/' in href:
-					addir_info(namecolor(domain+' '+title,'turquoise'),href,img,'',mode,1,"page",True)
+					addir_info(namecolor(domain+' '+title,'turquoise'),href,img,'',m,1,"page",True)
 				else:addir_info(namecolor(domain+' '+title,'turquoise'),href,img,'',m,1,'eps',True)
 			elif 'hdsieunhanh.com' in href:
 				addir_info(namecolor(domain,'orangered')+' '+title,href,img,'',m,1,'play')
@@ -4170,13 +4173,13 @@ def hdonline(name,url,img,fanart,mode,page,query,bakName,bakData):
 	
 	elif query=='eps':
 		if 'Các tập tiếp theo' in  name:name= url.split('.html')[1];url= url.split('.html')[0]+'.html'
-		else:name=namecolor(name)
+		else:name=namecolor(name).replace('hdonline Xem phim','').strip()
 		id=xsearch('-(\d+)\.html',url)
-		items=hdo.eps(id,page)
+		items=hdo.eps(id,page);l=len(items)
 		for href,epi in items:
 			if 'Các tập tiếp theo' in href:addir_info(href,url+name,img,'',mode,page+1,query,True)
 			else:
-				title='Tập-'+epi+' '+name
+				title='Tập-'+epi+' '+name if l>1 else name
 				addir_info(title,href,img,'',mode,1,'play',menu=menu)
 		if not items:tag(url)
 	
@@ -5386,44 +5389,54 @@ def bilutv(name,url,img,mode,page,query):
 			if urlhome not in url:url='http://bilutv.com'+url
 		body=make_request(url)
 		s=xsearch('(<ul class="choose-server">.+?/ul>)',body,1,re.DOTALL)
+		name=' '.join(re.sub('bilutv|Phim|phim|Xem|xem','',namecolor(name)).split())
 		if s and re.search('class="list-episode"',body):
 			for href,title in re.findall('<a href="/(.+?)".*>([^<]+?)</a>',s):
-				addir_info(title+' '+namecolor(name),urlhome+href,img,fanart,mode,1,'episodes',True)
+				addir_info(title+' '+name,urlhome+href,img,fanart,mode,1,'episodes',True)
 			current=xsearch('<div class="playing"></div>(.+?)</a>',body)
 			add_sep_item('--------------List of server: %s--------------'%current)
 			get_episodes(body)
 		elif s:
-			label=' '.join(s for s in re.sub('\[.+?\]','',name).split())
 			for href,title in re.findall('<a href="/(.+?)".*>([^<]+?)</a>',s):
-				addir_info(title+' '+label,urlhome+href,img,fanart,mode,1,'play')
+				addir_info(title+' '+name,urlhome+href,img,fanart,mode,1,'play')
 		else:
 			s=get_episodes(body)
 			if not s:
-				label=' '.join(s for s in re.sub('\[.+?\]','',name).split());i=1
-				s=re.findall('"(.+www.youtube.com.+)"',body)
+				s=re.findall('"(.+www.youtube.com.+)"',body);i=1
 				for href in s:
-					addir_info('Link %d '%i+label,href,img,fanart,mode,1,'play_yt');i+=1
-				if not s:addir_info(label,url,img,fanart,mode,1,'play')
+					addir_info('Link %d '%i+name,href,img,fanart,mode,1,'play_yt');i+=1
+				if not s:addir_info(name,url,img,fanart,mode,1,'play')
 
 	elif query=='play_yt':play_youtube(url)
 	elif query=='play':
 		from resources.lib.servers import gibberishAES
 		if '/xem-phim/' not in url:
-			url=xsearch('<a class="btn-see btn btn-danger" href="/(.+?)"',make_request(url))
+			url=xsearch('<a class="btn-see btn btn-danger" href="/(.+?)"',xread(url))
 			if urlhome not in url:url=urlhome+url
 		
-		b=make_request(url)
+		b=xread(url)
 		if "/cdn-cgi/l/chk_jschl" in b:mess('DDoS protection by CloudFlare','bilutv.com');return
 		elif 'Vì lý do bản quyền' in b:mess(u'Vì lý do bản quyền! BiluTV không cập nhật phim này nữa');return
 		
-		try:c=urllib.unquote(gibberishAES(b));link=''
-		except:c=link=''
-		
+		link='';max=myaddon.getSetting('resolut')=='Max'
+		try:
+			L=re.findall("decodeLink\('(.+?)', *(\d+?)\)[^}]+?label: *'(.+?)'",b,re.S)
+			L=[(urllib.unquote(gibberishAES(i, "bilutv.com454657883435677%s"%j)),resolu(l)) for i,j,l in L]
+			L=sorted(L, key=lambda k: int(k[1]),reverse=True if max else False)
+			for href,label in L:
+				link=test_link(href)
+				if link:break
+		except:pass
+		if link:return xbmcsetResolvedUrl(link)
+
+		try:c=urllib.unquote(gibberishAES(b))
+		except:c=''
 		for h in re.findall('"(/episode/getlinkbackup/.+?)"',c):
-			j=make_request('http://bilutv.com'+h,resp='j')
-			try:L=[(s.get('file'),resolu(s.get('label'))) for s in j]
+			try:
+				j=json.loads(xread('http://bilutv.com'+h))
+				L=[(s.get('file'),resolu(s.get('label'))) for s in j]
 			except:L=[]
-			L=sorted(L, key=lambda k: int(k[1]),reverse=True if myaddon.getSetting('resolut')=='Max' else False)
+			L=sorted(L, key=lambda k: int(k[1]),reverse=True if max else False)
 			#print L
 			for href,label in L:
 				link=test_link(href)
@@ -5434,7 +5447,7 @@ def bilutv(name,url,img,mode,page,query):
 			L=[]
 			for s in re.findall('(\{file:decodeLink.+?\})',c):
 				L.append((xsearch("\('(.+?)'",s),xsearch("\('.+?',(\d+)\)",s),resolu(xsearch("label:'(.+?)'",s))))
-			L=sorted(L, key=lambda k: int(k[2]),reverse=True if myaddon.getSetting('resolut')=='Max' else False)
+			L=sorted(L, key=lambda k: int(k[2]),reverse=True if max else False)
 			#print L
 			if L:
 				for href,id,label in L:
@@ -5688,6 +5701,7 @@ def phimmedia(name,url,img,mode,page,query):
 
 def phimbathu(name,url,img,fanart,mode,page,query):
 	ico=os.path.join(iconpath,'phimbathu.png');urlhome='http://phimbathu.com/';c='lightgray'
+	film_id=xsearch('-(\d+)[.|_]',url)
 	if not os.path.isfile(ico):
 		href='https://docs.google.com/uc?id=0B5y3DO2sHt1LeVZsMUQxbkUxWk0&export=download'
 		response=make_request(href,resp='o',maxr=3)
@@ -5718,6 +5732,8 @@ def phimbathu(name,url,img,fanart,mode,page,query):
 		b=get_home_page('phimbathu.html',urlhome)
 		title=color['search']+"Search trên phimbathu.com[/COLOR]"
 		addir_info(title,'phimbathu.com',ico,'',mode,1,'search',True)
+		title=color['search']+"Mở chế độ tự động chọn Server trên phimbathu.com[/COLOR]"
+		addir_info(title,'phimbathu.com',ico,'',mode,1,'choose-server',True)
 		
 		s='\n'.join(re.findall('(<li class="menu-item ">.+?</ul>)',b,re.DOTALL))
 		for href,title in re.findall('href="([^"]+?)".+</i>(.+?)</a>',s):
@@ -5742,6 +5758,17 @@ def phimbathu(name,url,img,fanart,mode,page,query):
 		
 		if get_home_page('phimbathu.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
 
+	elif query=="choose-server":
+		dialog = xbmcgui.Dialog();label='Chọn chế độ tự động chọn Server trên phimbathu.com'
+		choices=['Thuyết minh','Viet Sub','Không Chọn tự động']
+		chonserver=["Thuyết minh","VietSub","Không"]
+		choice = dialog.select(label, choices)
+		if choice >= 0:
+			myaddon.setSetting('chonserver',chonserver[choice])
+			mess(u'Đã chọn: %s'%choices[choice].decode('utf-8'))
+			xbmc.executebuiltin("Container.Refresh")
+		return 'no'
+	
 	elif query=="menu":
 		b=make_request(url)
 		s=[i for i in re.findall('(<li class="menu-item ">.+?</ul>)',b,re.DOTALL) if xsearch('</i>(.+?)</a>',i) in name]
@@ -5780,84 +5807,42 @@ def phimbathu(name,url,img,fanart,mode,page,query):
 		search_string = urllib.quote_plus(query)
 		return detail(make_request('http://phimbathu.com/tim-kiem.html?q='+search_string))
 
-	elif query=='episodes':
+	elif query=='episodes':#values="Thuyết minh|VietSub|Không"
+		title="Mở chế độ tự động chọn Server trên phimbathu.com"
+		menu={'phimbathu':{'name':title,'action':'choose-server','mode':mode}}
 		if '/xem-phim/' not in url:
-			url='http://phimbathu.com'+xsearch('"btn-see btn btn-info adspruce-streamlink" href="(.+?)"',xread(url))
+			p='"btn-see btn btn-info adspruce-streamlink" href="(.+?)"'
+			url='http://phimbathu.com'+xsearch(p,xread(url))
 		b=xread(url)
-		server=xsearch('<ul class="choose-server">(.+?)</ul>',b,1,re.S)
-		s=xsearch('<div class="list-episode">(.+?)</div>',b,1,re.S)
-		episodes=re.findall('<a class=".*?" href="(.+?)">(.+?)</a>',s)
-		if episodes:
-			for href,title in re.findall('<a href="([^"]+?)">([^<]+?)</a>',server):
-				if '//' not in href:href='http://phimbathu.com'+href
-				addir_info(namecolor('Server '+title.strip(),'blue'),href,img,'',mode,1,query,True)
-			playing=xsearch('<div class="playing"></div>(.+?)</a>',server)
-			if playing:add_sep_item('List of Server %s -----------------------------------------'%playing.strip())
-		else:episodes=re.findall('<a href="([^"]+?)".*?>([^<]+?)</a>',server)
-		if episodes:
-			for href,title in episodes:
-				if '//' not in href:href='http://phimbathu.com'+href
-				title=namecolor(title,'gold')+' '+namecolor(re.sub('\+|TM|Vietsub|Thuyết minh','',name))
-				addir_info(title,href,img,'',mode,1,'playAES')
-				
+		name=' '.join(re.sub('phimbathu','',namecolor(name)).split())
+		
+		if myaddon.getSetting('chonserver')=='Không':
 			s=xsearch('(<div class="list-episode".+?/div)',b,1,re.S)
 			if s:
-				title=xsearch('itemprop="name">(.+?)<',b)+' '+xsearch('class="real-name">(.+?)<',b)
-				add_sep_item('List episode: %s'%title)
-				for href,epi in re.findall('href="(.+?)">(.+?)</a>',s):
-					addir_info(namecolor('Tập %s'%epi,c),href,img,'',mode,1,'episodes',True)
+				for href,title in re.findall('href="(.+?)">(.+?)<',s):
+					addir_info('Tập %s %s'%(title,name),href,img,'',mode,1,'server',True,menu=menu)
+			else:addir_info(name,url,img,'',mode,1,'server',True,menu=menu)
+		
 		else:
-			s=xsearch('<p>(.+?)</p>',xsearch('<div id="player">(.+?)</div>',b,1,re.S))
-			if s:mess(u'%s'%s2u(s),'phimbathu.com',10000)
-			else:addir_info(name,url,img,'',mode,1,'playAES')
-			
-	elif query=='episodes1':
-		id=xsearch('(\d+).html',url);href='http://phimbathu.com/get-link-download-epi?id='+id
-		b=xread(href)#;print href,b
-		items=re.findall('<a href="(.+?)">Download (.+?)</a>',b)#;print items
-		for s in re.findall('<th>(.+?)</th>',b):
-			ss=[i for i in items if xsearch('_(\w+).html',i[0]) in s]
-			if ss:add_sep_item('-------------%s-------------'%s)
-			for href,title in ss:
+			s=xsearch('(<div class="list-episode".+?/div)',b,1,re.S)
+			if s:
+				for href,title in re.findall('href="(.+?)">(.+?)<',s):
+					addir_info('Tập %s %s'%(title,name),href,img,'',mode,1,'play',menu=menu)
+			else:addir_info(name,url,img,'',mode,1,'play',menu=menu)
+	
+	elif query=='server':
+		b=xread(url)
+		server=xsearch('<ul class="choose-server">(.+?)</ul>',b,1,re.S)
+		if server:
+			for href,title in re.findall('<a href="([^"]+?)".*?>([^<]+?)</a>',server):
 				if '//' not in href:href='http://phimbathu.com'+href
-				title=title+' '+namecolor(name.replace('[COLOR blue]TM[/COLOR] ',''))
+				title=namecolor(title,'gold')+' '+namecolor(re.sub('\+|TM|Vietsub|Thuyết minh','',name))
 				addir_info(title,href,img,'',mode,1,'play')
+		else:addir_info(name,url,img,'',mode,1,'play')
 	
 	elif query=='play':
-		s=re.findall('(<li data-link=.+?/li>)',make_request(url),re.DOTALL);print s
-		L=[(xsearch('data-link="(.+?)"',i),resolu(xsearch('Download.* (\w+)',i))) for i in s]
-		L=sorted(L, key=lambda k: int(k[1]),reverse=True if myaddon.getSetting('resolut')=='Max' else False)
-		#print href,L
-		link=''
-		if L:
-			for href,r in L:
-				link=dl(href)
-				if link:break
-		if link:xbmcsetResolvedUrl(link)
-		else:mess('File invalid or deleted!','phimbathu.com') 
-		
-	elif query=='playAES':#Chua get web server-backup va linkBackup trong json
-		def getLink(j,key):
-			def aes(i):
-				from resources.lib.servers import gibberishAES
-				try:s=urllib.unquote(gibberishAES(i.get('file',''), "phimbathu.com4590481877"+j.get('modelId')))
-				except:s=''
-				return s
-			def linkOK(l):
-				link=''
-				for href,r in ls(l):
-					link=dl(href)
-					if link:break
-				return link
-			return linkOK([(aes(i),resolu(i.get('label',''))) for i in j.get(key,[])])
-		try:j=json.loads(xsearch('playerSetting.+?(\{.+?\});',xread(url)))
-		except:j={}
-		link=getLink(j,'sources')
-		if link:xbmcsetResolvedUrl(link)
-		else:
-			link=getLink(j,'sourcesBk')
-			if link:xbmcsetResolvedUrl(link)
-			else:mess('File invalid or deleted!','phimbathu.com') 
+		from resources.lib.servers import phimBatHu;pbh=phimBatHu()
+		xbmcsetResolvedUrl(pbh.getDirectLink(url))
 
 def phim14(name,url,img,mode,page,query):
 	#http://www.dailymotion.com/video/k2Z6NnXtz8r2PUgJfMA 227414
@@ -5958,8 +5943,9 @@ def phim14(name,url,img,mode,page,query):
 					addir_info(namecolor(title),href,ico,'',mode,1,'page',True)
 		
 	elif query=='episodes':
-		href=xsearch('<a class="watch_button now" href="(.+?)"',make_request(url,hd))
-		b=make_request(href,hd)
+		if '/xem-phim/' not in url:href=xsearch('<a class="watch_button now" href="(.+?)"',xread(url,hd))
+		else:href=url
+		b=xread(href,hd)
 		S=re.findall('(<li class="server_item">.+?</ul>)',b,re.DOTALL)
 		if len(S) == 0:
 			s=xsearch('(<ul class="episode_list">.+?</ul>)',b,1,re.DOTALL)
@@ -5993,14 +5979,13 @@ def phim14(name,url,img,mode,page,query):
 					addir_info(title,href,img,'',mode,1,'play')
 			
 	elif query=='page':
-		#b=make_request(url,hd)
 		b=xread(url)
 		S=xsearch('(<div id="content" class="container">.+?</span></div>)',b,1,re.DOTALL)
 		for s in re.findall('(<li>.+?</li>)',S,re.DOTALL):make_item(s)
 		make_page_control(S)
 
 	elif query=='server':
-		b=make_request(url,hd)
+		b=xread(url,hd)
 		S=[s for s in re.findall('(<li class="server_item">.+?</ul>)',b,re.DOTALL) if url in s]
 		if S:
 			ys=True if 'Youtube' in xsearch('(<strong><img src=.+?</strong>)',S[0]) else False
@@ -6011,7 +5996,7 @@ def phim14(name,url,img,mode,page,query):
 	
 	elif query=='play':
 		if 'm.phim14.net' in url:
-			b=xsearch('(<div class="jp-player-video">.+?</div)',make_request(url),1,re.DOTALL)
+			b=xsearch('(<div class="jp-player-video">.+?</div)',xread(url,hd),1,re.DOTALL)
 			u=xsearch('src="(.+?)\?',b)
 			if u:return play_youtube(u)
 		b=xread(url);link=''
@@ -6445,6 +6430,11 @@ def addir_info(name,url,img,fanart='',mode=0,page=1,query='',isFolder=False,text
 			if 'Down' in inf['action']:
 				lists.append(('MoveDown',{'url':url,'mode':88,'query':'Down'}))
 		
+		elif menu.has_key('phimbathu'):
+			#menu={'phimbathu':{'name':title,'action':'choose-server','mode':mode}}
+			inf=menu.get('phimbathu')
+			lists.append((inf['name'],{'query':inf['action'],'mode':inf['mode']}))
+			
 		elif menu.has_key('youtube'):
 		#menu={'youtube':{'name':'Open this PlayList','action':'playlist','url':playlistId,'mode':mode}}
 			inf=menu.get('youtube')
@@ -6662,7 +6652,7 @@ def taiphimhd(name,url,img,fanart,mode,page,query):#RSS
 def imovies(name,url,img,fanart,mode,page,query):
 	def dirs(s):
 		title,href,img,fanart,dir=imv.getDetail(s) if type(s)==str else s
-		if 'Page next' in title:addir_info(title,href,img,fanart,mode,page+1,'page',True)
+		if 'Page next' in title:addir_info(title,href,img,fanart,mode,1,'pageNext',True)
 		elif dir:addir_info(namecolor(title,c),href,img,fanart,mode,1,'eps',True)
 		else:addir_info(title,href,img,fanart,mode,1,'play')
 	
@@ -6734,7 +6724,12 @@ def imovies(name,url,img,fanart,mode,page,query):
 			for i in re.findall('(<div class="mvit".+?/div>)',s,re.S):dirs(i)
 	
 	elif query=='page':[dirs(s) for s in imv.getPage(url)]
-			
+	
+	elif query=='pageNext':
+		for title,href,img,fanart,q,dir in imv.pageNext(url):
+			if 'Page next' in title:addir_info(title,href,img,fanart,mode,1,'pageNext',True)
+			else:addir_info(title,href,img,fanart,mode,1,q,dir)
+	
 	elif query=='subpage':
 		b=xread(url)
 		if 'Ooops.Đã Có lỗi xảy ra!' in b:mess(u'Ooops.Đã Có lỗi xảy ra!','imovies.vn');return
@@ -7640,7 +7635,7 @@ elif mode==39:phim14(name,url,img,mode,page,query)
 elif mode==40:phimmedia(name,url,img,mode,page,query)
 elif mode==41:tvhay(name,url,img,mode,page,query)
 elif mode==42:nhacdj(name,url,img,fanart,mode,page,query)
-elif mode==43:phimbathu(name,url,img,fanart,mode,page,query)
+elif mode==43:end=phimbathu(name,url,img,fanart,mode,page,query)
 elif mode==44:hdsieunhanh(name,url,img,fanart,mode,page,query)
 elif mode==45:chiasenhac(name,url,img,fanart,mode,page,query)
 elif mode==46:nhaccuatui(name,url,img,fanart,mode,page,query)

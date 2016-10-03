@@ -41,6 +41,7 @@
 		<setting id="fcine_pass" type="text" option="hidden" label="Password [COLOR orangered]fcine.net[/COLOR]"/>
 		<setting id="taiphimhdnet_user" type="text" label="User name [COLOR FF2976BB]taiphimhd.net[/COLOR]"/>
 		<setting id="taiphimhdnet_pass" type="text" option="hidden" label="Password [COLOR FF2976BB]taiphimhd.net[/COLOR]"/>
+		<setting id="chonserver" type="select" label="Tự động Chọn server trong PhimBatHu.com" values="Thuyết minh|VietSub|Không" default="Không" />
 	</category>
 	<category label="Thông tin khác">
 		<setting id="thumucrieng" type="text" label="[COLOR blue]Mục chia sẻ của tôi trên Fshare[/COLOR] ([COLOR gold]ID MyFshare[/COLOR])" default="RDA4FHXVE2UU"/>

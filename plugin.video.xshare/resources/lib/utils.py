@@ -48,9 +48,11 @@ def googleItems(j,link='link',label='label'):#Thu nghiem tren phim14
 	try:l=[(i.get(link),rsl(i.get(label))) for i in j]
 	except:
 		try:l=[(i.get(link),rsl(i.get('type'))) for i in j]
-		except:link=''
-	if link:
-		link=''
+		except:
+			try:l=[(i.get('file'),rsl(i.get('type'))) for i in j]
+			except:l=''
+	link=''
+	if l:
 		for href,label in ls(l):
 			link=xcheck(href)
 			if link:break

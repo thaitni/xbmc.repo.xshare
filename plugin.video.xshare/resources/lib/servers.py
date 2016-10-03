@@ -1554,15 +1554,48 @@ class imovies:
 		S=[i for i in b.split('<div class="mlii">') if '  <span class="mvn">' in i]
 		for s in S:items.append((self.getDetail(s)))
 		
-		pn=re.search('<li class="active">.+?<li class="">.*?href="(.+?)">(.+?)</a>',b,re.S)
-		if pn:
-			href=pn.group(1).replace('amp;','');pn=pn.group(2)
-			if 'http' not in href:href='http://imovies.vn'+href
-			s=xsearch('<div class="label-page"><span>(.+?</div>)',b)
-			pages=xsearch('(\d+)</div>',s)
-			title='[COLOR lime]Page next: %s/%s[/COLOR]'%(pn,pages)
+		groupId=xsearch('groupId *= *(\d+)',b)
+		if groupId:
+			href='http://imovies.vn/Movie/Search?pageSize=25&pageIndex=2&groupId=%s'%groupId
+			title='[COLOR lime]Page next: ...2[/COLOR]'
 			items.append((title,href,'','',True))
 		
+		return items
+	
+	def pageNext(self,url):
+		try:j=json.loads(xread(url))
+		except:j={}
+		'''{
+		"Id": 8560,
+		"LongId": "aaaaa6zl",
+		"Name": "Super Star Academy",
+		"Title": "Siêu Tinh Tinh Học Viện",
+		"Alias": "super-star-academy-sieu-tinh-tinh-hoc-vien",
+		"State": "(6/25)",
+		"Time": 0,
+		"Imdb": 0,
+		"Hit": 609,
+		"Avatar": "IMovie/mv_8560/image_8560.jpg",
+		"Poster": "IMovie/mv_8560/poster_8560.jpg",
+		"PartCount": 25,
+		"Type": 0,
+		"Year": 2016
+		}'''
+		def geti(i,s):return i.get(s,'').encode('utf-8') if i.get(s,'') else ''
+		items=[]
+		for i in j.get('Data'):
+			title='%s %s %s'%(geti(i,'Title'),geti(i,'Name'),geti(i,'State'))
+			href='http://imovies.vn/abc/abc/im%d.html'%i.get('Id',0)
+			img='http://static.imovies.vn/'+geti(i,'Avatar')
+			fanart='http://static.imovies.vn/'+geti(i,'Poster')
+			if geti(i,'State'):q='eps';dir=True;title=namecolor(title,self.c)
+			else:q='play';dir=False
+			items.append((title,href,img,fanart,q,dir))
+		pn=j.get('PageIndex',0)+1
+		#href='http://imovies.vn/Movie/Search?pageSize=25&pageIndex=2&groupId=%s'%groupId
+		href=re.sub('pageIndex=\d+&','pageIndex=%d&'%pn,url)
+		title='[COLOR lime]Page next: ...%d[/COLOR]'%pn
+		items.append((title,href,'','','',True))
 		return items
 	
 	def search(self,s):
@@ -2340,7 +2373,7 @@ class vietsubhd:
 			link=xcheck(href)
 			if link:break
 		return link
-		
+	
 class hdonline:
 	def __init__(self,c):
 		self.c=c;self.home='http://hdonline.vn'
@@ -2389,33 +2422,6 @@ class hdonline:
 		if pn:items.append(('[COLOR lime]Các tập tiếp theo...[/COLOR]',pn))
 		return items
 		
-	def eps2(self,url):
-		film=xsearch('-(\d+)\.html',url)
-		b=xread('http://hdonline.vn/episode/ajax?film=%s&episode=&page=1&search='%film)
-		items=[(i[1],film+'-'+i[0]) for i in re.findall('data-episodeid="(\d+)".+?>(\d+)</a>',b)]
-		return items
-		#<a href="/phim-12-monkeys-season-2-12085.html" class="btn-episode" data-episodeid="101272" data-order="1" onclick="PlayChangeUrl(this);return false;">1</a>
-		#http://hdonline.vn/phim-12-monkeys-season-2-tap-2-12085.101336.html
-	
-	def eps1(self,url):
-		def detail(home,i):
-			j=i.get('title').encode('utf-8'),home+i.get('file').encode('utf-8'),i.get('image').encode('utf-8')
-			return j
-			
-		loop=0;items=[];result='';self.hd['Referer']=self.home;url=url.replace('m.hdonline.vn','hdonline.vn')
-		while not items and loop<3:
-			b=xread(url,self.hd)
-			s=xsearch('"playlist":\[(\{.+?\})\]',b)
-			try:
-				j=[json.loads(i) for i in re.findall('(\{.+?\})',s)]
-				items=[detail(self.home,i) for i in j]
-			except:items=[]
-			if 'class="fa fa-user"' in b:loop=3
-			elif not items:loop+=1;mess('Xshare retry get link...%d'%loop);xbmc.sleep(2000*loop)
-		#f=open(r'd:\xoa1.html','w');f.write(s);f.close()
-		#else:mess(u'Hãy set acc/pass cho hdonline.vn nhé','HDOnline.vn')
-		return items
-	
 	def like_film(self,url):
 		b=xread(url,self.hd)
 		try:m=json.loads(b).get('msg');mess(u'%s'%m[:m.find('.')])
@@ -2452,6 +2458,69 @@ class hdonline:
 			for i in j.get('subtitle'):
 				if i.get('code').encode('utf-8')=='vi':sub=i.get('file');break
 		return items,sub
+
+class phimBatHu:
+	def __init__(self):
+		self.home='http://phimbathu.com'
+	
+	def getDirectLink(self,url):
+		def getLink(s,key):#chonserver values="Thuyết minh|VietSub|Không"
+			try:j=json.loads(xsearch('"sources":(\[[^\]]+?\])',s))
+			except:j={}
+			for i in j:
+				try:i['file']=urllib.unquote(gibberishAES(i.get('file',''),key))
+				except:pass
+			link=googleItems(j,'file','label')
+			return link
+		
+		b=xread(url)
+		key="phimbathu.com4590481877"+xsearch("'film_id':'(.+?)'",b)
+		chonserver=addon.getSetting('chonserver')
+		servers=re.findall('(<a.+?/a>)',xsearch('<ul class="choose-server">(.+?)</ul>',b,1,re.S))
+		
+		
+		playOn=''
+		if not servers or chonserver=='Không':
+			link=getLink(b,key)
+			playOn=xsearch('>([^<]+?)</a>',str([i for i in servers if '"playing"' in i]))
+			if not playOn:playOn='Default Server'
+			servers=[i for i in servers if '"playing"' not in i]#Loai bo server default trong servers
+		else:
+			for s in servers:
+				title=xsearch('>([^<]+?)</a>',s).upper();found=False
+				if 'T MINH' not in title and 'VIETSUB' not in title:found=True;break
+				elif chonserver=='Thuyết minh' and 'T MINH' in title:found=True;break
+				elif chonserver=='VietSub' and 'VIETSUB' in title:found=True;break
+			
+			if found:servers=[i for i in servers if i!=s]#Loai bo server hien tai trong servers
+
+			if '"playing"' not in s:url=self.home+xsearch('href="(.+?)"',s);b=xread(url)
+			playOn=xsearch('>([^<]+?)</a>',s)
+			link=getLink(b,key)
+
+		if not link:
+			mess('get next servers','phimbathu.com') 
+			for s in servers:
+				link=getLink(xread(self.home+xsearch('href="(.+?)"',s)),key)
+				playOn=xsearch('>([^<]+?)</a>',s)
+				if link:break
+		
+		if not link:
+			playOn='Backup Server'
+			mess('get bakup servers','phimbathu.com') 
+			s=xsearch('<ul class="server-backup"(.+?)</ul>',b,1,re.S)
+			strings=re.findall('link="([^"]+?)"',s)
+			for s in strings:
+				href=self.home+urllib.unquote(gibberishAES(s,key));print 'ccc',href
+				b=xread(href)
+				try:link=googleItems(json.loads(b),'file','label')
+				except:pass
+				if link:break
+				
+		if link:mess('Play on: '+playOn)
+		else:mess('File invalid or deleted!','phimbathu.com')
+		
+		return link
 		
 class mphim:
 	def __init__(self,c):
@@ -2924,7 +2993,8 @@ class fcinenet:
 class taiphimhdnet:
 	def __init__(self):
 		self.cookie=xrw('taiphimhdnet.cookie')
-		if not self.cookie or filetime('taiphimhdnet.cookie')>240:self.cookie=self.login()
+		if not self.cookie or 'DRUPAL_UID=' not in self.cookie or filetime('taiphimhdnet.cookie')>240:
+			self.cookie=self.login()
 		self.hd={'User-Agent':'Mozilla/5.0','Cookie':self.cookie}#,'X-Requested-With':'XMLHttpRequest'}
 		self.home='http://taiphimhd.net'
 	
@@ -2942,9 +3012,11 @@ class taiphimhdnet:
 		try:
 			res=urllib2.urlopen(urllib2.Request(url,data,{'User-Agent': 'xshare'}))
 			cookie=';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar)
+		except:cookie=''
+		if 'DRUPAL_UID=' in cookie:
 			xrw('taiphimhdnet.cookie',cookie)
 			mess(u'Login thành công','taiphimhd.net')
-		except:cookie='';mess(u'Login không thành công!','taiphimhd.net')
+		else:cookie='';mess(u'Login không thành công!','taiphimhd.net')
 		return cookie
 	
 	def getLinks(self,url):
