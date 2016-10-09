@@ -41,11 +41,12 @@
 		<setting id="fcine_pass" type="text" option="hidden" label="Password [COLOR orangered]fcine.net[/COLOR]"/>
 		<setting id="taiphimhdnet_user" type="text" label="User name [COLOR FF2976BB]taiphimhd.net[/COLOR]"/>
 		<setting id="taiphimhdnet_pass" type="text" option="hidden" label="Password [COLOR FF2976BB]taiphimhd.net[/COLOR]"/>
-		<setting id="chonserver" type="select" label="Tự động Chọn server trong PhimBatHu.com" values="Thuyết minh|VietSub|Không" default="Không" />
+		<setting id="chonserver" type="select" label="Tự động Chọn server trong PhimBatHu.com/Fcine.net" values="Thuyết minh|VietSub|Không" default="Không" />
 	</category>
 	<category label="Thông tin khác">
 		<setting id="thumucrieng" type="text" label="[COLOR blue]Mục chia sẻ của tôi trên Fshare[/COLOR] ([COLOR gold]ID MyFshare[/COLOR])" default="RDA4FHXVE2UU"/>
 		<setting id="thumuccucbo" type="folder" label="[COLOR blue]Thư mục cục bộ[/COLOR] ([COLOR gold]MyFolder[/COLOR])" default="" option="writeable"/>
+		<setting id="subsfolder" type="folder" label="[COLOR green]Thư mục chứa sub của xshare[/COLOR] [COLOR red](Will delete ALL!!!)[/COLOR]" default=""/>
 		<setting id="sodonghienthi" type="labelenum" label="[COLOR blue]Số dòng hiển thị cho 1 trang[/COLOR]" values="20|30|50" default="30"/>
 		<setting id="my_nas_url" type="text" label="[COLOR blue]My NAS url[/COLOR]" default="http://buffalonas.com/"/>
 		<setting id="my_nas_up"  type="text" label="[COLOR blue]My NAS user/pass[/COLOR] - có dấu [COLOR red]/[/COLOR] nhé" default="/"/>

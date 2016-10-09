@@ -1,3 +1,6 @@
+[B]Version 3.4.8.2[/B] <09/10/2016>:
+Fix imovies, fcine, myFavourites, subfolder, vaphim, csn, youtube
+
 [B]Version 3.4.8.1[/B] <03/10/2016>:
 Fix taiphimhd.net
 
