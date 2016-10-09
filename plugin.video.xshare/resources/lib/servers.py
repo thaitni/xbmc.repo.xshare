@@ -579,7 +579,7 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		self.token=xsearch('data-token="(.+?)"',response.body)
 		return self.token
 	
-	def get_folder(self,url):
+	def get_folder1(self,url):
 		def fixTitleEPS(i,l):
 			if l<10:return i
 			elif l<100:s='02d'
@@ -593,7 +593,8 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		items=[]
 		result={'pagename':'','items':items}
 		if '/file/' in url:return result
-		b=xread(url)
+		#b=xread(url,self.hd);xrw(r'd:\xoa.html',b)
+		b=self.fetch(url).body
 		if xsearch('(Số lượng: 0)',b):mess('Folder %s is empty'%url,'Fshare.vn');return result
 		elif not b:mess('Folder %s find not found'%url,'Fshare.vn');return result
 		
@@ -619,6 +620,45 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 			items.append((title,link,id,size,date))
 			
 		
+		return {'pagename':pagename,'items':items}
+	
+	def get_folder(self,url):
+		def fixTitleEPS(i):
+			s='02d'
+			if xsearch('[T|t]ập.?(\d+)',i):
+				i=re.sub('[T|t]ập.?\d+','Tập '+format(int(xsearch('[T|t]ập.?(\d+)',i)),s),i)
+			elif xsearch('TẬP.?(\d+)',i):
+				i=re.sub('TẬP.?\d+','Tập '+format(int(xsearch('TẬP.?(\d+)',i)),s),i)
+			return i
+			
+		if '/file/' in url:return {'pagename':'','items':[]}
+		response=self.fetch(url)
+		body=response.body if response and response.status==200 else ''
+		pagename=xsearch('<title>(.+?)</title>',body).replace('Fshare - ','')
+		items=list()
+		if body:
+			for content in re.findall('<div class="pull-left file_name(.+?)<div class="clearfix"></div>',body,re.S):
+				item=re.search('data-id="(.+?)".+?href="(.+?)".+?title="(.+?)"',content)
+				if item:
+					size=xsearch('<div class="pull-left file_size align-right">(.+?)</div>',content).strip()
+					id=item.group(1);type='file' if 'file' in item.group(2) else 'folder';title=item.group(3)
+					if type=='file':link='https://www.fshare.vn/file/%s'%id
+					elif re.search('(\w{10,20} )',title):
+						iD=xsearch('(\w{10,20} )',title)
+						if 'FOLDER' in iD:link='https://www.fshare.vn/folder/%s'%iD.replace('FOLDER','')
+						elif 'FILE' in iD:link='https://www.fshare.vn/file/%s'%iD.replace('FILE','')
+						else:
+							link='https://www.fshare.vn/folder/%s'%iD
+							try:
+								if self.fetch(link).status!=200:link='https://www.fshare.vn/file/%s'%iD
+							except:pass
+						title=' '.join(s for s in title[title.find(' '):].split())
+					else:link='https://www.fshare.vn/folder/%s'%id;title=' '.join(s for s in title.split())
+					date=xsearch('"pull-left file_date_modify align-right">(.+?)</div>',content).strip()
+					title=fixTitleEPS(title)
+					items.append((title,link,id,size,date))
+				elif xsearch('(Số lượng: 0)',body):mess('Folder %s is empty'%url,'Fshare.vn')
+		else:mess('Folder %s find not found'%url,'Fshare.vn')
 		return {'pagename':pagename,'items':items}
 	
 	def getFile(self,parent,name):
