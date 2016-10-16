@@ -41,7 +41,7 @@
 		<setting id="fcine_pass" type="text" option="hidden" label="Password [COLOR orangered]fcine.net[/COLOR]"/>
 		<setting id="taiphimhdnet_user" type="text" label="User name [COLOR FF2976BB]taiphimhd.net[/COLOR]"/>
 		<setting id="taiphimhdnet_pass" type="text" option="hidden" label="Password [COLOR FF2976BB]taiphimhd.net[/COLOR]"/>
-		<setting id="chonserver" type="select" label="Tự động Chọn server trong PhimBatHu.com/Fcine.net" values="Thuyết minh|VietSub|Không" default="Không" />
+		<setting id="chonserver" type="select" label="Tự động Chọn server trong PhimBatHu.com/Fcine.net/hdonline.vn" values="Thuyết minh|VietSub|Không" default="Không" />
 	</category>
 	<category label="Thông tin khác">
 		<setting id="thumucrieng" type="text" label="[COLOR blue]Mục chia sẻ của tôi trên Fshare[/COLOR] ([COLOR gold]ID MyFshare[/COLOR])" default="RDA4FHXVE2UU"/>
@@ -51,6 +51,7 @@
 		<setting id="my_nas_url" type="text" label="[COLOR blue]My NAS url[/COLOR]" default="http://buffalonas.com/"/>
 		<setting id="my_nas_up"  type="text" label="[COLOR blue]My NAS user/pass[/COLOR] - có dấu [COLOR red]/[/COLOR] nhé" default="/"/>
 		<setting id="cookie" type="text" label="cookiestring" default="" visible="false"/>
+		<setting id="listIPTV" type="text" label='[COLOR cyan]List IPTV trên [COLOR orange]textuploader.com[/COLOR] của người dùng[/COLOR] (dấu "," giữa các list)' default="d5kt7,5euky,d5od8"/>
 	</category>
 	<category label="Các tùy chọn riêng">
 		<setting id="resolut" type="labelenum" label="[COLOR gold]Chọn độ phân giải cho các server free (max/min)[/COLOR]" values="Max|Min" default="Max"/>

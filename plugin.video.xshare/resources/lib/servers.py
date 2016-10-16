@@ -500,7 +500,8 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		self.token=''
 		self.logged=None
 		self.hd={'User-Agent':'Mozilla/5.0','x-requested-with':'XMLHttpRequest'}
-		if username:
+		self.myAcc=username and password
+		if self.myAcc:
 			self.login(username,password)
 			if self.logged=='success':
 				myfolder=self.get_myFolder()
@@ -522,12 +523,13 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 			self.hd['Cookie']=response.cookiestring
 			response = self.fetch('https://www.fshare.vn/login',data)
 			if response and response.status==302:
-				self.hd['Cookie']=response.cookiestring;self.logged='success'
+				self.hd['Cookie']=response.cookiestring;self.logged='success';print self.hd
 				mess(u'Login thành công','Fshare.vn')
 			else:mess(u'Login không thành công!','Fshare.vn')
 	
 	def logout(self):
-		if self.logged:
+		if False:
+		#if self.logged:
 			response = self.fetch('https://www.fshare.vn/logout')
 			if response and response.status==302:self.logged=None;mess(u'Logout thành công','Fshare.vn')
 			else:mess(u'Logout không thành công!','Fshare.vn')
@@ -550,6 +552,18 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		return cookie
 	
 	def get_maxlink(self,url):
+		def aku(url):
+			from StringIO import StringIO
+			import gzip
+			data='url_download=https%3A%2F%2Fwww.fshare.vn%2Ffile%2F'+url.rsplit('/',1)[1]
+			try:
+				buf = StringIO(xread('http://www.aku.vn/linksvip',data=data))
+				f = gzip.GzipFile(fileobj=buf)
+				link=xsearch('<a href=([^<]+?) target=_blank',f.read())
+				if link:mess('[COLOR cyan]Thanks to Nhat Vo Van[/COLOR]','get link from aku.vn')
+			except:link=''
+			return link
+		
 		b=xget(url,self.hd)
 		if not b:return 'fail'
 		link=b.geturl()
@@ -560,7 +574,12 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 			elif 'sử dụng nhiều địa chỉ IP' in b:
 				mess(u'Acc Quý khách sử dụng nhiều địa chỉ IP!','Fshare.vn',10000)
 				result='fail'
-			elif re.search('<i class="fa fa-star">',b):mess('Your Fshare acc is FREE','Fshare.vn')
+			elif re.search('<i class="fa fa-star">',b):
+				mess(u'Bạn đang sử dụng FREE Fshare acc','fshare.vn')
+				return aku(url)
+			elif not re.search('<a href="/logout">',b):
+				mess(u'Thông tin Fshare acc chưa đủ hoặc sai','fshare.vn')
+				return aku(url)
 			
 			fs_csrf=xsearch('value="(.+?)" name="fs_csrf"',b)
 			downloadForm=xsearch('id="DownloadForm_linkcode" type="hidden" value="(.+?)"',b)
@@ -574,96 +593,43 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 	
 	def get_token(self,url='https://www.fshare.vn/home'):
 		self.hd['x-pjax']='true'
-		response=self.fetch(url)
-		if not response or response.status!=200:mess(u'Get home page fail!','Fshare.vn');return ''
-		self.token=xsearch('data-token="(.+?)"',response.body)
-		return self.token
+		return xsearch('data-token="(.+?)"',xread('https://www.fshare.vn/home',self.hd))
 	
-	def get_folder1(self,url):
-		def fixTitleEPS(i,l):
-			if l<10:return i
-			elif l<100:s='02d'
-			else:s='03d'
-			if xsearch('[T|t]ập.?(\d+)',i):
-				i=re.sub('[T|t]ập.?\d+','Tập '+format(int(xsearch('[T|t]ập.?(\d+)',i)),s),i)
-			elif xsearch('TẬP.?(\d+)',i):
-				i=re.sub('TẬP.?\d+','Tập '+format(int(xsearch('TẬP.?(\d+)',i)),s),i)
+	def get_folder(self,url):
+		def fixTitleEPS(i):
+			p=[xsearch('(Tập.?\d+)|(tập.?\d+)|(TẬP.?\d+)',i),xsearch('(\W[E|e].?.?\d+)',i),xsearch('(\A\d+)',i)]
+			if p[0]:i=re.sub(p[0],'Tập '+format(int(xsearch('(\d+)',p[0])),'02d'),i)
+			elif p[1]:i=re.sub(p[1],'.E'+format(int(xsearch('(\d+)',p[1])),'02d'),i)
+			elif p[2]:i=re.sub(p[2],format(int(xsearch('(\d+)',p[2])),'02d'),i)
 			return i
-			
+		
 		items=[]
 		result={'pagename':'','items':items}
 		if '/file/' in url:return result
-		#b=xread(url,self.hd);xrw(r'd:\xoa.html',b)
-		b=self.fetch(url).body
+		b=xread(url,self.hd)
 		if xsearch('(Số lượng: 0)',b):mess('Folder %s is empty'%url,'Fshare.vn');return result
 		elif not b:mess('Folder %s find not found'%url,'Fshare.vn');return result
 		
 		pagename=xsearch('<title>(.+?)</title>',b).replace('Fshare - ','')
-		list=refa('(<li class="".+?/li>)',b,re.S)
-		l=len(list)
+		list=[i for i in refas('(<li.+?/li>)',b) if 'date_modify' in i]
 		for s in list:
 			id=xsearch('data-id="(.+?)"',s)
 			title=xsearch('title="(.+?)"',s).strip()
 			size=xsearch('<div class="pull-left file_size align-right">(\d.+?)</div>',s)
 			type=xsearch('data-type="(.+?)"',s)
 			if type=='file':link='https://www.fshare.vn/file/%s'%id
-			elif xsearch('([0-9A-Z_]{12,20})',title):
-				ID=xsearch('([0-9A-Z_]{12,20})',title)
+			elif xsearch('(\A[0-9A-Z_]{12,20})',title):#MyFshare item name
+				ID=xsearch('(\A[0-9A-Z_]{12,20})',title)
 				title=title.split(' ',1)[-1].strip()
 				if 'FOLDER' in ID:link='https://www.fshare.vn/folder/%s'%ID.replace('FOLDER','')
 				elif 'FILE' in ID:link='https://www.fshare.vn/file/%s'%ID.replace('FILE','')
 				elif xread('https://www.fshare.vn/folder/%s'%ID):link='https://www.fshare.vn/folder/%s'%ID
 				else:link='https://www.fshare.vn/file/%s'%ID
 			else:link='https://www.fshare.vn/folder/%s'%id
-			date=xsearch('"pull-left file_date_modify align-right">(.+?)</div>',b).strip()
-			title=fixTitleEPS(title,l)
+			date=xsearch('"pull-left file_date_modify align-right">(\d{2}/\d{2}/\d{4})</div>',s).strip()
+			title=fixTitleEPS(title)
 			items.append((title,link,id,size,date))
-			
-		
 		return {'pagename':pagename,'items':items}
-	
-	def get_folder(self,url):
-		def fixTitleEPS(i):
-			s='02d'
-			if xsearch('[T|t]ập.?(\d+)',i):
-				i=re.sub('[T|t]ập.?\d+','Tập '+format(int(xsearch('[T|t]ập.?(\d+)',i)),s),i)
-			elif xsearch('TẬP.?(\d+)',i):
-				i=re.sub('TẬP.?\d+','Tập '+format(int(xsearch('TẬP.?(\d+)',i)),s),i)
-			return i
-			
-		if '/file/' in url:return {'pagename':'','items':[]}
-		response=self.fetch(url)
-		body=response.body if response and response.status==200 else ''
-		pagename=xsearch('<title>(.+?)</title>',body).replace('Fshare - ','')
-		items=list()
-		if body:
-			for content in re.findall('<div class="pull-left file_name(.+?)<div class="clearfix"></div>',body,re.S):
-				item=re.search('data-id="(.+?)".+?href="(.+?)".+?title="(.+?)"',content)
-				if item:
-					size=xsearch('<div class="pull-left file_size align-right">(.+?)</div>',content).strip()
-					id=item.group(1);type='file' if 'file' in item.group(2) else 'folder';title=item.group(3)
-					if type=='file':link='https://www.fshare.vn/file/%s'%id
-					elif re.search('(\w{10,20} )',title):
-						iD=xsearch('(\w{10,20} )',title)
-						if 'FOLDER' in iD:link='https://www.fshare.vn/folder/%s'%iD.replace('FOLDER','')
-						elif 'FILE' in iD:link='https://www.fshare.vn/file/%s'%iD.replace('FILE','')
-						else:
-							link='https://www.fshare.vn/folder/%s'%iD
-							try:
-								if self.fetch(link).status!=200:link='https://www.fshare.vn/file/%s'%iD
-							except:pass
-						title=' '.join(s for s in title[title.find(' '):].split())
-					else:link='https://www.fshare.vn/folder/%s'%id;title=' '.join(s for s in title.split())
-					date=xsearch('"pull-left file_date_modify align-right">(.+?)</div>',content).strip()
-					title=fixTitleEPS(title)
-					items.append((title,link,id,size,date))
-				elif xsearch('(Số lượng: 0)',body):mess('Folder %s is empty'%url,'Fshare.vn')
-		else:mess('Folder %s find not found'%url,'Fshare.vn')
-		return {'pagename':pagename,'items':items}
-	
-	def getFile(self,parent,name):
-		url=''.join(i[1] for i in self.get_folder(parent).get('items') if i[0]==name)
-		return xread(self.get_maxlink(url)) if url else ''
 	
 	def myFshare_add(self,url,name):
 		if not self.url_id:mess(u'Hãy set "Thư mục chia sẻ của tôi trên Fshare!"','myFshare');return
@@ -814,7 +780,7 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 	def searchFollow(self,q):
 		b=xread('https://www.fshare.vn/files/searchFollow?key=%s'%q,self.hd)
 		items=[]
-		for s in re.findall('(<li.+?/li>)',b,re.S):
+		for s in refas('(<li.+?/li>)',b):
 			title=xsearch('title="(.+?)"',s)
 			href=xsearch('href="(.+?)"',s)
 			if not title or not href:continue
@@ -1130,7 +1096,7 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 				cookie=urlfetch.post('http://www.hdvietnam.com/login/login',data=data).cookiestring
 				xrw('hdvietnam.cookie',cookie)
 			except:cookie=''
-		else:cookie=xrw('hdvietnam.cookie');print 'aa '+cookie
+		else:cookie=xrw('hdvietnam.cookie')
 		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://www.hdvietnam.com/forums/','Cookie':cookie}
 		cookie=xread(self.urlhome+'threads/997745/page-200',self.hd)
 		self.token=xsearch('"logout.._xfToken=(.+?)"',cookie)
@@ -1195,13 +1161,13 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 			items.append(('pageNext','[COLOR lime]Trang tiếp theo: %s[/COLOR]'%xsearch('/page-(\d+)',pn),pn))
 		return items
 		
-	def threads(self,url):
+	def threads(self,url,refresh=''):
 		def cleans(s):return ' '.join(re.sub('<[^<]+?>|\{[^\{]+\}|\[[^\[]+?\]|&#\w+;|amp;|<','',s).split())
 		def srv(link):return [i for i in srvs if i in link]
 		srvs=['fshare.vn','4share.vn','tenlua.vn','subscene.com','phudeviet.org','youtube.com']
 		items=[];morethread=[]
 		def getTitle(title,href,s):
-			if 'fshare.vn' in href or '4share.vn' in href:return title
+			if refresh and 'fshare.vn' in href or '4share.vn' in href:return title
 			t=title
 			if [i for i in srvs if i in title] or not title:
 				title=xsearch('<b>Ðề: (.+?)</b>',s)
@@ -1225,7 +1191,9 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 			i=re.findall('<a href="([^"]+?)" target="_blank"[^<]+?>(.+?)/a>',s)
 			i= [(getTitle(title,href,s),href,img) for href,title in i if srv(href)]
 			if i:items+=i
-			else:items+=[('',i,img) for i in re.findall('(http[\w|:|/|\.|\?|=|&|-]+)',s.replace('amp;','')) if srv(i)]
+			else:
+				m=re.findall('(http[\w|:|/|\.|\?|=|&|-]+)',s.replace('amp;',''))
+				items+=[('',i,img) for i in m if srv(i)]
 
 			j=re.findall('<a href="(http://www.hdvietnam.com/[^"]+?)" class="internalLink">(.+>)',s)
 			j= [(cleans(title),href,img) for href,title in j if 'chuyenlink' not in href and 'tags' not in href]
@@ -1235,12 +1203,14 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 			if i[1] not in temp:temp.append(i[1]);list.append(i)
 		
 		#if len([i for i in items if 'fshare.vn' in i[1]])<5:
-		def ftitle(title,href):
-			if 'fshare.vn' in href or '4share.vn' in href:
-				mess(href,'link checking ...')
-				title=siteInfo(href)[0]
-			return title
-		items=[(ftitle(i[0],i[1]),i[1],i[2]) for i in list];mess()
+		if refresh:
+			def ftitle(title,href):
+				if 'fshare.vn' in href or '4share.vn' in href:
+					mess(href,'link checking ...')
+					title=siteInfo(href)[0]
+				return title
+			items=[(ftitle(i[0],i[1]),i[1],i[2]) for i in list]
+		
 		list=[i for i in items if i[0] and i[1]]
 		
 		return list
@@ -1814,7 +1784,8 @@ class taiphim:
 			if re.search('"|,|\'|\?',href) or href in [j[0] for j in n]:continue
 			s=b[b.find(href)-1000:b.find(href)]
 			if xsearch('"(http[^"]+\.jpg)"',s):img=xsearch('"(http[^"]+\.jpg)"',s)
-			if title in href or href in title:
+			if 'fshare.vn' in href or '4share.vn' in href:title=siteInfo(href)[0]
+			elif title in href or href in title:
 				i='';fs=30
 				while not i and fs>10:
 					i=xsearch('style="font-size:.{,3}%d.{,5}">([^<]+)<'%fs,s);fs-=1
@@ -2471,11 +2442,15 @@ class hdonline:
 		return items,sub
 	
 	def getLink(self,url,ep='1'):
-		b=xread(url,self.hd)
+		b=xread(url,self.hd)#;xrw('xoa.html',b)
+		url='http://hdonline.vn/frontend/episode/xmlplay?ep=%s&fid=%s&token=%s-%s&format=json'
 		id=xsearch('-(\d+)\.',url)
-		token=xsearch('\|(\w{80,100})\|',b)
-		rand=xsearch('\|(\d{10,12})\|',b)
-		url='http://hdonline.vn/frontend/episode/xmlplay?ep=%s&fid=%s&token=%s-%s&format=json'%(ep,id,token,rand)
+		token=xsearch('\|(\w{80,100})\|',b)#+'=='
+		rand=xsearch('\|(\d{10,12})\|',b)#;print token,rand
+		url=url%(ep,id,token,rand)
+		chonserver=addon.getSetting('chonserver')
+		if chonserver=='Thuyết minh':url+='&tm=1'
+		
 		try:j=json.loads(xread(url,self.hd))#;print json.dumps(j,indent=2)
 		except:j={}
 		items=[];sub=''
@@ -2486,7 +2461,7 @@ class hdonline:
 		if j.get('subtitle'):
 			for i in j.get('subtitle'):
 				if i.get('code').encode('utf-8')=='vi':sub=i.get('file');break
-		return items,sub
+		return items,sub,j.get('image','')
 
 class phimBatHu:
 	def __init__(self):
@@ -3045,7 +3020,7 @@ class fcinenet:
 class taiphimhdnet:
 	def __init__(self):
 		self.cookie=xrw('taiphimhdnet.cookie')
-		if not self.cookie or 'DRUPAL_UID=' not in self.cookie or filetime('taiphimhdnet.cookie')>240:
+		if not self.cookie or 'DRUPAL_UID=' not in self.cookie or filetime('taiphimhdnet.cookie')>10:
 			self.cookie=self.login()
 		self.hd={'User-Agent':'Mozilla/5.0','Cookie':self.cookie}#,'X-Requested-With':'XMLHttpRequest'}
 		self.home='http://taiphimhd.net'
@@ -3056,7 +3031,7 @@ class taiphimhdnet:
 	
 	def login(self):
 		name=addon.getSetting('taiphimhdnet_user');pw=addon.getSetting('taiphimhdnet_pass')
-		data=urllib.urlencode({'name':name,'pass':pw,'form_id':'user_login'})
+		data=urllib.urlencode({'name':name,'pass':pw,'form_id':'user_login'});print data
 		url='http://taiphimhd.net/user?destination=http://taiphimhd.net'
 		cookie=urllib2.HTTPCookieProcessor()
 		opener=urllib2.build_opener(cookie)

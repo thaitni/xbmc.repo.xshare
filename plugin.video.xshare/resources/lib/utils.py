@@ -44,6 +44,7 @@ def s2u(s):return s.decode('utf-8') if isinstance(s,str) else s
 def u2s(s):return s.encode('utf-8') if isinstance(s,unicode) else s
 def unescape(string):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',s,1),s) for s in string.split())
 def refa(p,s,f=0):return re.findall(p,s,f)
+def refas(p,s):return re.findall(p,s,re.S)
 def mess(message='',title='',timeShown=5000):
 	if not message:xbmc.executebuiltin("Dialog.Close(all, true)")
 	else:
@@ -96,9 +97,9 @@ def xcookie(cookie=None):
 	else:ck=urllib2.HTTPCookieProcessor();urllib2.install_opener(urllib2.build_opener(ck))
 	return ck
 	
-def xread(url,headers={'User-Agent':'Mozilla/5.0'},data=None):
+def xread(url,headers={'User-Agent':'Mozilla/5.0'},data=None,timeout=30):
 	req=urllib2.Request(url,data,headers)
-	try:res=urllib2.urlopen(req, timeout=30);b=res.read();res.close()
+	try:res=urllib2.urlopen(req, timeout=timeout);b=res.read();res.close()
 	except:b=''
 	return b
 
@@ -114,11 +115,10 @@ def xreadc(url,c=''):
 	except:b=''
 	return b
 
-def xget(url,hd={'User-Agent':'Mozilla/5.0'},data=None,timeout=30):
-	req=urllib2.Request(url,data,hd)
-	try:b=urllib2.urlopen(req,timeout=timeout)
-	except:b=None
-	return b
+def xget(url,hd={'User-Agent':'Mozilla/5.0'},data=None,timeout=30):#d=res.info().dict
+	try:res=urllib2.urlopen(urllib2.Request(url,data,hd),timeout=timeout)
+	except:res=None
+	return res#res.info().get('content-length')
 
 def xcheck(item,hd={'User-Agent':'Mozilla/5.0'},data=None,timeout=30):
 	def check(url):
@@ -149,10 +149,21 @@ def xsearch(pattern,string,group=1,flags=0,result=''):
 	except:s=result
 	return s
 
+def xsearchs(pattern,string):
+	try:s=re.search(pattern,string,re.S).group(1)
+	except:s=result
+	return s
+
 def fmn(n):
 	try:s=format(int(n), "8,d").replace(',','.').strip()
 	except:s=str(n)
 	return s
+
+def fixTitleEPS(i):
+	p=[xsearch('(Tập.?\d+)|(tập.?\d+)|(TẬP.?\d+)',i),xsearch('(\WE.?\d+)',i)]
+	if p[0]:i=re.sub(p[0],'Tập '+format(int(xsearch('(\d+)',p[0])),'02d'),i)
+	elif p[1]:i=re.sub(p[1],'.E'+format(int(xsearch('(\d+)',p[1])),'02d'),i)
+	return i
 
 def vnu(s):
 	dic={'&Aacute;':'Á','&aacute;':'á','&Agrave;':'À','&agrave;':'à','&acirc;':'â','&atilde;':'ã','&Egrave;':'È','&egrave;':'è','&Eacute;':'É','&eacute;':'é','&ecirc;':'ê','&Ograve;':'Ò','&ograve;':'ò','&Oacute;':'Ó','&oacute;':'ó','&Ocirc;':'Ô','&ocirc;':'ô','&otilde;':'õ','&Uacute;':'Ú','&uacute;':'ú','&Ugrave;':'Ù','&ugrave;':'ù','&Igrave;':'Ì','&igrave;':'ì','&Iacute;':'Í','&iacute;':'í','&Yacute;':'Ý','&yacute;':'ý','&bull;':'*'}
@@ -169,7 +180,7 @@ def s2c1(s):
 
 def leechInfo(link):
 	href='http://vnz-leech.com/checker/check.php?links=%s'
-	headers={'Referer':'http://vnz-leech.com/checker/','User-Agent':'xshare'}
+	headers={'Referer':'http://vnz-leech.com/checker/','User-Agent':'Mozilla/5.0'}
 	b=xread(href%''.join(link.split()),headers)
 	try:j=json.loads(b.replace('(','').replace(')',''))
 	except:j={}
@@ -193,10 +204,11 @@ def siteInfo(url):
 	elif 'fshare.vn' in url.lower():
 		id=siteName(url).upper();link='https://www.fshare.vn/%s/'+id
 		url=link%('file' if '/file/' in url.lower() else 'folder')
-		b=xread(url,{'User-Agent':'Mozilla/5.0','x-requested-with':'XMLHttpRequest'})
+		b=xread(url)#,{'User-Agent':'Mozilla/5.0','x-requested-with':'XMLHttpRequest'})
 		if b and '/file/' in url:
 			s=xsearch('(<div class="file-info".+?data-owner)',b,1,re.S)
-			title=' '.join(re.sub('<[^>]+?>','',xsearch('(<i class="fa fa-file.+?/div>)',s,1,re.S)).split())
+			m=xsearch('(<i class="fa fa-file.+?/div>)',s,1,re.S)
+			title=' '.join(re.sub('<[^>]+?>','',m).split())
 			if title:
 				size=xsearch('(<i class="fa fa-hdd.+?/div>)',s,1,re.S)
 				title=title+' '+re.sub('<[^>]+?>| ','',size)
