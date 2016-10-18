@@ -5369,31 +5369,31 @@ def myNAS(name,url,img,fanart,mode,page,query):
 
 def bilutv(name,url,img,mode,page,query):
 	hd={'User-Agent':'Mozilla/5.0 (Windows NT 6.3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36'}
-	ico=os.path.join(iconpath,'bilutv.png');urlhome='http://bilutv.com/'
+	ico=os.path.join(iconpath,'bilutv.png');urlhome='http://bilutv.com/';c='hotpink'
 	if not os.path.isfile(ico):
 		try:makerequest(ico,get('http://bilutv.com/images/logo.png').body,'wb')
 		except:pass
 		
-	def namecolor(name,c='hotpink'):return '[COLOR %s]'%c+name+'[/COLOR]'
-	def nocolor(name):return re.sub('\[.+?\]','',name)
-
-	def page_items(body,c='film-item'):
-		for s in re.findall('(<li class="%s">.+?</li>)'%c,body,re.DOTALL):
+	def page_items(body,cl='film-item'):
+		for s in re.findall('(<li class="%s.+?</li>)'%cl,body,re.DOTALL):
 			href=xsearch('href="/(.+?)"',s)
-			img=xsearch('data-src="(.+?)"',s)
-			if not img:img=xsearch('data-original="(.+?)"',s)
-			title=xsearch('<p class="name">(.+?)</p>',s)+' - '
-			title+='[COLOR green] '+xsearch('<p class="real-name">(.+?)</p>',s)+'[/COLOR]'
+			img=xsearch('src="(.+?)"',s,result=xsearch('original="(.+?)"',s))
+			title=xsearch('<p class="name">(.+?)</p>',s)
+			label=xsearch('<p class="real-name">(.+?)</p>',s)
+			title='%s - [COLOR green]%s[/COLOR]'%(title,label)
 			quality=xsearch('<span class="label-quality">(.+?)</span>',s)
 			label=xsearch('<label class="current-status">(.+?)</label>',s)
 			if re.search('Tập \d+|\d+/|/\d+|\+',label):
-				title=namecolor(title)+' (%s%s)'%('' if not quality else quality+' ',label);dir=True;query='folder'
-			else:title=title+' (%s%s)'%('' if not quality else quality+' ',label);dir=False;query='play'
+				title=namecolor(title,c)+' (%s%s)'%('' if not quality else quality+' ',label)
+				dir=True;query='folder'
+			else:
+				title=title+' (%s%s)'%('' if not quality else quality+' ',label)
+				dir=False;query='play'
 			if 'Thuyết Minh' in label:title='[COLOR blue]TM[/COLOR] '+title
 			addir_info(title,urlhome+href,img,'',mode,1,query,dir)
 	
 	def get_episodes(body):
-		s=xsearch('(<ul class="list-episode">.+?/ul>)',body,1,re.S)
+		s=xsearch('(<ul class="list-episode".+?/ul>)',body,1,re.S)
 		title=' '.join(s for s in re.sub('\[.+?\]','',name).split())
 		items=re.findall('href="(.+?)">(.+?)</a>',s)
 		for href,tap in items:
@@ -5401,29 +5401,34 @@ def bilutv(name,url,img,mode,page,query):
 		return items
 	
 	if query=='bilutv.com':
-		body=get_home_page('bilutv.html',urlhome)
+		b=get_home_page('bilutv.html',urlhome)
 		title=color['search']+"Search trên bilutv.com[/COLOR]"
 		addir_info(title,'bilutv.com',ico,'',mode,1,'search',True)
-		s=xsearch('(<a href="/the-loai.+?"main-content")',body,1,re.DOTALL);menu_fail=True
+		s=xsearch('(<a href="/the-loai.+?"main-content")',b,1,re.DOTALL)
 		for href,title in re.findall('<a href="/(.+?)" title="(.*?)">',s):
 			if not title:title=xsearch('<a href="/%s".+?</i><span>(.+?)</span>'%href,s)
 			if [i for i in ('hoat-hinh','xem-nhieu','chieu-rap') if i in href]:
-				addir_info(namecolor(title),urlhome+href,ico,'',mode,1,'page',True)
-			else:addir_info(namecolor(title),href,ico,'',mode,1,'menu',True);menu_fail=False
+				addir_info(namecolor(title,c),urlhome+href,ico,'',mode,1,'page',True)
+			else:addir_info(namecolor(title,c),href,ico,'',mode,1,'menu',True)
 		
 		add_sep_item('--------------Top--------------')
-		s=xsearch('(<ul id="top-slide">.+?</ul>)',body,1,re.DOTALL)
-		for title,href,img in re.findall('<a title="(.+?)" href="/(.+?)".+?data-src="(.+?)"',s):
+		s=xsearch('(<ul id="top-slide".+?/ul>)',b,1,re.DOTALL)
+		for title,href,img in re.findall('<a title="(.+?)" href="/(.+?)".+?src="(.+?)"',s):
 			addir_info(title,urlhome+href,img,'',mode,1,'folder',True)
 		
-		if menu_fail:#Delete file bilutv.html if content resquest not full
-			try:os.remove(joinpath(xsharefolder,'bilutv.html'))
-			except:temp='';pass
-		add_sep_item('--------------Hot--------------');page_items(body)
-			
-		body=get_home_page('bilutv.html',urlhome,True)
-		if "/cdn-cgi/l/chk_jschl" in body:mess('DDoS protection by CloudFlare','bilutv.com')
-		elif body:xbmc.executebuiltin("Container.Refresh")
+		add_sep_item('--------------Hot--------------')#;page_items(b)
+		page_items(xsearch('(<ul id="film-hot".+?/ul>)',b,1,re.S))
+		
+		for s in re.findall('(<h2 class="caption".+?/ul>)',b,re.S):
+			title=xsearch('<a class="view-all" title="(.+?)" href="/(.+?)">',s,1)
+			href=xsearch('<a class="view-all" title="(.+?)" href="/(.+?)">',s,2)
+			if title and href:
+				addir_info(namecolor(title,'cyan'),urlhome+href,ico,'',mode,1,'page',True)
+			page_items(xsearch('(<ul class="list-film".+?/ul>)',s,1,re.S))
+		
+		b=get_home_page('bilutv.html',urlhome,True)
+		if "/cdn-cgi/l/chk_jschl" in b:mess('DDoS protection by CloudFlare','bilutv.com')
+		elif b:xbmc.executebuiltin("Container.Refresh")
 	
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
 	elif query=="INP":
@@ -5439,13 +5444,17 @@ def bilutv(name,url,img,mode,page,query):
 		body=get_home_page('bilutv.html',urlhome)
 		s=xsearch('(<a href="/%s".+?/ul>)'%url,body,1,re.DOTALL)
 		if 'phim-le' in url:
-			addir_info(namecolor('Phim lẻ - Tất cả'),'http://bilutv.com/danh-sach/phim-le.html',ico,'',mode,1,'page',True)
+			url='http://bilutv.com/danh-sach/phim-le.html'
+			addir_info(namecolor('Phim lẻ - Tất cả',c),url,ico,'',mode,1,'page',True)
 		elif 'phim-bo' in url:
-			addir_info(namecolor('Phim bộ - Tất cả'),'http://bilutv.com/danh-sach/phim-bo.html',ico,'',mode,1,'page',True)
+			url='http://bilutv.com/danh-sach/phim-bo.html'
+			addir_info(namecolor('Phim bộ - Tất cả',c),url,ico,'',mode,1,'page',True)
 		elif 'quoc-gia' in url:
-			addir_info(namecolor('Tất cả quốc gia'),'http://bilutv.com/quoc-gia',ico,'',mode,1,'page',True)
+			url='http://bilutv.com/quoc-gia'
+			addir_info(namecolor('Tất cả quốc gia',c),url,ico,'',mode,1,'page',True)
+		
 		for href,title in re.findall('<a title=".+?" href="/(.+?)">(.+?)</a>',s):
-			addir_info(namecolor(title),urlhome+href,ico,'',mode,1,'page',True)
+			addir_info(namecolor(title,c),urlhome+href,ico,'',mode,1,'page',True)
 				
 	elif query=='page':
 		body=make_request(url)
@@ -5463,7 +5472,7 @@ def bilutv(name,url,img,mode,page,query):
 				title=color['trangtiep']+'Trang tiếp theo: trang %d/%s[/COLOR]'%(page+1,pages)
 				addir_info(title,href,ico,'',mode,page+1,'page',True)
 
-	elif query=='episodes':body=make_request(url);get_episodes(body)
+	elif query=='episodes':get_episodes(xread(url))
 
 	elif query=='folder':
 		fanart=''
@@ -5474,7 +5483,7 @@ def bilutv(name,url,img,mode,page,query):
 			if urlhome not in url:url='http://bilutv.com'+url
 		body=make_request(url)
 		s=xsearch('(<ul class="choose-server">.+?/ul>)',body,1,re.DOTALL)
-		name=' '.join(re.sub('bilutv|Phim|phim|Xem|xem','',namecolor(name)).split())
+		name=' '.join(re.sub('bilutv|Phim|phim|Xem|xem','',namecolor(name,c)).split())
 		if s and re.search('class="list-episode"',body):
 			for href,title in re.findall('<a href="/(.+?)".*>([^<]+?)</a>',s):
 				addir_info(title+' '+name,urlhome+href,img,fanart,mode,1,'episodes',True)
@@ -5494,7 +5503,7 @@ def bilutv(name,url,img,mode,page,query):
 
 	elif query=='play_yt':play_youtube(url)
 	elif query=='play':
-		from resources.lib.servers import gibberishAES
+		from resources.lib.servers import gibberishAES;keyAES='bilutv.com4590481877'
 		if '/xem-phim/' not in url:
 			url=xsearch('<a class="btn-see btn btn-danger" href="/(.+?)"',xread(url))
 			if urlhome not in url:url=urlhome+url
@@ -5506,14 +5515,20 @@ def bilutv(name,url,img,mode,page,query):
 		link='';max=myaddon.getSetting('resolut')=='Max'
 		try:
 			L=re.findall("decodeLink\('(.+?)', *(\d+?)\)[^}]+?label: *'(.+?)'",b,re.S)
-			L=[(urllib.unquote(gibberishAES(i, "bilutv.com454657883435677%s"%j)),resolu(l)) for i,j,l in L]
+			if L:L=[(urllib.unquote(gibberishAES(i, keyAES+j)),resolu(l)) for i,j,l in L]
+			else:
+				j=json.loads(xsearch('playerSetting[^{]+({.+?});',b))
+				modelId=j.get('modelId','')
+				def abc(i):return urllib.unquote(gibberishAES(i.get('file',''), keyAES+modelId))
+				L=[(abc(i),resolu(i.get('label',''))) for i in j.get('sources')]
 			L=sorted(L, key=lambda k: int(k[1]),reverse=True if max else False)
 			for href,label in L:
 				link=test_link(href)
 				if link:break
 		except:pass
-		if link:return xbmcsetResolvedUrl(link)
-
+		'''
+		xbmcsetResolvedUrl(link)
+	
 		try:c=urllib.unquote(gibberishAES(b))
 		except:c=''
 		for h in re.findall('"(/episode/getlinkbackup/.+?)"',c):
@@ -5540,7 +5555,7 @@ def bilutv(name,url,img,mode,page,query):
 					except:continue
 					link=test_link(href)
 					if link:break
-			
+		'''
 		if link:xbmcsetResolvedUrl(link)
 		else:mess('File invalid or deleted!','bilutv.com') 
 
@@ -5551,32 +5566,15 @@ def anime47(name,url,img,mode,page,query):
 		try:makerequest(ico,xread('http://anime47.com/skin/tatcasau/img/logo.png'),'wb')
 		except:pass
 	
-	def get_item1(s):
-		href=urlhome+xsearch('href="./(.+?)"',s)
-		img=xsearch('src="(.+?)"',s)
-		title=xsearch('<p class="title2">(.+?)</p>',s)
-		if not title:
-			title=xsearch('title="(.+?)"',s).replace('...','').strip()
-			temp=xsearch('>([^<]+?)</h3>',s).replace('...','').strip()
-			if not title:title=temp
-			elif temp and temp not in title:title=title+' - '+temp
-		eps=xsearch('>(.{,3}/.{,3})</',s)
-		if eps:title=title+' [COLOR blue]'+eps+'[/COLOR]'
-		views=xsearch('"view">(.+?)</',s)
-		if views:title=title+' [COLOR gold](views:'+views+')[/COLOR]'
-		elif xsearch('>Lượt xem.+?>(\d+?)</',s):
-			title=title+' [COLOR gold](views:'+xsearch('>Lượt xem.+?>(\d+?)</',s)+')[/COLOR]'
-		addir_info(namecolor(title,c),href,img,'',mode,1,'episodes',True)
-
 	def get_item(s):
-		title=xsearch('(<h3.+?/h3>)',s,result=xsearch('(<h1.+?/h1>)',s))
+		title=xsearch('alt="(.+?)"',s,result=xsearch('(<h3.+?/h3>)',s,1,re.S,result=xsearch('(<h1.+?/h1>)',s,1,re.S)))
 		title=' '.join(re.sub('<.+?>','',title).split())
-		href=urlhome+xsearch('href="./(.+?)"',s)
+		href=urlhome+xsearch('href="./(.+?)"',s,result=xsearch('href="/(.+?)"',s))
 		if not title or not href:return
 		img=xsearch('src="(.+?)"',s)
-		year=xsearch(' <div class="year">(.+?)</div>',s,result=xsearch('<p>Năm.* (\d+?)</p>',s))
+		year=xsearch(' <div class="year">([^<]+?)</div>',s,1,re.S,result=xsearch('<p>Năm.* (\d+?)</p>',s)).strip()
 		if year:title+=' [COLOR gold]%s[/COLOR]'%year
-		eps=xsearch('<div class="episode">(.+?)</div>',s,result=xsearch('<p>Tập.* (\d.+?)</p>',s))
+		eps=xsearch('<div class="episode">([^<]+?)</div>',s,1,re.S,result=xsearch('<p>Tập.* (\d.+?)</p>',s)).strip()
 		if eps:title+=' [COLOR blue]%s[/COLOR]'%eps
 		v=xsearch('<p>View.* (\d+?)</p>',s)
 		views=xsearch('<span class="view-left">([^<]+?)</span>',s,1,re.S,result=v).strip()
@@ -5584,7 +5582,7 @@ def anime47(name,url,img,mode,page,query):
 		addir_info(namecolor(title,c),href,img,'',mode,1,'episodes',True)
 		
 	if query=='anime47.com':
-		body=get_home_page('anime47.html',urlhome)
+		b=get_home_page('anime47.html',urlhome)
 		title=color['search']+"Search trên anime47.com[/COLOR]"
 		addir_info(title,'anime47.com',ico,'',mode,1,'search',True)
 		title=namecolor('Phân theo Thể loại/Năm Sản Xuất/Lượt xem',c)
@@ -5598,14 +5596,13 @@ def anime47(name,url,img,mode,page,query):
 		
 			
 		add_sep_item('-------Phim Đề Cử--------')
-		s=xsearch('(<section.+?/section>)',body,1,re.S)
+		s=xsearch('(<section.+?/section>)',b,1,re.S)
 		for s in [i for i in s.split('<div class="item">') if '"big img"' in i]:
 			get_item(s)
 		
 		href='http://anime47.com/danh-sach/phim-moi.html'
 		addir_info(namecolor('Phim mới','cyan'),href,ico,'',mode,1,'page',True)
-		S=xsearch('(<div class="blockbody".+?<div id="right">)',body,1,re.DOTALL)
-		for s in re.findall('(<li>.+?</li>)',S,re.DOTALL):get_item(s)
+		for s in [i for i in re.findall('(<li.+?/li>)',b,re.S) if '"decaption"' in i]:get_item(s)
 
 		if get_home_page('anime47.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
 	
@@ -6339,9 +6336,18 @@ def television(name,url,img,fanart,mode,page,query,text):
 			addir_info(namecolor(title+' jobdecor.vn',c),'',fptlive_ico,'',mode,1,'fptiptv',True)
 			addir_info(namecolor(title+' BlogCongDong.Com',c),'',fptlive_ico,'',mode,1,'fptiptv0',True)
 		
+		art=os.path.join(iconpath,'iptv.png')
+		if not os.path.isfile(art):
+			makerequest(art,xread('http://www.m3uliste.pw/files/iptv.png'),'wb')
 		if myaddon.getSetting('listIPTV').split(',')[0]:
 			title='List Truyền hình IPTV trên [COLOR orange]textuploader.com[/COLOR] của người dùng'
-			addir_info(namecolor(title,'cyan'),'',icon['icon'],'',mode,1,'userList',True)
+			addir_info(namecolor(title,'cyan'),'',icon['icon'],art,mode,1,'userList',True)
+		
+		title=namecolor('[B]IPTV M3U Stream Hunters[/B]','cyan')
+		img=os.path.join(iconpath,'m3uliste.png')
+		if not os.path.isfile(img):
+			makerequest(img,xread('http://www.m3uliste.pw/files/.logo-lw-scaled.jpg.png'),'wb')
+		addir_info(title,'http://www.m3uliste.pw/',img,art,mode,1,'hunters',True)
 		
 		addir_info(namecolor('Truyền hình VTVGo.vn','blue'),'Home',vtvgo_ico,'',56,1,'Home',True)
 		b=make_request('http://hplus.com.vn/ti-vi-truc-tuyen/kenh-htv',headers=hd,resp='o')
@@ -6360,6 +6366,34 @@ def television(name,url,img,fanart,mode,page,query,text):
 			title=xsearch('<a href="[^<]+?">(.+?)</a>',s)
 			addir_info(namecolor(fixs(title.strip()),c),href,img,'',mode,1,'hplus_play',text=cookie)
 	
+	elif query=='hunters':
+		def makeList(s):
+			for href in [i for i in re.findall('>(http:.+?)<',s) if 'get.php' in i]:
+				href=href.replace('&amp;','&')
+				addir_info(namecolor(href,'cyan'),href,img,fanart,mode,1,'userList',True)
+		def getDate(s):return re.sub('<[^<]+?>','',xsearch('>Update(.+?)</font>',s)).strip()
+		
+		if not url.startswith('http') and len(url)>20:
+			for i in eval(url):
+				addir_info(namecolor(i,'orange'),i,img,fanart,mode,1,'hunters',True)
+			return
+		elif not url.startswith('http'):
+			b=xrw('hunters.txt')
+			makeList(''.join([s for s in b.split('xshare') if getDate(s)==url]))
+		else:
+			if filetime('hunters.html')>10:b=xread(url);xrw('hunters.html',b)
+			else:b=xrw('hunters.html')
+			items=re.findall('(>Update .+?</font></p></div>)',b,re.S)
+			if not items:return
+			day=re.sub('<[^<]+?>','',xsearch('>Update(.+?)</font>',items[0])).strip()
+			dates=[i for i in [getDate(s) for s in items] if i and i!=day]
+			if len(dates)>1:
+				xrw('hunters.txt','\nxshare\n'.join(items))
+				title=namecolor('List các ngày khác','orangered')
+				addir_info(title,str(dates),img,fanart,mode,2,'hunters',True)
+			if day:add_sep_item('List Update Ngày %s ---------------------------'%day)
+			makeList(items[0])
+		
 	elif query=='userList':
 		if filetime('iptvlist.py')>1:
 			py=xread('http://textuploader.com/d56fz/raw').replace('\r\n', '\n')
