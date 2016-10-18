@@ -2443,15 +2443,15 @@ class hdonline:
 	
 	def getLink(self,url,ep='1'):
 		b=xread(url,self.hd)#;xrw('xoa.html',b)
-		url='http://hdonline.vn/frontend/episode/xmlplay?ep=%s&fid=%s&token=%s-%s&format=json'
 		id=xsearch('-(\d+)\.',url)
+		url='http://hdonline.vn/frontend/episode/xmlplay?ep=%s&fid=%s&token=%s-%s&format=json'
 		token=xsearch('\|(\w{80,100})\|',b)#+'=='
 		rand=xsearch('\|(\d{10,12})\|',b)#;print token,rand
-		url=url%(ep,id,token,rand)
+		url=url%(ep,id,token,rand);print url
 		chonserver=addon.getSetting('chonserver')
 		if chonserver=='Thuyết minh':url+='&tm=1'
 		
-		try:j=json.loads(xread(url,self.hd))#;print json.dumps(j,indent=2)
+		try:j=json.loads(xread(url,self.hd));print json.dumps(j,indent=2)
 		except:j={}
 		items=[];sub=''
 		if j.get("audiodub"):mess(u'Phim này có 2 audio','HDonline.vn',10000)
