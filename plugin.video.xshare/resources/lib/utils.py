@@ -74,7 +74,7 @@ def googleItems(j,link='link',label='label'):#Thu nghiem tren phim14
 
 def rsl(s):
 	s=str(s).replace('HDG','').replace('HD','1080').replace('SD','640').replace('large','640').replace('medium','480')
-	s=s.replace('Auto','640')
+	s=s.replace('Auto','640').replace('AUTO','640')
 	result=xsearch('(\d+)',s)
 	return result if result else '240'
 

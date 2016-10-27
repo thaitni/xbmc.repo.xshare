@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR] [COLOR green]XBMC[/COLOR] [COLOR blue]HDVideo[/B][/COLOR]" version="3.4.8.4" provider-name="thaitni">
+<addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR] [COLOR green]XBMC[/COLOR] [COLOR blue]HDVideo[/B][/COLOR]" version="3.4.8.5" provider-name="thaitni">
     <requires>
         <import addon="xbmc.python" version="2.1.0" optional="true"/>
 		<import addon="script.video.F4mProxy"/>
@@ -95,5 +95,27 @@
     <summary lang="en">Proxy for f4m</summary>
     <description lang="en">Use this addon to play F4m v1 and v2 streams</description>
   </extension>
+</addon>
+
+<addon id="script.module.requests"
+       name="requests"
+       version="2.9.1"
+       provider-name="kennethreitz, beenje">
+	<requires>
+		<import addon="xbmc.python" version="2.14.0"/>
+	</requires>
+	<extension point="xbmc.python.module"
+             library="lib" />
+	<extension point="xbmc.addon.metadata">
+		<summary>Python HTTP for Humans</summary>
+		<description>Packed for KODI from https://github.com/kennethreitz/requests</description>
+		<platform>all</platform>
+		<language></language>
+		<license>Apache2</license>
+		<forum></forum>
+		<website>http://python-requests.org</website>
+		<source>https://github.com/beenje/script.module.requests</source>
+		<email>beenje AT gmail.com</email>
+	</extension>
 </addon>
 </addons>

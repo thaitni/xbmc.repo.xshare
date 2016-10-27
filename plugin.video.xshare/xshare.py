@@ -2371,7 +2371,7 @@ def fptplay(name,url,img,fanart,mode,page,query,text=''):
 	
 	elif query=='play':
 		def stream(href,id,epi='1'):
-			ec=urllib.urlencode;HD='|User-Agent=Mozilla'
+			ec=urllib.urlencode;HD='|User-Agent=Mozilla/5.0'
 			data=ec({'id':id,'type':'newchannel','quality':'3','episode':epi,'mobile':'web'})
 			try:xbmcsetResolvedUrl(json.loads(xread(href,hd,data)).get('stream')+HD)
 			except:
@@ -5377,7 +5377,7 @@ def bilutv(name,url,img,mode,page,query):
 	def page_items(body,cl='film-item'):
 		for s in re.findall('(<li class="%s.+?</li>)'%cl,body,re.DOTALL):
 			href=xsearch('href="/(.+?)"',s)
-			img=xsearch('src="(.+?)"',s,result=xsearch('original="(.+?)"',s))
+			img=xsearch('original="(.+?)"',s,result=xsearch('src="(.+?)"',s))
 			title=xsearch('<p class="name">(.+?)</p>',s)
 			label=xsearch('<p class="real-name">(.+?)</p>',s)
 			title='%s - [COLOR green]%s[/COLOR]'%(title,label)
@@ -5457,7 +5457,7 @@ def bilutv(name,url,img,mode,page,query):
 			addir_info(namecolor(title,c),urlhome+href,ico,'',mode,1,'page',True)
 				
 	elif query=='page':
-		body=make_request(url)
+		body=xread(url)
 		page_items(body,'film-item ')
 		
 		pn=re.search('<a href="/[^<]+?" >(\d+)</a></li><li><a href="/([^<]+?)" class="navigation next" rel="next">',body)
@@ -5831,7 +5831,7 @@ def phimbathu(name,url,img,fanart,mode,page,query):
 			if re.search('.huyết .inh',i):title='[COLOR blue]TM[/COLOR] '+title
 			href=xsearch('href="(.+?)"',i)
 			if '//' not in href:href='http://phimbathu.com'+href
-			img=xsearch('data-original="(.+?)"',i)
+			img=xsearch('src="(.+?)"',i,result=xsearch('data-original="(.+?)"',i))
 			addir_info(namecolor(title,c),href,img,'',mode,1,'episodes',True)
 		pn=xsearch('<a href="([^<]+?)" class="navigation next"',s)
 		if pn:
@@ -7853,6 +7853,53 @@ def taiphimhdnet(name,url,img,fanart,mode,page,query):
 		else:mess(u'Downloaded sub thất bại!')
 		return 'no'
 
+def vnzoom(name,url,img,fanart,mode,page,query):
+	ico=os.path.join(iconpath,'vnzoom.png');c='cyan'
+	#b=xread(url,{'User-Agent':'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.59 Safari/537.36','Cookie':'bb_sessionhash=e1f705ebae364ce45a7694ce643700a3; bb_forumpwd=cfd75ccae02eec2584d0776def081c522b0645e1a-1-%7Bi-656_s-32-.00715437aef5b91782723c77bf9adf59._%7D'});'SC1TTCZMV89A' in b
+	def makeico(b):
+		if not os.path.isfile(ico):
+			href=xsearch('href="http://www.vn-zoom.com/"><img src="(.+?)"',b)
+			b=xread(href)
+			if b:makerequest(ico,b,'wb')
+	
+	from resources.lib.servers import vnZoom;vnz=vnZoom()
+	if query=='Home':
+		b=vnz.vread('http://www.vn-zoom.com/forumdisplay.php?f=26');makeico(b)
+		p='<h2 class="forumtitle"><a href="http://www.vn-zoom.com/f(\d+?)/">(.+?)</a></h2>'
+		I=['666','658','655','584','656','657','319','659','29','585','662','731','672','716','27']
+		for href,title in [i for i in re.findall(p,b) if i[0] in I]:
+			href='http://www.vn-zoom.com/forumdisplay.php?f=%s&page=1'%href
+			addir_info(namecolor(s2c(title.strip()),c),href,ico,'',mode,1,'room',True)
+	
+	elif query=='room':
+		b=vnz.vread(url)
+		for s in ['<a class="title'+i for i in b.split('<a class="title') if 'class="author"' in i]:
+			title=xsearch('<a class="title[^>]+?>([^<]+?)</a>',s)
+			label=xsearch('class="username.+?" title="(.+?)"',s).replace('Started by ','').replace('on ','')
+			if label:title='[COLOR cyan]%s[/COLOR] %s'%(label,title)
+			href=xsearch('href="(.+?)"',s)
+			addir_info(title,href,ico,'',mode,1,'page',True)
+		lp=xsearch('(\d+)\.html',xsearch('href="([^"]+?)" title="Trang Cuối',b))
+		if lp:
+			title=namecolor('Trang tiếp theo: %d/%s'%(page+1,lp),'lime')
+			url=re.sub('page=\d+','page=%d'%(page+1),url)
+			addir_info(title,url,ico,'',mode,page+1,'room',True)
+	
+	elif query=='page':
+		b=vnz.vread(url,user=True);print len(b)
+		srvs=['fshare.vn','4share.vn','tenlua.vn','subscene.com','phudeviet.org','youtube.com']
+		def abc(u):return [i for i in srvs if i in u]
+		for s in re.findall('(<ol id="posts".+?/ol>)',b,re.S):
+			imgs=re.findall('<img style="max-width[^>]+src="(.+?)"',s)
+			for i in re.findall('(<pre.+?/pre>)',s):
+				img=imgs[0]
+				items=re.findall('<a href="(.+?)" target="_blank" rel="nofollow">(.+?)</a>',i)
+				if not items:
+					title=namecolor(name)
+					items=[(m,title) for m in re.findall('>(http.+?)<',i) if abc(m)]
+				for href,title in items:
+					addir_info(title,href,img,'',mode,1)
+
 try:#Container.SetViewMode(num) addir:name,link,img,fanart,mode,page,query,isFolder
 	myfolder=s2u(myaddon.getSetting('thumuccucbo'))
 	if not os.path.exists(myfolder):myfolder=joinpath(datapath,'myfolder')
@@ -7864,7 +7911,7 @@ subsfolder=myaddon.getSetting('subsfolder')
 if not subsfolder:subsfolder=joinpath(tempfolder,'subs')
 xsharefolder=os.path.join(tempfolder,'xshare')
 params=get_params();mode=page=0;temp=[];url=name=fanart=img=date=query=action=end=text=''
-
+print sys.argv[2],sys.argv[0]
 try:url=urllib.unquote_plus(params["url"])
 except:pass
 try:name=urllib.unquote_plus(params["name"])
@@ -7970,7 +8017,9 @@ elif mode==94:end=subscene(name,url,query)
 elif mode==95:tenlua_getlink(url)
 elif mode==96:end=doc_thumuccucbo(name,url,img,fanart,mode,query)
 elif mode==97:doc_list_xml(url,name,page)
-elif mode==98:end=youtube(name,url,img,fanart,mode,page,query,text)
+#elif mode==98:end=youtube(name,url,img,fanart,mode,page,query,text)
+elif mode==98:vnzoom(name,url,img,fanart,mode,page,query)
 elif mode==99:myaddon.openSettings();end='ok'
 elif mode>100:myFavourites(name,url,img,fanart,mode,page,query)
 if not end or end not in 'no-ok-fail':endxbmc()
+#kphim.tv,phimbathu

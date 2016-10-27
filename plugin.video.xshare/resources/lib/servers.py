@@ -886,7 +886,7 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		try:link=json.loads(b).get('stream')
 		except:link=''
 		if link:link
-		return link+'|User-Agent=Mozilla'
+		return link+'|User-Agent=Mozilla/5.0'
 	
 	def fptNodes(self,url):
 		b=xread(url)
@@ -1031,14 +1031,20 @@ class kPhim:
 	
 	def getLink(self,url):
 		b=xread(url)
-		servers=re.findall('poster.+?fid.+?title="video-(\d+?)".+?title="(.+?)">',b)
-		if servers:video_id=servers[0][0]
-		else:video_id=xsearch("fvid='(.+?)'",b)
-		server_id=xsearch('loadNewPlayer\(fsvvideo, (\d.+?),',b)
-		tk=urllib2.hashlib.md5(server_id+'func').hexdigest()[1:]#jquery.min.js?ver=14 mahoahkphim
+		s=re.findall('vid="(.+?)" sid="(.+?)".+?>(.+?)<',b)
+		if len(s)==1:server_id,video_id,server=s[0]
+		elif len(s)>1:
+			label='Chọn Server play phim này trên kphim.tv'
+			choices=[i[2] for i in s]
+			choice=xselect(label,choices)
+			if choice < 0:choice=0
+			server_id,video_id,a=s[choice]
+		else:return ''
+		tk=urllib2.hashlib.md5('%sfunc%s'%(server_id,video_id)).hexdigest()[1:]
 		b=xread('http://kphim.tv/embed/%s/%s/%s'%(server_id,video_id,tk),self.hd)
-		
-		j=re.findall('src="([^<]+?)".+?res="([^<]+?)"',b);link=''
+		a=xsearch('sources[^\[]+(\[.+?\]),',b,1,re.S)
+		j=re.findall("file[^']+'(.+?)'.+?label[^']+'(.+?)'",a,re.S)
+		link=''
 		for href,label in ls([(i[0],rsl(i[1])) for i in j]):
 			try:link=urllib2.urlopen(href).geturl();break
 			except:pass
@@ -3125,3 +3131,62 @@ class taiphimhdnet:
 		if res:b=res.read(500*1024)
 		else:b=''
 		return b
+
+class vnZoom:
+	def __init__(self):
+		cookie=xrw('vnzoom.cookie')
+		self.hd={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36','Cookie':cookie}
+		self.home='http://www.vn-zoom.com'
+	
+	def login(self):
+		data='vb_login_md5password=f1887d3f9e6ee7a32fe5e76f4ab80d63&do=login&vb_login_username=thaitni'
+		url='http://www.vn-zoom.com/login.php?do=login'
+		try:
+			res=urllib2.urlopen(urllib2.Request(url,data,{'User_Agent': 'Mozilla/5.0'}))
+			cookie=xsearch('(.+?);',res.headers.get('set-cookie'));mess('Login OK')
+		except:cookie='';mess('Login Failed')
+		if cookie:
+			ck=';'.join(i for i in self.hd['Cookie'].split(';') if 'bb_forum_view' in i or 'bb_forumpwd' in i)
+			cookie+=';'+ck
+			self.hd['Cookie']=cookie
+			xrw('vnzoom.cookie',cookie)
+		return cookie
+
+	def bb_forumpwd(self,blockrow):
+		u=xsearch('name="url" value="(.+?)"',blockrow)
+		fm=xsearch('name="forumid" value="(.+?)"',blockrow)
+		f=xsearch('name="forceredirect" value="(.+?)"',blockrow)
+		t=xsearch('name="securitytoken" value="(.+?)"',blockrow)
+		s=xsearch('name="s" value="(.+?)"',blockrow)
+		n=xsearch('m\xe1\xba\xadt m\xc3\xa3 : (.+?) ',blockrow)
+		data={'do':'doenterpwd','url':u,'forumid':fm,'forceredirect':f,'securitytoken':t,'s':s,'newforumpwd':n}
+		href=xsearch('action="(.+?)"',blockrow)
+		ck=urllib2.HTTPCookieProcessor()
+		opener=urllib2.build_opener(ck)
+		urllib2.install_opener(opener)
+		opener.addheaders=self.hd.items()
+		try:opener.open(href,urllib.urlencode(data))
+		except:pass
+		ck=';'.join('%s=%s'%(i.name,i.value) for i in ck.cookiejar)
+		ck=';'.join(i for i in ck.split(';') if 'bb_forum_view' in i or 'bb_forumpwd' in i)
+		if ck:
+			cookie=';'.join(i for i in self.hd['Cookie'].split(';') if 'bb_sessionhash' in i)
+			ck=cookie+';'+ck
+			self.hd['Cookie']=ck
+			xrw('vnzoom.cookie',ck)
+		return ck
+
+	def vread(self,url,loop=True,user=False):
+		b=xread(url,self.hd)
+		if user and 'do=logout' not in b:self.login();b=xread(url,self.hd)
+		blockrow=xsearch('(<div class="blockrow restore".+?/form>)',b)
+		if blockrow and loop:
+			self.bb_forumpwd(blockrow)
+			b=self.vread(url,False,user)
+		elif blockrow:
+			b=xread(url,self.hd)
+			blockrow=xsearch('(<div class="blockrow restore".+?/form>)',b)
+			if blockrow:b=xread(url,self.hd)
+		print 'aaaaaaaaaaa','do=logout' in b;xrw('vnzoom.html',b)
+		return b
+	
