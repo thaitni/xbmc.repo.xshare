@@ -2944,13 +2944,18 @@ class k88com:
 		b=xread(l)
 		try:j=json.loads(b)
 		except:j={}
-		result=j.get('result');print result
+		result=j.get('result')
 		if result:
 			ticket=result.get('ticket','')
 			captcha=getCaptcha(result.get('captcha_url'))
-		else:ticket=captcha='';mess(xsearch('([^\.]+)',j.get('msg')))
+		else:
+			try:import YDStreamExtractor;vid=True
+			except:vid=False;mess(u'Cài đặt module youtube.dl để get link phim này')
+			if vid:
+				vid=YDStreamExtractor.getVideoInfo(url)
+				if vid:link=vid.streamURL()
+			ticket=captcha=''#;mess(xsearch('([^\.]+)',j.get('msg')))
 		if ticket:
-			print ticket,captcha
 			l='https://api.openload.co/1/file/dl?file=%s&ticket=%s&captcha_response=%s'
 			b=xread(l%(f,ticket,captcha))
 			try:
@@ -2963,7 +2968,7 @@ class k88com:
 		response=xread(url);link=''
 		href=xsearch('\{link:.*"(.+?)"\}',response)
 		if len(href)>20:
-			data=urllib.urlencode({'link':href});label=0;mess('link')
+			data=urllib.urlencode({'link':href});label=0#;mess('link')
 			jp=xread('http://www.kenh88.com/gkphp/plugins/gkpluginsphp.php',data=data)
 			try:
 				j=json.loads(jp).get('link')
@@ -2975,7 +2980,7 @@ class k88com:
 			except:j={}
 		
 		elif xsearch('src="(.+?docid=.+?)"',response):
-			docid=xsearch('docid=(.+?)&',response);mess('docid')
+			docid=xsearch('docid=(.+?)&',response)#;mess('docid')
 			if docid:
 				link='https://docs.google.com/get_video_info?authuser=&eurl=%s&docid=%s'
 				link=link%(urllib.quote_plus(url),docid)
@@ -2985,8 +2990,8 @@ class k88com:
 		
 		elif xsearch('iframe src="(.+?)"',response):
 			href=xsearch('iframe src="(.+?)"',response)
-			if 'openload.co' in href:link=self.openload(href);mess('openload')
-			elif 'xtubeid.com' in url:mess('xtubeid')
+			if 'openload.co' in href:link=self.openload(href)#;mess('openload')
+			elif 'xtubeid.com' in url:mess('Chưa xử lý link trên xtubeid.com')
 			else:
 				b=xread(href)
 				l=re.findall('file: "([^"]+?)"[^"]+label: "([^"]+?)"',b,re.S)

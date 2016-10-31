@@ -7304,7 +7304,7 @@ def play_youtube(url):
 			if vid:
 				link=vid.streamURL()
 				if link:
-					xbmcsetResolvedUrl(vid.streamURL())
+					xbmcsetResolvedUrl(link)
 					mess('Xshare play Youtube by Youtube.dl module','Notification')
 		if not link:
 			id=xsearch('([\w|-]{10,20})',url)
