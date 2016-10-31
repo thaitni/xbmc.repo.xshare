@@ -7292,22 +7292,26 @@ def vtvgo (name,url,img,fanart,mode,page,query):
 		try:xbmcsetResolvedUrl(vtv.vodLink(url))
 		except:mess('Get maxspeed link fail !','VTVgo.vn')
 
-def play_youtube0(url):
-	import YDStreamExtractor
-	vid = YDStreamExtractor.getVideoInfo(url,quality=1) #quality is 0=SD, 1=720p, 2=1080p and is a maximum
-	stream_url = vid.streamURL()
-	xbmcsetResolvedUrl(stream_url)
-
 def play_youtube(url):
 	from resources.lib.servers import youtube;yt=youtube()
 	link=yt.getDL(url,'url_encoded_fmt_stream_map')
 	if link=='Video not found!':mess(link,'youtube.com')
 	elif not link:
-		id=id=xsearch('([\w|-]{10,20})',url)
-		url = 'plugin://plugin.video.youtube/?action=play_video&videoid=%s'%id
-		item=xbmcgui.ListItem(path=url, iconImage=img, thumbnailImage=img)
-		xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
-		mess('Xshare play on Youtube Add-on','Notification')
+		try:import YDStreamExtractor;vid=True
+		except:vid=False;mess(u'Cài đặt module youtube.dl để sử dụng youtube tốt hơn')
+		if vid:
+			vid=YDStreamExtractor.getVideoInfo(url)
+			if vid:
+				link=vid.streamURL()
+				if link:
+					xbmcsetResolvedUrl(vid.streamURL())
+					mess('Xshare play Youtube by Youtube.dl module','Notification')
+		if not link:
+			id=xsearch('([\w|-]{10,20})',url)
+			url = 'plugin://plugin.video.youtube/?action=play_video&videoid=%s'%id
+			item=xbmcgui.ListItem(path=url, iconImage=img, thumbnailImage=img)
+			xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
+			mess('Xshare play on Youtube Add-on','Notification')
 	else:
 		xbmcsetResolvedUrl(link,re.sub(' \[COLOR.+?/COLOR\]','',name)+'Maxlink')
 		mess('Link Youtube playing on Xshare')
@@ -7464,8 +7468,10 @@ def youtube(name,url,img,fanart,mode,page,query,text=''):
 			else:addir_info(namecolor(title,'deepskyblue'),id_,img_,'',mode,1,query_,True)
 	
 	if query=='Home':
-		title=namecolor('Search trên youtube.com','lime')
+		title=namecolor('Search trên www.youtube.com','lime')
 		addir_info(title,'youtube.com',ico,'',mode,1,'videoSearch',True)
+		title=namecolor('Search trên api.youtube.com','lime')
+		addir_info(title,'youtube.com',ico,'',mode,1,'videoSearchAPI',True)
 		title=namecolor('Videos Phổ biến trên YouTube - Việt Nam','gold')
 		url=urlhome+'channel/UCy3AjyBptEC4ODn-JeOp4JQ/videos?lang=vi&regionCode=VN&hl=vi'
 		addir_info(title,url,ico,'',mode,1,'home',True)
@@ -7482,15 +7488,26 @@ def youtube(name,url,img,fanart,mode,page,query,text=''):
 		addir_info(namecolor('[B]Youtube world channels[/B]','green'),'',ico,'',mode,1,'guideCategoryListResponse',True)
 			
 	elif '&pageToken=' in url:getElements(url,query)
-	elif query=="videoSearch":make_mySearch('',url,'','',mode,'get')
-	elif url=="youtube.com" or query=="INP":# or url=='channelSearch':
+	elif query=="videoSearch":make_mySearch('',url,'','',mode,'get');xrw('ytsearch.txt','SearchWEB')
+	elif query=="videoSearchAPI":make_mySearch('',url,'','',mode,'get');xrw('ytsearch.txt','SearchAPI')
+	elif url=="youtube.com" or query=="INP" or url=='videoSearch':# or url=='channelSearch':
 		if query=="INP":
 			query=make_mySearch('',url,'','','','Input')
 			if not query:return 'No'
-		#----Search API
-		#page=1
-		#getElements(query,'searchListResponse')
-		#----
+		if url=="youtube.com":page=1
+		
+		if xrw('ytsearch.txt')=='SearchAPI':
+			query='+'.join(query.split())
+			if query:
+				from resources.lib.servers import youtube;yt=youtube()
+				href='https://www.youtube.com/watch?v='
+				for title,id,img in yt.search(query):
+					if title=='nextPageToken':
+						title=namecolor('Page next...%d'%(page+1),'lime')
+						addir_info(title,'videoSearch',ico,'',mode,page+1,id,True)
+					else:addir_info(s2c(title),href+id,img,'',mode,1,'video')
+					
+			return
 		if 'https://www.youtube.com' in query:href=query+'&spf=navigate'
 		else:href='https://www.youtube.com/results?search_query=%s&spf=navigate'%'+'.join(query.split())
 		b=xread(href)
@@ -7854,17 +7871,17 @@ def taiphimhdnet(name,url,img,fanart,mode,page,query):
 		return 'no'
 
 def vnzoom(name,url,img,fanart,mode,page,query):
-	ico=os.path.join(iconpath,'vnzoom.png');c='cyan'
-	#b=xread(url,{'User-Agent':'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.59 Safari/537.36','Cookie':'bb_sessionhash=e1f705ebae364ce45a7694ce643700a3; bb_forumpwd=cfd75ccae02eec2584d0776def081c522b0645e1a-1-%7Bi-656_s-32-.00715437aef5b91782723c77bf9adf59._%7D'});'SC1TTCZMV89A' in b
-	def makeico(b):
-		if not os.path.isfile(ico):
-			href=xsearch('href="http://www.vn-zoom.com/"><img src="(.+?)"',b)
-			b=xread(href)
-			if b:makerequest(ico,b,'wb')
-	
 	from resources.lib.servers import vnZoom;vnz=vnZoom()
+	ico=os.path.join(iconpath,'vnzoom.png');c='cyan'
+	if not os.path.isfile(ico):
+		b=vnz.vread('http://www.vn-zoom.com/forumdisplay.php?f=26')
+		href=xsearch('href="http://www.vn-zoom.com/"><img src="(.+?)"',b)
+		b=xread(href)
+		if b:makerequest(ico,b,'wb')
+	#b=xread(url,{'User-Agent':'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.59 Safari/537.36','Cookie':'bb_sessionhash=e1f705ebae364ce45a7694ce643700a3; bb_forumpwd=cfd75ccae02eec2584d0776def081c522b0645e1a-1-%7Bi-656_s-32-.00715437aef5b91782723c77bf9adf59._%7D'});'SC1TTCZMV89A' in b
+	
 	if query=='Home':
-		b=vnz.vread('http://www.vn-zoom.com/forumdisplay.php?f=26');makeico(b)
+		b=vnz.vread('http://www.vn-zoom.com/forumdisplay.php?f=26')
 		p='<h2 class="forumtitle"><a href="http://www.vn-zoom.com/f(\d+?)/">(.+?)</a></h2>'
 		I=['666','658','655','584','656','657','319','659','29','585','662','731','672','716','27']
 		for href,title in [i for i in re.findall(p,b) if i[0] in I]:
@@ -8017,7 +8034,7 @@ elif mode==94:end=subscene(name,url,query)
 elif mode==95:tenlua_getlink(url)
 elif mode==96:end=doc_thumuccucbo(name,url,img,fanart,mode,query)
 elif mode==97:doc_list_xml(url,name,page)
-#elif mode==98:end=youtube(name,url,img,fanart,mode,page,query,text)
+elif mode==98:end=youtube(name,url,img,fanart,mode,page,query,text)
 elif mode==98:vnzoom(name,url,img,fanart,mode,page,query)
 elif mode==99:myaddon.openSettings();end='ok'
 elif mode>100:myFavourites(name,url,img,fanart,mode,page,query)

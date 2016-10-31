@@ -809,8 +809,7 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		conutry=re.sub('\(.+?\)','',get_setting('country_fptplay')).strip()
 		if not phone_fptplay:#'MDkxODc3ODAxMzpoaWV1aGllbi52bg=='
 			mess(u'Bạn đang sử dụng account Fptplay của hieuhien.vn')
-			#phone_fptplay,password=urllib2.base64.b64decode('MDkxMzc2MTQ0NDphZGRvbnhzaGFyZQ==').split(':')
-			phone_fptplay,password=urllib2.base64.b64decode('MDkxODc3ODAxMzpoaWV1aGllbi52bg==').split(':')
+			phone_fptplay,password=urllib2.base64.b64decode('MDkxMzc2MTQ0NDphZGRvbnhzaGFyZQ==').split(':')
 		data=urllib.urlencode({'phone':phone_fptplay,'password':password,'country_code':conutry})
 		cookie=urllib2.HTTPCookieProcessor();opener=urllib2.build_opener(cookie);urllib2.install_opener(opener)
 		#try:b=opener.open(self.hd['referer'])
@@ -1374,6 +1373,27 @@ class youtube:#https://www.youtube.com/watch?v=rZftpdEKzeY
 		self.url='https://www.googleapis.com/youtube/v3/%s?regionCode=VN&hl=vi&maxResults=50&order=date&key=AIzaSyA-Y38JpoUKbdpQgFellPthOgcZTFJwkqY&%s'
 		self.key='AIzaSyA-Y38JpoUKbdpQgFellPthOgcZTFJwkqY'
 	
+	def search(self,query):
+		if ':' in query:
+			q='q=%s&pageToken=%s'%(query.split(':')[1],query.split(':')[0])
+			query=query.split(':')[1]
+		else:q='q='+query
+		url='https://www.googleapis.com/youtube/v3/search?regionCode=VN&type=video&'
+		b=xread(url+'part=snippet&maxResults=30&key=AIzaSyA-Y38JpoUKbdpQgFellPthOgcZTFJwkqY&'+q)
+		print url+'part=snippet&maxResults=30&key=AIzaSyA-Y38JpoUKbdpQgFellPthOgcZTFJwkqY&'+q
+		try:j=json.loads(b)
+		except:j={}
+		def detail(l):
+			title=l.get('snippet',{}).get('title').encode('utf-8')
+			id=l.get('id',{}).get('videoId')
+			if not title or not id:return []
+			img=l.get('snippet',{}).get('thumbnails',{}).get('high',{}).get('url','')
+			return title,id,img
+		items=[detail(i) for i in j.get('items',[]) if detail(i)]
+		if j.get('nextPageToken'):
+			items.append(('nextPageToken','%s:%s'%(j.get('nextPageToken').encode('utf-8'),query),''))
+		return items
+
 	def ytRead(self,url):
 		try:j=json.loads(xread(url))
 		except:j={}
@@ -2844,6 +2864,24 @@ class phimMedia:
 		except:items=[]
 		return items
 
+class InputWindow(xbmcgui.WindowDialog):
+    def __init__(self, *args, **kwargs):
+        self.cptloc = kwargs.get('captcha')
+        self.img = xbmcgui.ControlImage(385,1,550,145,self.cptloc)
+        self.addControl(self.img)
+        self.kbd = xbmc.Keyboard('','Input captcha')
+	
+    def get(self):
+        self.show()
+        xbmc.sleep(1000)
+        self.kbd.doModal()
+        if (self.kbd.isConfirmed()):
+            text = self.kbd.getText()
+            self.close()
+            return text.strip() if text else ''
+        self.close()
+        return ''
+	
 class k88com:
 	def __init__(self,c):
 		self.hd={'User-Agent':'Mozilla/5.0'}
@@ -2892,23 +2930,52 @@ class k88com:
 			pages=xsearch('>(\d{,4})</a></li><li><span>',b)
 			items.append((pages,self.urlhome+pn.replace('/page/','?page='),'pageNext',''))
 		return items
-	
+
+	def openload(self,url):
+		def getCaptcha(captcha_url):
+			if captcha_url:
+				solver=InputWindow(captcha=captcha_url)
+				captcha=solver.get()
+			else:captcha=''
+			return captcha
+
+		f=url.rsplit('/',2)[1];link=''
+		l='https://api.openload.co/1/file/dlticket?file=%s&login=7f2b51527710f733&key=tegQWpjF'%f
+		b=xread(l)
+		try:j=json.loads(b)
+		except:j={}
+		result=j.get('result');print result
+		if result:
+			ticket=result.get('ticket','')
+			captcha=getCaptcha(result.get('captcha_url'))
+		else:ticket=captcha='';mess(xsearch('([^\.]+)',j.get('msg')))
+		if ticket:
+			print ticket,captcha
+			l='https://api.openload.co/1/file/dl?file=%s&ticket=%s&captcha_response=%s'
+			b=xread(l%(f,ticket,captcha))
+			try:
+				res=xget(json.loads(b).get('result').get('url'))
+				if res:link=res.geturl();res.close()
+			except:mess('Get link from openload.co Failed')
+		return link
+		
 	def getLink(self,url):
 		response=xread(url);link=''
 		href=xsearch('\{link:.*"(.+?)"\}',response)
 		if len(href)>20:
-			data=urllib.urlencode({'link':href});label=0
+			data=urllib.urlencode({'link':href});label=0;mess('link')
 			jp=xread('http://www.kenh88.com/gkphp/plugins/gkpluginsphp.php',data=data)
-			try:j=json.loads(jp).get('link')
+			try:
+				j=json.loads(jp).get('link')
+				if isinstance(j,unicode):items=[(j,'')]
+				else:items=ls([(i.get('link',''),rsl(i.get('label',''))) for i in j])
+				for href,r in items:
+					link=xcheck(href.replace('amp;',''))
+					if link:break
 			except:j={}
-			if isinstance(j,unicode):items=[(j,'')]
-			else:items=ls([(i.get('link'),rsl(i.get('label'))) for i in j])
-			for href,r in items:
-				link=xcheck(href.replace('amp;',''))
-				if link:break
 		
 		elif xsearch('src="(.+?docid=.+?)"',response):
-			docid=xsearch('docid=(.+?)&',response)
+			docid=xsearch('docid=(.+?)&',response);mess('docid')
 			if docid:
 				link='https://docs.google.com/get_video_info?authuser=&eurl=%s&docid=%s'
 				link=link%(urllib.quote_plus(url),docid)
@@ -2917,11 +2984,15 @@ class k88com:
 				link=xsearch('url=(.+?)&type=',urllib.unquote(urllib.unquote(link)))
 		
 		elif xsearch('iframe src="(.+?)"',response):
-			b=xread(xsearch('iframe src="(.+?)"',response))
-			l=re.findall('file: "([^"]+?)"[^"]+label: "([^"]+?)"',b,re.S)
-			for href,r in ls([(i[0],rsl(i[1])) for i in l]):
-				link=xcheck(href.replace('amp;',''))
-				if link:break
+			href=xsearch('iframe src="(.+?)"',response)
+			if 'openload.co' in href:link=self.openload(href);mess('openload')
+			elif 'xtubeid.com' in url:mess('xtubeid')
+			else:
+				b=xread(href)
+				l=re.findall('file: "([^"]+?)"[^"]+label: "([^"]+?)"',b,re.S)
+				for href,r in ls([(i[0],rsl(i[1])) for i in l]):
+					link=xcheck(href.replace('amp;',''))
+					if link:break
 		return link
 
 class fcinenet:
@@ -3187,6 +3258,4 @@ class vnZoom:
 			b=xread(url,self.hd)
 			blockrow=xsearch('(<div class="blockrow restore".+?/form>)',b)
 			if blockrow:b=xread(url,self.hd)
-		print 'aaaaaaaaaaa','do=logout' in b;xrw('vnzoom.html',b)
 		return b
-	
