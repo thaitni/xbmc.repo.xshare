@@ -43,6 +43,9 @@ def namecolor(name,c=''):return '[COLOR %s]%s[/COLOR]'%(c,name) if c else re.sub
 def s2u(s):return s.decode('utf-8') if isinstance(s,str) else s
 def u2s(s):return s.encode('utf-8') if isinstance(s,unicode) else s
 def unescape(string):return ' '.join(re.sub('&.+;',xsearch('&(\w).+;',s,1),s) for s in string.split())
+def xhref(s,p=''):return xsearch('href="(.+?)"',s,result=xsearch(p,s))
+def xtitle(s,p=''):return ' '.join(xsearch('title="(.+?)"',s,result=xsearch(p,s)).split())
+def ximg(s,p=''):return xsearch('src="(.+?)"',s,result=xsearch(p,s))
 def refa(p,s,f=0):return re.findall(p,s,f)
 def refas(p,s):return re.findall(p,s,re.S)
 def mess(message='',title='',timeShown=5000):
@@ -68,7 +71,7 @@ def googleItems(j,link='link',label='label'):#Thu nghiem tren phim14
 	link=''
 	if l:
 		for href,label in ls(l):
-			link=xcheck(href)
+			link=xcheck(href.replace('\\',''));print href
 			if link:break
 	return link
 
@@ -80,14 +83,15 @@ def rsl(s):
 
 def ls(l):
 	reverse=True if get_setting('resolut')=='Max' else False
-	l=sorted(l, key=lambda k: int(k[1]),reverse=reverse)
-	return l
+	try:L=sorted(l, key=lambda k: int(k[1]),reverse=reverse)
+	except:L=l
+	return L
 
 def xrw(fn,s=''):
 	fn=os.path.join(xsharefolder,fn)
 	try:
-		if s:f=open(fn,'w');f.write(s);s=fn
-		else:f=open(fn);s=f.read()
+		if s:s=s.replace('\r\n','\n');f=open(fn,'w');f.write(s)
+		else:f=open(fn);s=f.read().replace('\r\n','\n')
 		f.close()
 	except:s=''
 	return s
@@ -99,7 +103,16 @@ def xcookie(cookie=None):
 	
 def xread(url,headers={'User-Agent':'Mozilla/5.0'},data=None,timeout=30):
 	req=urllib2.Request(url,data,headers)
-	try:res=urllib2.urlopen(req, timeout=timeout);b=res.read();res.close()
+	try:
+		res=urllib2.urlopen(req, timeout=timeout)
+		b=res.read()
+		if res.headers.getheader('content-encoding')=='gzip':
+			from StringIO import StringIO
+			import gzip
+			buf=StringIO(b)
+			f=gzip.GzipFile(fileobj=buf)
+			b=f.read()
+		res.close()
 	except:b=''
 	return b
 

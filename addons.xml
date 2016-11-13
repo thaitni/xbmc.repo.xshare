@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR] [COLOR green]XBMC[/COLOR] [COLOR blue]HDVideo[/B][/COLOR]" version="3.4.8.6" provider-name="thaitni">
+<addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR] [COLOR green]XBMC[/COLOR] [COLOR blue]HDVideo[/B][/COLOR]" version="3.4.8.7" provider-name="thaitni">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.video.F4mProxy"  optional="true"/>
@@ -71,26 +71,25 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.f4mTester" version="2.6.6" name="f4mTester" provider-name="Shani">
-    <requires>
-        <import addon="xbmc.python" version="2.1.0"/>
-        <import addon="script.video.F4mProxy" version="2.6.6"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" library="default.py">
-        <provides>video</provides>
-    </extension>
-
-    <extension point="xbmc.addon.repository" name="shani repository">
-        <info compressed="false">https://offshoregit.com/Shani-08/main/addons.xml</info>
-        <checksum>https://offshoregit.com/Shani-08/main/addons.xml.md5</checksum>
-        <datadir zip="true">https://offshoregit.com/Shani-08/main/zips/</datadir>
-    </extension>
-
-    <extension point="xbmc.addon.metadata">
-        <summary>f4mTester</summary>
-        <description></description>
-        <platform>all</platform>
-    </extension>
+<addon id="script.video.F4mProxy" name="F4mProxy" version="2.6.6" provider-name="Shani">
+	<requires>
+		<import addon="xbmc.python" version="2.1.0"/>
+		<import addon="script.module.requests"/>
+	</requires>
+	<extension point="xbmc.python.module" library="lib"/>
+	<extension point="xbmc.python.pluginsource" library="addon.py">
+		<provides>executable</provides>
+	</extension>
+	<extension point="xbmc.addon.repository" name="shani repository">
+		<info compressed="false">https://offshoregit.com/Shani-08/main/addons.xml</info>
+		<checksum>https://offshoregit.com/Shani-08/main/addons.xml.md5</checksum>
+		<datadir zip="true">https://offshoregit.com/Shani-08/main/zips/</datadir>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<platform>all</platform>
+		<summary lang="en">Proxy for f4m</summary>
+		<description lang="en">Use this addon to play F4m v1 and v2 streams</description>
+	</extension>
 </addon>
 
 <addon id="script.module.youtube.dl" name="youtube-dl Control" version="16.1026.0" provider-name="Rick Phillips (ruuk)">
