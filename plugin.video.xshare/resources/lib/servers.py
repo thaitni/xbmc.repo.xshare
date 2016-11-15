@@ -20,14 +20,14 @@ def gibberishAES(string, key=''):
 	n = False
 		
 	def f(e):
-		try:result=urllib.quote(e)
-		except:result=str(e)
-		return result
+		#try:result=urllib.quote(e)
+		#except:result=str(e)
+		return str(e)
 		
 	def c(e):
-		try:result=urllib.quote(e, safe='~()*!.\'')
-		except:result=str(e)
-		return result
+		#try:result=urllib.quote(e, safe='~()*!.\'')
+		#except:result=str(e)
+		return str(e)
 
 	def t(e):
 		f = [0]*len(e)
@@ -1020,6 +1020,30 @@ class phim3s_net:
 			mess(u'%s'%response.get('message','%s thất bại !'%action),'Phim3s.net bookmark')
 			self.fetch('http://phim3s.net/member/logout/')
 
+class phimoinet:
+	def __init__(self):
+		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://www.phimmoi.net'}
+	
+	def getLink(self,url):
+		b=xread(url,self.hd)
+		if not b:b=xread(url,self.hd)
+		alert=xsearch('<div class="alert-heading">(.+?)</div>',b)
+		href=xsearch('src="([^<]*?episodeinfo.+?)"',b).replace('javascript','json')
+		b=xread(href,self.hd)
+		if not b:b=xread(href,self.hd)
+		try:j=json.loads(b)
+		except:j={}
+		links=j.get('medias',[]);error=j.get('error','')
+		if error:mess(error)
+		elif alert:mess(alert)
+		link=''
+		if links:
+			items=ls([(i.get('url'),rsl(i.get('resolution'))) for i in links])
+			for href,label in items:
+				link=xcheck(gibberishAES(href,'PhimMoi.Net://%s'%j.get('requestId')))
+				if link:break
+		return link
+
 class kPhim:
 	def __init__(self,c):
 		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://kphim.tv/dieu-khoan-chung.html'}
@@ -1078,20 +1102,8 @@ class kPhim:
 		return link
 
 class tvhay:
-	def __init__(self, s):
-		try:
-			w, i, s, e=s.split(',')
-			s=self.dec(w, i, s, e)
-			b=xsearch("(\w{100,},\w+,\w+,\w+)",s.replace("'",''))
-			w, i, s, e=b.split(',')
-			s=self.dec(w, i, s, e)
-			b=xsearch("(\w{100,},\w+,\w+,\w+)",s.replace("'",''))
-			w, i, s, e=b.split(',')
-			s=self.dec(w, i, s, e)
-		except:s=''
-		self.string=s
-	
-	def dec(self, w, i, s, e):
+	def dec(self,s):
+		w,i,s,e = s.split(',')
 		a=b=c=0;d=[];f=[]
 		while (True):
 			if a<5:f.append(w[a])
@@ -1105,20 +1117,43 @@ class tvhay:
 			c+=1
 			if len(w)+len(i)+len(s)+len(e)==len(d)+len(f)+len(e):break
 
-
 		b=0;k=[];h=''.join(f);g=''.join(d)
 		for a in range(0,len(d),2):
 			m=1 if ord(h[b])%2 else -1
 			k.append(chr(int(g[a:a+2],36)-m))
 			b+=1
 			if b>=len(f):b=0
-
 		return ''.join(k)
 	
 	def dec_(self, w, i, s, e):
 		for s in range(0,len(w),2):
 			i+=chr(int(w[s:s+2],36))
 		return i
+	
+	def getLink(self,url):
+		def token():#http://tvhay.org/tvhayplayer/clientfix.js 218
+			now=str(int(urllib2.time.time()))
+			md5=urllib2.hashlib.md5(now+"$%$#$#%#%$#@#@#^%").hexdigest()
+			return md5[:11]+now+md5[21:32]
+		
+		if url.startswith('http:'):
+			if 'http://tvhay.org/xem-phim' not in url:
+				url=xsearch('href="([^<]+?)" class="btn-watch"',xread(url))
+		s=xsearch("('\w+?','\w+?','\w+?','\w+?')",xread(url)).replace("'","")
+		s=self.dec(s)
+		s=xsearch("(\w{100,},\w+,\w+,\w+)",s.replace("'",''))
+		s=self.dec(s)
+		s=xsearch("(\w{100,},\w+,\w+,\w+)",s.replace("'",''))
+		s=self.dec(s)
+		
+		s=xsearch('link:"(.+?)"',s).replace('/&/g', '%26')
+		data='link=%s&cs=%s'%(s,token())
+		b=xread('http://tvhay.org/tvhayplayer/plugins/gkpluginsphp.php',data=data)
+		try:j=json.loads(b).get('link','')
+		except:j=''
+		if isinstance(j, unicode):link=j
+		else:link=googleItems(j)
+		return link
 
 class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 	def __init__(self):
@@ -2480,7 +2515,7 @@ class hdonline:
 		chonserver=addon.getSetting('chonserver')
 		if chonserver=='Thuyết minh':url+='&tm=1'
 		
-		try:j=json.loads(xread(url,self.hd));print json.dumps(j,indent=2)
+		try:j=json.loads(xread(url,self.hd))#;print json.dumps(j,indent=2)
 		except:j={}
 		items=[];sub=''
 		if j.get("audiodub"):mess(u'Phim này có 2 audio','HDonline.vn',10000)
@@ -3032,7 +3067,9 @@ class k88com:
 		elif xsearch('iframe src="(.+?)"',response):
 			href=xsearch('iframe src="(.+?)"',response)
 			if 'openload.co' in href:link=self.openload(href)#;mess('openload')
-			elif 'xtubeid.com' in url:mess('Chưa xử lý link trên xtubeid.com')
+			elif 'xtubeid.com' in url:
+				#http://www.kenh88.com/xem-phim-online/anh-hung-chinh-nghia?link=737242
+				mess('Chưa xử lý link trên xtubeid.com')
 			else:
 				b=xread(href)
 				l=re.findall('file: "([^"]+?)"[^"]+label: "([^"]+?)"',b,re.S)

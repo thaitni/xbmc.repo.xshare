@@ -325,7 +325,7 @@ def endxbmc():
 	xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def xbmcsetResolvedUrl(url,name='',img='',sub=''):
-	if 'youtube.com' in url:play_youtube(url);return
+	if 'youtube.com' in url:return play_youtube(url);mess('aa')
 	elif img:item=xbmcgui.ListItem(path=url, iconImage=img, thumbnailImage=img)
 	else:item=xbmcgui.ListItem(path=url)
 	if 'Maxlink' in name:
@@ -2956,6 +2956,9 @@ def hdviet(name,url,img,mode,page,query):
 	
 	if query=='hdviet.com':
 		b=getHome('hdviet.html',urlhome)
+		if len(b)<1000:
+			b=xsearch('<h3>(.+?)</h3>',b)
+			mess(s2u(b))
 		name=namecolor('Search trên hdviet.com','lime')
 		addir(name,'http://movies.hdviet.com/tim-kiem.html',ico,fanart,mode,1,'search',True)
 		
@@ -3272,30 +3275,28 @@ def phimmoi(name,url,img,mode,page,query):
 	
 	elif query=='eps':
 		if url.endswith('/'):href=url+'xem-phim.html'
+		else:href=url
 		b=xread(href)
-		if not b:#Trailer
-			if url.endswith('/'):href=url+'trailer.html'
-			b=xread(href)
-			link=xsearch("trailerUrl='(.+?)'",b)
+		if not b and url.endswith('/'):#Trailer
+			href=url+'trailer.html'
 		
-		name=xsearch('<title>(.+?)</title>',b,1,re.S).replace('Xem phim ','')
+		label=xsearch('<title>(.+?)</title>',b,1,re.S).replace('Xem phim ','')
+		name=label if label else name
 		p='(<div class="movie-list-index related-box".+?class="clear">)'
 		cungchude=xsearch(p,b,1,re.S)
 		chude='Mục các phim cùng chủ đề'
 		
 		servers=xsearch('(<div class="list-server".+?class="clear">)',b,1,re.S)
 		if not servers:
-			link=xsearch('src="([^<]*?episodeinfo.+?)"',b)
-			if link:addir_info('Xem phim: '+name,link,img,fanart,mode,1,'play')
-			else:
-				link=xsearch('v=([\w\-]+)',xsearch("trailerUrl='(.+?)'",b))
-				addir_info('Xem Trailer: '+name,link,img,fanart,mode,1,'play')
-			
-			add_sep_item(chude)
-			for s in re.findall('(<li.+?/li>)',cungchude):itemDIR(s)
+			addir_info(name,href,img,fanart,mode,1,'play')
+			s=re.findall('(<li.+?/li>)',cungchude)
+			if s:
+				add_sep_item(chude)
+				for s in s:itemDIR(s)
 		
 		else:
-			addir_info(namecolor(chude,'gold'),cungchude,ico,'',mode,1,'cungchude',True)
+			if cungchude:
+				addir_info(namecolor(chude,'gold'),cungchude,ico,'',mode,1,'cungchude',True)
 			servers=re.findall('(<h3.+?/ul>)',servers,re.S)
 			for s in servers:
 				if len(servers)>1:
@@ -3310,35 +3311,11 @@ def phimmoi(name,url,img,mode,page,query):
 		for s in re.findall('(<li.+?/li>)',url):itemDIR(s)
 	
 	elif query=='play':
-		if 'Xem Trailer: ' in name:
-			play_youtube('https://www.youtube.com/watch?v='+url);return
-		
-		headers={'User-Agent':'Mozilla/5.0','Referer':url}
-		b=xread(url,headers)
-		if not b:b=xread(url,headers)
-		alert=xsearch('<div class="alert-heading">(.+?)</div>',b)
-		s=xsearch("responseJson='(\{.+?\})'",b)
-		
-		if not s:
-			href=xsearch('src="([^<]*?episodeinfo.+?)"',b)
-			b=xread(href,headers)
-			if not b:b=xread(href,headers)
-			s=xsearch("responseJson='(\{.+?\})'",b)
-		try:j=json.loads(s)
-		except:j={}
-		
-		links=j.get('medias',[]);error=j.get('error','')
-		if links:link=googleItems(links,link='url',label='resolution')
-		else:link=xcheck(j.get('url',''))
-		
+		if 'trailer.html' in url:link=xsearch("trailerUrl='(.+?)'",xread(url))
+		else:
+			from resources.lib.servers import phimoinet;pm=phimoinet()
+			link=pm.getLink(url)
 		if link:xbmcsetResolvedUrl(link)
-		elif alert:
-			try:mess(s2u(alert),'phimmoi.net')
-			except:mess('File invalid or deleted!','phimmoi.net')
-		elif error:
-			try:mess(s2u(error.replace(',','')),'phimmoi.net')
-			except:mess('File invalid or deleted!','phimmoi.net')
-		else:mess('File invalid or deleted!','phimmoi.net')
 
 def phim3s(name,url,img,mode,page,query):
 	ico=os.path.join(iconpath,'phim3s.png');urlhome='http://phim3s.net/'
@@ -5616,13 +5593,14 @@ def anime47(name,url,img,mode,page,query):
 	elif query=="page":
 		b=xread(url,hd)
 		for s in [i for i in re.findall('(<li.+?/li>)',b,re.S) if '"decaption"' in i]:get_item(s)
-		href=xsearch('class="currentpage".+?href=/(.+?)\s',b).replace("'","")
-		if href:
-			items=re.findall("class='pagelink' href=(.+?)\s",b)
-			try:pl=max(int(xsearch('/(\d+)\.html',i,result=xsearch('page=(\d+)',i))) for i in items)
-			except:pl=0
-			title=namecolor('Trang tiếp theo: trang %d/%d'%(page+1,pl),'lime')
-			addir_info(title,urlhome+href,ico,'',mode,page+1,'page',True)
+		
+		s=xsearch('(<div class="pagination".+?/div)',b,1,re.S)
+		try:pages=max(int(i) for i in re.findall('/(\d+)\.html',s))
+		except:pages=0
+		if pages and pages > page:
+			title=namecolor('Trang tiếp theo: trang %d/%d'%(page+1,pages),'lime')
+			href=re.sub('/\d+\.html','/%d.html'%(page+1),url)
+			addir_info(title,href,ico,'',mode,page+1,query,True)
 	
 	elif query=="menu":
 		b=get_home_page('anime47.html',urlhome)
@@ -6246,7 +6224,8 @@ def tvhay(name,url,img,mode,page,query):
 		add_sep_item('List of Server %s -------------------------'%title)
 		label=xsearch('<title>(.+?)</title>',s)
 		for href,title in re.findall('<a.+?href="(.+?)">(.+?)</a>',s):
-			addir_info('[COLOR cyan]%s[/COLOR] %s'%(title,label),href,img,'',mode,1,'play')
+			title=s2c('[COLOR cyan]%s[/COLOR] %s'%(title,label))
+			addir_info(title,href,img,'',mode,1,'play')
 	
 	if query=='tvhay.org':
 		b=getHome('tvhay.html','http://tvhay.org')
@@ -6317,41 +6296,21 @@ def tvhay(name,url,img,mode,page,query):
 		s=['<title>%s</title> %s'%(title,i) for i in s]
 		SRVS=len(s)>1
 			
-		if lenEPS > 10:
+		if lenEPS > 25:
 			default=s[0]
 			for s in s:
 				title='Server '+xsearch('<div class="label">(.+?)</div>',s).replace(':','')
 				if 'Thuyết Minh' in title:default=s
 				elif SRVS:addir_info(namecolor(title,'gold'),s,img,'',mode,1,'eps_server',True)
-			
 			eps_server(default)
-		
-		elif lenEPS==1:
-			b=xsearch("('\w+?','\w+?','\w+?','\w+?')",b).replace("'","")#get data string
-			s=re.sub('href=".+?"','href="%s"'%b,s[0])
-			eps_server(s)
-		else:
-			for s in s:eps_server(s)
+		else:[eps_server(s) for s in s]
 	
 	elif query=='play':
-		if url.startswith('http:'):
-			if 'http://tvhay.org/xem-phim' not in url:
-				url=xsearch('href="([^<]+?)" class="btn-watch"',xread(url))
-			s=xsearch("('\w+?','\w+?','\w+?','\w+?')",xread(url)).replace("'","")
-		else:s=url
-		
-		from resources.lib.servers import tvhay
-		s=xsearch('link:"(.+?)"',tvhay(s).string)
-		data='link=%s&cs=7dd3f03e7271478871072d1e4fdc71bc'%s#;log('data: %s'%data)
-		b=xread('http://tvhay.org/tvhayplayer/plugins/gkpluginsphp.php',data=data)
-		try:j=json.loads(b).get('link','')
-		except:j=''
-		#print json.dumps(j,indent=2)
-		if isinstance(j, unicode):link=j
-		else:link=googleItems(j)
+		from resources.lib.servers import tvhay;tvh=tvhay()
+		link=tvh.getLink(url)
 		if link:xbmcsetResolvedUrl(link)
 		else:mess('File invalid or deleted!','tvhay.org') 
-	
+
 def television(name,url,img,fanart,mode,page,query,text):
 	fptlive_ico=icon['fptplay'];c='orange'
 	hplus_ico='http://static.hplus.com.vn/themes/front/images/logo_hplus.png';hplus='http://hplus.com.vn/'
