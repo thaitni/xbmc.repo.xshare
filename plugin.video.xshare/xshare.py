@@ -2428,7 +2428,7 @@ def fptplay(name,url,img,fanart,mode,page,query,text=''):
 				
 	elif query=='eps':
 		data='film_id=%s&page=%d'%(xsearch('(\w{20,30})',url),page)
-		hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','referer':''}
+		hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','referer':'','X-KEY':'123456'}
 		b=xread('https://fptplay.net/show/episode',hd,data)
 		items=[i for i in re.findall('(<li.+?/li>)',b,re.S) if '"title_items"' in i]
 		for s in items:
@@ -2447,7 +2447,7 @@ def fptplay(name,url,img,fanart,mode,page,query,text=''):
 	
 	elif query=='play':
 		def stream(href,id,epi='1'):
-			hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','referer':''}
+			hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','referer':'','X-KEY':'123456'}
 			ec=urllib.urlencode;HD='|User-Agent=Mozilla/5.0'
 			data=ec({'id':id,'type':'newchannel','quality':'3','episode':epi,'mobile':'web'})
 			try:xbmcsetResolvedUrl(json.loads(xread(href,hd,data)).get('stream')+HD)
@@ -2459,7 +2459,7 @@ def fptplay(name,url,img,fanart,mode,page,query,text=''):
 				except:pass
 				#print href,hd,data
 		
-		if '?' not in url:stream('https://fptplay.net/show/getlink',url)
+		if '?' not in url:stream('https://fptplay.net/show/getlink',xsearch('(\w+)\.html',url))
 		else :stream('https://fptplay.net/show/getlink',url.split('?')[0],url.split('?')[1])
 
 def dangcaphd(name,url,img,mode,page,query):
@@ -3027,7 +3027,7 @@ def hdviet(name,url,img,mode,page,query):
 			addir_info(namecolor(name),url,img,fanart,mode,page,'hdv_play')
 			return
 		
-		label=xsearch('\](.+?)\[',name)
+		label=namecolor(name)
 		for epi in range(1,int(j.get("Sequence"))+1):
 			title='%d %s'%(epi,label)
 			addir_info(title,'%s_e%d'%(url,epi),img,fanart,mode,page,'hdv_play')

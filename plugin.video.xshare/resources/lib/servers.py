@@ -830,8 +830,8 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 
 class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 	def __init__(self):
-		self.hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest'}
-		self.hd['referer']='https://fptplay.net/fptplay/gioi-thieu'
+		self.hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','X-KEY':'123456'}
+		self.hd['referer']='https://fptplay.net/'
 		self.hd['Cookie']=xrw('fptplay.cookie') if filetime('fptplay.cookie')<30 else self.login()
 		
 	def login(self):
@@ -909,11 +909,11 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 	def liveLink(self,url):
 		id=urllib2.os.path.basename(url)
 		if not id:id='vtv3-hd'
-		data='mobile=web&quality=3&type=newchannel&id=%s'%id
+		data='mobile=web&quality=3&type=newchannel&id=%s'%id;print data
 		b=xread('https://fptplay.net/show/getlinklivetv',self.hd,data)
-		try:link=json.loads(b).get('stream')
+		try:link=json.loads(b).get('stream')+'|User-Agent=Mozilla/5.0&Referer=https://fptplay.net/'
 		except:link=''
-		return link+'|User-Agent=Mozilla/5.0&Referer=https://fptplay.net'
+		return link
 	
 	def fptNodes(self,url):
 		b=xread(url)

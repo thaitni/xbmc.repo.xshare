@@ -1,7 +1,10 @@
-[B]Version 3.4.8.8[/B] <27/10/2016>:
+[B]Version 3.4.8.9[/B] <16/11/2016>:
+Fix fptplay
+
+[B]Version 3.4.8.8[/B] <15/11/2016>:
 Fix free servers
 
-[B]Version 3.4.8.7[/B] <27/10/2016>:
+[B]Version 3.4.8.7[/B] <13/11/2016>:
 Fix free servers
 
 [B]Version 3.4.8.6[/B] <27/10/2016>:
