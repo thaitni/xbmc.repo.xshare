@@ -1102,53 +1102,64 @@ class kPhim:
 		return link
 
 class tvhay:
-	def dec(self,s):
-		w,i,s,e = s.split(',')
-		a=b=c=0;d=[];f=[]
-		while (True):
-			if a<5:f.append(w[a])
-			elif a<len(w):d.append(w[a])
-			a+=1
-			if b<5:f.append(i[b])
-			elif b<len(i):d.append(i[b])
-			b+=1
-			if c<5:f.append(s[c])
-			elif c<len(s):d.append(s[c])
-			c+=1
-			if len(w)+len(i)+len(s)+len(e)==len(d)+len(f)+len(e):break
+	def __init__(self):
+		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://tvhay.org/'}
+	
+	def dataLink(self,b):
+		def dec(s):
+			w,i,s,e = s.split(',')
+			a=b=c=0;d=[];f=[]
+			while (True):
+				if a<5:f.append(w[a])
+				elif a<len(w):d.append(w[a])
+				a+=1
+				if b<5:f.append(i[b])
+				elif b<len(i):d.append(i[b])
+				b+=1
+				if c<5:f.append(s[c])
+				elif c<len(s):d.append(s[c])
+				c+=1
+				if len(w)+len(i)+len(s)+len(e)==len(d)+len(f)+len(e):break
 
-		b=0;k=[];h=''.join(f);g=''.join(d)
-		for a in range(0,len(d),2):
-			m=1 if ord(h[b])%2 else -1
-			k.append(chr(int(g[a:a+2],36)-m))
-			b+=1
-			if b>=len(f):b=0
-		return ''.join(k)
+			b=0;k=[];h=''.join(f);g=''.join(d)
+			for a in range(0,len(d),2):
+				m=1 if ord(h[b])%2 else -1
+				k.append(chr(int(g[a:a+2],36)-m))
+				b+=1
+				if b>=len(f):b=0
+			return ''.join(k)
+	
+		s=xsearch("('\w+?','\w+?','\w+?','\w+?')",b).replace("'","")
+		s=xsearch("(\w{100,},\w+,\w+,\w+)",dec(s).replace("'",''))
+		s=xsearch("(\w{100,},\w+,\w+,\w+)",dec(s).replace("'",''))
+		return xsearch('link:"(.+?)"',dec(s)).replace('/&/g', '%26')
 	
 	def dec_(self, w, i, s, e):
 		for s in range(0,len(w),2):
 			i+=chr(int(w[s:s+2],36))
 		return i
 	
+	def getData(self,code,link):
+		try:exec(code);data=get_data(link)
+		except:data=''
+		return data
+	
 	def getLink(self,url):
-		def token():#http://tvhay.org/tvhayplayer/clientfix.js 218
-			now=str(int(urllib2.time.time()))
-			md5=urllib2.hashlib.md5(now+"$%$#$#%#%$#@#@#^%").hexdigest()
-			return md5[:11]+now+md5[21:32]
-		
 		if url.startswith('http:'):
 			if 'http://tvhay.org/xem-phim' not in url:
 				url=xsearch('href="([^<]+?)" class="btn-watch"',xread(url))
-		s=xsearch("('\w+?','\w+?','\w+?','\w+?')",xread(url)).replace("'","")
-		s=self.dec(s)
-		s=xsearch("(\w{100,},\w+,\w+,\w+)",s.replace("'",''))
-		s=self.dec(s)
-		s=xsearch("(\w{100,},\w+,\w+,\w+)",s.replace("'",''))
-		s=self.dec(s)
+		b=xreadc(url)
+		code=xread('http://textuploader.com/d5217/raw') if b else ''
+		self.hd['Cookie']=b.split('xshare')[1]
+		link=self.dataLink(b)
+		b='';loop=0
+		while link and not b and loop < 3:
+			data=self.getData(code,link)
+			b=xread('http://tvhay.org/tvhayplayer/plugins/gkpluginsphp.php',self.hd,data)
+			if not b:
+				if loop:mess('Retry ... %d'%(loop+1))
+				loop+=1;xbmc.sleep(3000)
 		
-		s=xsearch('link:"(.+?)"',s).replace('/&/g', '%26')
-		data='link=%s&cs=%s'%(s,token())
-		b=xread('http://tvhay.org/tvhayplayer/plugins/gkpluginsphp.php',data=data)
 		try:j=json.loads(b).get('link','')
 		except:j=''
 		if isinstance(j, unicode):link=j

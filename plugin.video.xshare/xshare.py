@@ -2222,7 +2222,8 @@ def fptplay(name,url,img,fanart,mode,page,query,text=''):
 		href=xsearch('href="([^"]+?)"',s,result=xsearch('data-href="(.+?)"',s))
 		if not title or not href or 'javascript' in href:return
 		if re.search('.huyết .inh',title.lower()):title='[COLOR blue]TM[/COLOR] '+title
-		img=xsearch('original="([^"]+?\.jpg)',s,result=xsearch('original="([^"]+?\.png)',s))
+		img=xsearch('src="(.+?\.jpg)',s,result=xsearch('original="([^"]+?\.jpg)',s))
+		if not img:img=xsearch('original="([^"]+?\.png)',s)
 		addir_info(title,href,img,img,mode,1,'eps',True)
 		
 	if query=="fptplay.net":
@@ -4750,7 +4751,6 @@ def nhacdj(name,url,img,fanart,mode,page,query):
 		for href,title in re.findall('<a href="(.+?)" title="(.+?)">',s):
 			addir_info(namecolor(title,c),href,ico,'',mode,1,'djpage',True)
 		
-		#add_sep_item('--------------PHIM MỚI CẬP NHẬT-------------');page=1;tvhay_page(body)
 		s=xsearch('(class="left-box-home".+?</div></div></div></div>)',body,1,re.DOTALL)
 		label=xsearch('>([^<]+?)</h4>',s)
 		if label:add_sep_item('%s'%label)
@@ -6185,7 +6185,7 @@ def hdsieunhanh(name,url,img,fanart,mode,page,query):
 		if link:xbmcsetResolvedUrl(link)
 		else:mess('File invalid or deleted!','hdsieunhanh.com') 
 
-def tvhay(name,url,img,mode,page,query):
+def tvhay(name,url,img,mode,page,query):#Da fix fptplay img, dang fix tvhay
 	ico=os.path.join(iconpath,'tvhay.png');urlhome='http://tvhay.org/';c='gold'
 	if not os.path.isfile(ico):
 		href='https://docs.google.com/uc?id=0B5y3DO2sHt1LcmxSUm8yZ0dram8&export=download'
@@ -6244,15 +6244,15 @@ def tvhay(name,url,img,mode,page,query):
 			else:addir_info(namecolor(title,c),'',ico,'',mode,1,'tvh_submenu',True)
 		
 		add_sep_item('---------TVHAY đề cử---------')
-		s=xsearch('(<ul class="listfilm overview".+?/ul>)',b,1,re.S);log('----- %d'%len(s))
+		s=xsearch('(<ul class="listfilm overview".+?/ul>)',b,1,re.S)
 		for s in re.findall('(<li.+?/li>)',s,re.S):itemDIR(s)
 		
 		add_sep_item('---------TVHAY giới thiệu---------')
-		s=xsearch('(<div class="blockbody".+?/ul>)',b,1,re.S);log('----- %d'%len(s))
+		s=xsearch('(<div class="blockbody".+?/ul>)',b,1,re.S)
 		for s in re.findall('(<li.+?/li>)',s,re.S):itemDIR(s)
 		
 		add_sep_item('---------Phim Đã hoàn thành---------')
-		s=xsearch('(<ul class="list tab phim-bo-full.+?/ul>)',b,1,re.S);log('----- %d'%len(s))
+		s=xsearch('(<ul class="list tab phim-bo-full.+?/ul>)',b,1,re.S)
 		for s in re.findall('(<li.+?/li>)',s,re.S):itemDIR(s)
 	
 	elif query=='eps_server':eps_server(url)
@@ -6309,7 +6309,7 @@ def tvhay(name,url,img,mode,page,query):
 		from resources.lib.servers import tvhay;tvh=tvhay()
 		link=tvh.getLink(url)
 		if link:xbmcsetResolvedUrl(link)
-		else:mess('File invalid or deleted!','tvhay.org') 
+		else:mess('Get link Failed! Retry please ...','tvhay.org') 
 
 def television(name,url,img,fanart,mode,page,query,text):
 	fptlive_ico=icon['fptplay'];c='orange'
