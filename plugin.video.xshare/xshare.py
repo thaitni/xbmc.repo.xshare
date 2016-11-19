@@ -2218,13 +2218,16 @@ def fptplay(name,url,img,fanart,mode,page,query,text=''):
 	
 	def itemDIR(s):
 		if '"https://fptplay.net/epl_img/lockepl.png"' in s:return
-		title=vnu(xsearch('title="([^"]+?)"',s,result=xsearch('alt="([^"]+?)"',s)))
+		title=xsearch('title="([^"]+?)"',s,result=xsearch('alt="([^"]+?)"',s))
 		href=xsearch('href="([^"]+?)"',s,result=xsearch('data-href="(.+?)"',s))
 		if not title or not href or 'javascript' in href:return
 		if re.search('.huyết .inh',title.lower()):title='[COLOR blue]TM[/COLOR] '+title
+		label=[re.sub('<.+?>','',i) for i in re.findall('(<p.+?/p>)',s)]
+		label=' '.join(i for i in label if i not in title)
+		if label:title=title+' [COLOR green]%s[/COLOR]'%label
 		img=xsearch('src="(.+?\.jpg)',s,result=xsearch('original="([^"]+?\.jpg)',s))
 		if not img:img=xsearch('original="([^"]+?\.png)',s)
-		addir_info(title,href,img,img,mode,1,'eps',True)
+		addir_info(vnu(title),href,img,img,mode,1,'eps',True)
 		
 	if query=="fptplay.net":
 		b=getHome('fptplay.html','https://fptplay.net')
@@ -2429,7 +2432,7 @@ def fptplay(name,url,img,fanart,mode,page,query,text=''):
 				
 	elif query=='eps':
 		data='film_id=%s&page=%d'%(xsearch('(\w{20,30})',url),page)
-		hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','referer':'','X-KEY':'123456'}
+		hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','referer':'','X-KEY':'play1game'}
 		b=xread('https://fptplay.net/show/episode',hd,data)
 		items=[i for i in re.findall('(<li.+?/li>)',b,re.S) if '"title_items"' in i]
 		for s in items:
@@ -2447,21 +2450,8 @@ def fptplay(name,url,img,fanart,mode,page,query,text=''):
 			addir_info(title,url,ico,'',mode,page+1,"eps",True)
 	
 	elif query=='play':
-		def stream(href,id,epi='1'):
-			hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','referer':'','X-KEY':'123456'}
-			ec=urllib.urlencode;HD='|User-Agent=Mozilla/5.0'
-			data=ec({'id':id,'type':'newchannel','quality':'3','episode':epi,'mobile':'web'})
-			try:xbmcsetResolvedUrl(json.loads(xread(href,hd,data)).get('stream')+HD)
-			except:
-				b=xread(url);id=xsearch("var id = '(.+?)'",b)
-				data=ec({'id':id,'type':'newchannel','quality':'3','episode':epi,'mobile':'web'})
-				href='https://fptplay.net/show/getlinklivetv'#cac link tv tren muc phim dang phat
-				try:xbmcsetResolvedUrl(json.loads(xread(href,hd,data)).get('stream')+HD)
-				except:pass
-				#print href,hd,data
-		
-		if '?' not in url:stream('https://fptplay.net/show/getlink',xsearch('(\w+)\.html',url))
-		else :stream('https://fptplay.net/show/getlink',url.split('?')[0],url.split('?')[1])
+		from resources.lib.servers import fptPlay;fpt=fptPlay()
+		xbmcsetResolvedUrl(fpt.playLink(url))
 
 def dangcaphd(name,url,img,mode,page,query):
 	ico=os.path.join(iconpath,'phim3s.png');homepage='http://dangcaphd.com/movie/movies.html'
@@ -5558,20 +5548,24 @@ def anime47(name,url,img,mode,page,query):
 		if get_home_page('anime47.html',urlhome,True):xbmc.executebuiltin("Container.Refresh")
 	
 	elif query=="search":make_mySearch('',url,'','',mode,'get')
-	elif query=="INP":
-		query=make_mySearch('',url,'','','','Input')
-		if query:return anime47(name,url,img,mode,page,query)
-		else:return 'no'
-	elif url=="anime47.com":
+	elif query=="INP" or url=="anime47.com":
+		if query=="INP":
+			query=make_mySearch('',url,'','','','Input')
+			if not query:return 'no'
+		
 		search_string = urllib.quote_plus(query)
-		url='http://anime47.com/search.php?q=%s'%search_string
-		body=make_request(url,hd)
-		for s in re.findall('(<li><a href.+?</li>)',body):
-			href=urlhome+xsearch('href="/(.+?)"',s)
-			img=ximg(s)
-			title=xsearch('<strong>([^<]+?)</strong>',s)
-			temp=xsearch('<br>([^<]+?)<',s)
-			if temp:title=title+' '+temp
+		url='http://anime47.com/tim-kiem.php?keyword=%s'%search_string
+		try:j=json.loads(xread(url,hd)[4:])
+		except:j={}
+		print j
+		for key in j:
+			i=j.get(key,{})
+			try:
+				title=u2s(i.get('title',''))
+				href=i.get('url','')
+				img=i.get('img','')
+			except:continue
+			if not title or not href:continue
 			addir_info(namecolor(title,c),href,img,'',mode,1,'episodes',True)
 
 	elif query=="list":

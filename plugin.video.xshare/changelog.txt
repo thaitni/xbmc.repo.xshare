@@ -1,3 +1,6 @@
+[B]Version 3.4.8.11[/B] <19/11/2016>:
+Fix fptplay, anime47
+
 [B]Version 3.4.8.10[/B] <18/11/2016>:
 Fix tvhay
 

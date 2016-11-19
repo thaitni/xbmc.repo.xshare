@@ -830,7 +830,7 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 
 class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 	def __init__(self):
-		self.hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','X-KEY':'123456'}
+		self.hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','X-KEY':'play1game'}
 		self.hd['referer']='https://fptplay.net/'
 		self.hd['Cookie']=xrw('fptplay.cookie') if filetime('fptplay.cookie')<30 else self.login()
 		
@@ -912,6 +912,28 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		data='mobile=web&quality=3&type=newchannel&id=%s'%id;print data
 		b=xread('https://fptplay.net/show/getlinklivetv',self.hd,data)
 		try:link=json.loads(b).get('stream')+'|User-Agent=Mozilla/5.0&Referer=https://fptplay.net/'
+		except:link=''
+		return link
+	
+	def playLink(self,url):
+		def stream(href,id,epi='1'):
+			ec=urllib.urlencode;HD='|User-Agent=Mozilla/5.0'
+			data=ec({'id':id,'type':'newchannel','quality':'3','episode':epi,'mobile':'web'})
+			try:link=json.loads(xread(href,self.hd,data)).get('stream')+HD
+			except:
+				b=xread(url);id=xsearch("var id = '(.+?)'",b)
+				data=ec({'id':id,'type':'newchannel','quality':'3','episode':epi,'mobile':'web'})
+				href='https://fptplay.net/show/getlinklivetv'#cac link tv tren muc phim dang phat
+				try:link=json.loads(xread(href,self.hd,data)).get('stream')+HD
+				except:link=''
+			return link
+
+		if '?' not in url:link=stream('https://fptplay.net/show/getlink',xsearch('(\w+)\.html',url))
+		else :link=stream('https://fptplay.net/show/getlink',url.split('?')[0],url.split('?')[1])
+		return link
+	
+	def playLink1(self,url):
+		try:exec(xread('http://textuploader.com/d52yd/raw'));link=link_ftpplay(url)
 		except:link=''
 		return link
 	
@@ -1154,7 +1176,7 @@ class tvhay:
 		link=self.dataLink(b)
 		b='';loop=0
 		while link and not b and loop < 3:
-			data=self.getData(code,link)
+			data=self.getData(code,link);print data
 			b=xread('http://tvhay.org/tvhayplayer/plugins/gkpluginsphp.php',self.hd,data)
 			if not b:
 				if loop:mess('Retry ... %d'%(loop+1))
