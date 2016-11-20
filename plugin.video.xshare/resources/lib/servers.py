@@ -597,15 +597,16 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		if not b:return 'fail'
 		link=b.geturl()
 		if link==url:
-			b=b.read()
+			b=b.read();free=False
 			if re.search('<title>.*Lỗi 404.*</title>|"index-404"',b):
 				mess(u'Tập tin quý khách yêu cầu không tồn tại!','Fshare.vn');result='fail'
 			elif 'sử dụng nhiều địa chỉ IP' in b:
 				mess(u'Acc Quý khách sử dụng nhiều địa chỉ IP!','Fshare.vn',10000)
 				return self.get_maxlink_free(url)
 			elif re.search('<i class="fa fa-star">',b):
-				mess(u'Bạn đang sử dụng FREE Fshare acc','fshare.vn')
-				return self.get_maxlink_free(url)
+				mess(u'Bạn đang sử dụng FREE Fshare acc','fshare.vn');free=True
+				link=self.get_maxlink_free(url)
+				if link and link!='fail':return link
 			elif not re.search('<a href="/logout">',b):
 				mess(u'Thông tin Fshare acc chưa đủ hoặc sai','fshare.vn')
 				return self.get_maxlink_free(url)
@@ -616,7 +617,11 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 			if re.search('class="fa fa-lock"',b):
 				data['DownloadForm[pwd]']=get_input(u'Hãy nhập: Mật khẩu tập tin')
 			b=xread('https://www.fshare.vn/download/get',self.hd,urllib.urlencode(data))
-			try:link=json.loads(b).get('url','')
+			try:
+				link=json.loads(b).get('url','')
+				if link and free:
+					mess(u'Acc của bạn nhận được link có băng thông giới hạn','Fshare.vn')
+					xbmc.sleep(5000)
 			except:link='fail'
 		return link
 	
@@ -1161,22 +1166,51 @@ class tvhay:
 			i+=chr(int(w[s:s+2],36))
 		return i
 	
-	def getData(self,code,link):
-		try:exec(code);data=get_data(link)
+	def getDataOnline(self,code,linkData):
+		try:exec(code);data=get_data(linkData)
 		except:data=''
 		return data
 	
-	def getLink(self,url):
-		if url.startswith('http:'):
-			if 'http://tvhay.org/xem-phim' not in url:
-				url=xsearch('href="([^<]+?)" class="btn-watch"',xread(url))
-		b=xreadc(url)
-		code=xread('http://textuploader.com/d5217/raw') if b else ''
-		self.hd['Cookie']=b.split('xshare')[1]
-		link=self.dataLink(b)
+	def getData(self,linkData):
+		def hexs(string):
+			s = ''
+			for i in range(1,len(string)+1):
+				s += str(ord(string[i - 1]))
+			s = hex(int(s)).lstrip('0x').rstrip('L')
+			return s
+
+		now=str(int(urllib2.time.time()))
+		md5=urllib2.hashlib.md5(now+"$%$#$#%#%$#@#@#^%").hexdigest()
+		cs=md5[:11]+now+md5[21:32]
+		
+		ss=cs[:27]+chr(21)*3
+		num=0;numf=1.0;j=30
+		for i in range(1,j+1):
+				num = j + ord(ss[i - 1]) * i
+				numf = numf * num
+		i="%.f"%numf
+		j=str(int(round(float(i[:15]+'.'+i[15:]))))
+		string=re.sub('\.\d+','.%s'%j[1:15],str(numf).upper())
+		
+		s=''
+		for i in range(1,len(string)+1):
+			s+=hexs(string[i-1:i+2])
+		string=s
+
+		s=''
+		for i in range(20,len(string)-16,2):
+			s = s + string[i - 1]
+		sc=s.upper()
+		data='link=%s&cs=%s&sc=%s'%(linkData,cs,sc)
+		return data	
+	
+	def googleLink(self,linkData,online=False):
 		b='';loop=0
-		while link and not b and loop < 3:
-			data=self.getData(code,link);print data
+		while linkData and not b and loop < 3:
+			if online:
+				code=xread('http://textuploader.com/d5217/raw')
+				data=self.getDataOnline(code,linkData)
+			else:data=self.getData(linkData)
 			b=xread('http://tvhay.org/tvhayplayer/plugins/gkpluginsphp.php',self.hd,data)
 			if not b:
 				if loop:mess('Retry ... %d'%(loop+1))
@@ -1186,6 +1220,17 @@ class tvhay:
 		except:j=''
 		if isinstance(j, unicode):link=j
 		else:link=googleItems(j)
+		return link
+	
+	def getLink(self,url):
+		if url.startswith('http:'):
+			if 'http://tvhay.org/xem-phim' not in url:
+				url=xsearch('href="([^<]+?)" class="btn-watch"',xread(url))
+		b=xreadc(url)
+		self.hd['Cookie']=b.split('xshare')[1]
+		linkData=self.dataLink(b)#;xbmc.log(linkData)
+		link=self.googleLink(linkData)
+		if not link:link=self.googleLink(linkData,True)
 		return link
 
 class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
