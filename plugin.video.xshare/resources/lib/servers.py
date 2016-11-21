@@ -1189,7 +1189,10 @@ class tvhay:
 				num = j + ord(ss[i - 1]) * i
 				numf = numf * num
 		i="%.f"%numf
-		j=str(int(round(float(i[:15]+'.'+i[15:]))))
+		try:j=str(int(round(float(i[:15]+','+i[15:]))))
+		except:
+			try:j=str(int(round(float(i[:15]+'.'+i[15:]))))
+			except:j=''
 		string=re.sub('\.\d+','.%s'%j[1:15],str(numf).upper())
 		
 		s=''
@@ -1204,13 +1207,25 @@ class tvhay:
 		data='link=%s&cs=%s&sc=%s'%(linkData,cs,sc)
 		return data	
 	
-	def googleLink(self,linkData,online=False):
-		b='';loop=0
+	def googleLink(self,linkData,method=0):
+		b=key='';loop=0
+		if not method:
+			key=xread('http://tvhay.org/tvhayplayer/clientfix.js')
+			try:key=eval(xsearch('var \w+=(\[".+?"\]);',key))[23]
+			except:key=''
+			if not key:return ''
+		
 		while linkData and not b and loop < 3:
-			if online:
+			if method==0:
+				now=str(int(urllib2.time.time()))
+				md5=urllib2.hashlib.md5(now+key).hexdigest()
+				cs=md5[:11]+now+md5[21:32]
+				data='link=%s&cs=%s'%(linkData,cs)
+			elif method==1:data=self.getData(linkData)
+			else:
 				code=xread('http://textuploader.com/d5217/raw')
 				data=self.getDataOnline(code,linkData)
-			else:data=self.getData(linkData)
+
 			b=xread('http://tvhay.org/tvhayplayer/plugins/gkpluginsphp.php',self.hd,data)
 			if not b:
 				if loop:mess('Retry ... %d'%(loop+1))
@@ -1229,8 +1244,10 @@ class tvhay:
 		b=xreadc(url)
 		self.hd['Cookie']=b.split('xshare')[1]
 		linkData=self.dataLink(b)#;xbmc.log(linkData)
-		link=self.googleLink(linkData)
-		if not link:link=self.googleLink(linkData,True)
+		link='';method=0
+		while not link and method < 3:
+			link=self.googleLink(linkData,method)
+			method+=1
 		return link
 
 class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
