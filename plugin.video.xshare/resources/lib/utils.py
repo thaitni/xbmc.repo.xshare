@@ -49,13 +49,13 @@ def ximg(s,p=''):return xsearch('src="(.+?)"',s,result=xsearch(p,s))
 def refa(p,s,f=0):return re.findall(p,s,f)
 def refas(p,s):return re.findall(p,s,re.S)
 def mess(message='',title='',timeShown=5000):
-	if not message:xbmc.executebuiltin("Dialog.Close(all, true)")
-	else:
+	if message:
 		title=': [COLOR blue]%s[/COLOR]'%title if title else ''
 		s0='[COLOR green][B]Xshare[/B][/COLOR]'+title
-		s1='[COLOR red]%s[/COLOR]'%message if '!' in message else u'[COLOR gold]%s[/COLOR]'%message
-		#icon=addon.icon
+		message=s2u(message)
+		s1=u'[COLOR red]%s[/COLOR]'%message if '!' in message else u'[COLOR gold]%s[/COLOR]'%message
 		xbmc.executebuiltin((u'XBMC.Notification(%s,%s,%s,%s)'%(s0,s1,timeShown,icon)).encode("utf-8"))
+	else:xbmc.executebuiltin("Dialog.Close(all, true)")
 
 def xselect(label,choices):
 	dialog = xbmcgui.Dialog()
@@ -71,8 +71,9 @@ def googleItems(j,link='link',label='label'):#Thu nghiem tren phim14
 	link=''
 	if l:
 		for href,label in ls(l):
-			link=xcheck(href.replace('\\',''));print href
-			if link:break
+			#link=xcheck(href.replace('\\',''))#;print href
+			resp=xget(href.replace('\\',''))#;print href
+			if resp:link=href;break
 	return link
 
 def rsl(s):

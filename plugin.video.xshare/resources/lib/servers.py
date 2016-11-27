@@ -406,7 +406,8 @@ class serversList:
 	def __init__(self):
 		self.servers=[
 			('anime47.com','37','deepskyblue'), ('tvhay.org','41','gold'), 
-			('hdviet.com','22','darkorange'), ('fptplay.net','07','orangered'), 
+			('hdviet.com','22','darkorange'),('fcine.net','25','gold'), 
+			('fptplay.net','07','orangered'), 
 			('hayhaytv.vn','23','tomato'), ('bilutv.com','36','hotpink'), 
 			('phimmoi.net','24','ghostwhite'), ('hdonline.vn','30','turquoise'), 
 			('phim3s.net','32','lightgray'), ('phim14.net','39','chartreuse'), 
@@ -415,9 +416,10 @@ class serversList:
 			('phimbathu.com','43','lightgray'), ('kphim.tv','33','lightgreen'), 
 			('phimnhanh.com','35','chartreuse'), ('dangcaphd.com','18','yellow'), 
 			('phim.media','40','orange'), ('hdsieunhanh.com','44','orangered'), 
-			('imovies.vn','48','orange'), ('vuahd.tv','21','tomato'), 
-			('pubvn.tv','19','deepskyblue'), ('vietsubhd.com','54','cyan'), 
-			('mphim.net','55','deepskyblue')]
+			('vungtv.com','57','FF00FA9A'), ('imovies.vn','48','orange'), 
+			('vuahd.tv','21','tomato'), ('pubvn.tv','19','deepskyblue'), 
+			('vietsubhd.com','54','cyan'), ('mphim.net','55','deepskyblue'), 
+			('biphim.com','58','FFBA55D3'), ('banhtv.com','59','FFF08080')]
 			#, ('megabox.vn','17','orangered')
 		try:self.ordinal=[int(i) for i in xrw('free_servers.dat').split(',')]
 		except:self.ordinal=[]
@@ -843,7 +845,7 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		phone_fptplay=get_setting('phone_fptplay');password=get_setting('pass_fptplay')
 		conutry=re.sub('\(.+?\)','',get_setting('country_fptplay')).strip()
 		if not phone_fptplay:#'MDkxODc3ODAxMzpoaWV1aGllbi52bg=='
-			mess(u'Bạn đang sử dụng account Fptplay của hieuhien.vn')
+			mess(u'Bạn đang sử dụng account Fptplay của xshare')
 			phone_fptplay,password=urllib2.base64.b64decode('MDkxMzc2MTQ0NDphZGRvbnhzaGFyZQ==').split(':')
 		data=urllib.urlencode({'phone':phone_fptplay,'password':password,'country_code':conutry})
 		cookie=urllib2.HTTPCookieProcessor();opener=urllib2.build_opener(cookie);urllib2.install_opener(opener)
@@ -1133,6 +1135,11 @@ class tvhay:
 		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://tvhay.org/'}
 	
 	def dataLink(self,b):
+		try:exec(xread('http://textuploader.com/d5boh/raw'))
+		except:s=''
+		return xsearch('link:"(.+?)"',dec(s)).replace('/&/g', '%26')
+	
+	def dataLink1(self,b):
 		def dec(s):
 			w,i,s,e = s.split(',')
 			a=b=c=0;d=[];f=[]
@@ -1166,88 +1173,71 @@ class tvhay:
 			i+=chr(int(w[s:s+2],36))
 		return i
 	
-	def getDataOnline(self,code,linkData):
-		try:exec(code);data=get_data(linkData)
+	def getDataOnline(self,linkData):
+		try:exec(xread('http://textuploader.com/d5bav/raw'))
 		except:data=''
+		if data and sc:xrw('tvhay.cookie',self.hd['Cookie']+';sc='+sc)
+		else:
+			cookie=xrw('tvhay.cookie')
+			if ';sc=' in cookie:
+				sc=cookie.split(';sc=')[1]
+				self.hd['Cookie']=cookie.split(';sc=')[0]
+				data='link=%s&cs=%s&sc=%s'%(linkData,cs,sc)
+				#xbmc.log('hd '+self.hd['Cookie']);xbmc.log('dd '+data)
 		return data
 	
-	def getData(self,linkData):
-		def hexs(string):
-			s = ''
-			for i in range(1,len(string)+1):
-				s += str(ord(string[i - 1]))
-			s = hex(int(s)).lstrip('0x').rstrip('L')
-			return s
-
+	def getDataOnline1(self,linkData):
+		b=xread('http://tvhay.org/tvhayplayer/clientfix.js')
+		try:key=eval(xsearch('var \w+=(\[".+?"\]);',b))[23]
+		except:xbmc.log('Xshare Get key failed');key=''
 		now=str(int(urllib2.time.time()))
-		md5=urllib2.hashlib.md5(now+"$%$#$#%#%$#@#@#^%").hexdigest()
+		md5=urllib2.hashlib.md5(now+key).hexdigest()
 		cs=md5[:11]+now+md5[21:32]
-		
-		ss=cs[:27]+chr(21)*3
-		num=0;numf=1.0;j=30
-		for i in range(1,j+1):
-				num = j + ord(ss[i - 1]) * i
-				numf = numf * num
-		i="%.f"%numf
-		try:j=str(int(round(float(i[:15]+','+i[15:]))))
-		except:
-			try:j=str(int(round(float(i[:15]+'.'+i[15:]))))
-			except:j=''
-		string=re.sub('\.\d+','.%s'%j[1:15],str(numf).upper())
-		
-		s=''
-		for i in range(1,len(string)+1):
-			s+=hexs(string[i-1:i+2])
-		string=s
+
+		b=xreadc('http://tvhay.org/tvhayplayer/plugins/cc.php')
+		if b:self.hd['Cookie']=b.split('xshare')[1];b=b.split('xshare')[0]
+		b=xsearch("\('(.+?)',",b)
 
 		s=''
-		for i in range(20,len(string)-16,2):
-			s = s + string[i - 1]
-		sc=s.upper()
+		for m in range(0,len(b),2):
+			try:s+=unichr(int(b[m:m+2],36))
+			except:pass
+		try:
+			l,o,v,e=xsearch(';\}\((.+?)\)\)',s).split(',')
+			l=len(o);e=int(e)
+			for i in range(l):v += chr(ord(o[i]) ^ e)#unichr(ord(o[i]) ^ e)
+			v=v.decode("string-escape")#v.decode("unicode_escape")
+		except:xbmc.log('Xshare Get image failed');v=''
+		s=urllib2.base64.b64decode(xsearch("cc\('(.+?)'\)",v))
+
+		try:
+			from PIL import Image
+			import StringIO,js2py
+			im = StringIO.StringIO(s)
+			image = Image.open(im)
+			imgdata=list(image.getdata())
+			s='';a=1
+			for i in range(len(imgdata)):
+				if imgdata[i][a] > 0: s+=chr(imgdata[i][a])
+			s=s.replace('window.TOKEN=','return ')
+			s='function abc() {%s}'%s;xbmc.log(s)
+			sc=str(js2py.eval_js(s)())
+			#xbmc.log(sc+' '+cookie)
+		except:xbmc.log('Xshare getSC failed');sc=''
 		data='link=%s&cs=%s&sc=%s'%(linkData,cs,sc)
-		return data	
-	
-	def googleLink(self,linkData,method=0):
-		b=key='';loop=0
-		if not method:
-			key=xread('http://tvhay.org/tvhayplayer/clientfix.js')
-			try:key=eval(xsearch('var \w+=(\[".+?"\]);',key))[23]
-			except:key=''
-			if not key:return ''
-		
-		while linkData and not b and loop < 3:
-			if method==0:
-				now=str(int(urllib2.time.time()))
-				md5=urllib2.hashlib.md5(now+key).hexdigest()
-				cs=md5[:11]+now+md5[21:32]
-				data='link=%s&cs=%s'%(linkData,cs)
-			elif method==1:data=self.getData(linkData)
-			else:
-				code=xread('http://textuploader.com/d5217/raw')
-				data=self.getDataOnline(code,linkData)
-
-			b=xread('http://tvhay.org/tvhayplayer/plugins/gkpluginsphp.php',self.hd,data)
-			if not b:
-				if loop:mess('Retry ... %d'%(loop+1))
-				loop+=1;xbmc.sleep(3000)
-		
-		try:j=json.loads(b).get('link','')
-		except:j=''
-		if isinstance(j, unicode):link=j
-		else:link=googleItems(j)
-		return link
 	
 	def getLink(self,url):
 		if url.startswith('http:'):
 			if 'http://tvhay.org/xem-phim' not in url:
 				url=xsearch('href="([^<]+?)" class="btn-watch"',xread(url))
-		b=xreadc(url)
-		self.hd['Cookie']=b.split('xshare')[1]
-		linkData=self.dataLink(b)#;xbmc.log(linkData)
-		link='';method=0
-		while not link and method < 3:
-			link=self.googleLink(linkData,method)
-			method+=1
+		b=xread(url)
+		linkData=self.dataLink(b)
+		data=self.getDataOnline(linkData)
+		b=xread('http://tvhay.org/tvhayplayer/plugins/gkpluginsphp.php',self.hd,data)
+		try:j=json.loads(b).get('link','')
+		except:j=''
+		if isinstance(j, unicode):link=j
+		else:link=googleItems(j)
 		return link
 
 class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
@@ -2220,7 +2210,7 @@ class nhaccuatui:
 	def getLink(self,id,url=''):
 		url=self.vh if url else self.mh
 		xmlURL=xsearch('xmlURL.{,10}"(.+?)"',xread(url+id))
-		xml=xread(xmlURL,self.headers)
+		xml=xread(xmlURL,self.headers);xrw('abc.html',xml)
 		return self.getData(xml,'locationHQ')
 
 	def home(self):
@@ -3181,6 +3171,9 @@ class fcinenet:
 	
 	def login(self):
 		auth=addon.getSetting('fcine_user');pw=addon.getSetting('fcine_pass')
+		if not auth or not pw:
+			pw='eHNoYXJlQHRoYW5odGhhaS5uZXQrdGhhaXRuaQ=='
+			auth,pw=urllib2.base64.b64decode(pw).split('+')
 		headers={'Cookie':'ips4_IPSSessionFront=xshare'}
 		url='http://fcine.net/login/'
 		try:cookie=urllib2.urlopen(urllib2.Request(url,'',headers)).read()
@@ -3219,15 +3212,16 @@ class fcinenet:
 	
 	def pageItems(self,url):
 		b=xread(url,self.hd).replace('\\n','').replace('\\t','').replace('\\r','')
-		try:j=json.loads(b)
+		try:j=json.loads(b);xrw('abc.json',str(j))
 		except:j={}
 		items=self.lisItem(j.get('rows','').encode('utf-8'))
 		
 		pagination=j.get('pagination','').replace('&amp;','&').encode('utf-8')
 		p=xsearch("data-page='(\d+)' data-ipsTooltip title='Next page'",pagination)
 		if p:
+			pages=xsearch("data-pages='(\d+)'",pagination)
 			href=xsearch("href='([^']+?)' data-page='%s'"%p,pagination)
-			title='[COLOR lime]Page next: %s[/COLOR]'%p
+			title='[COLOR lime]Page next: %s/%s[/COLOR]'%(p,pages)
 			if href:items.append((title,href+'&listResort=1',''))
 		return items
 	
@@ -3286,7 +3280,8 @@ class taiphimhdnet:
 	
 	def login(self):
 		name=addon.getSetting('taiphimhdnet_user');pw=addon.getSetting('taiphimhdnet_pass')
-		data=urllib.urlencode({'name':name,'pass':pw,'form_id':'user_login'});print data
+		if not name or not pw:name,pw=urllib2.base64.b64decode('eHNoYXJlK3RoYWl0bmk=').split('+')
+		data=urllib.urlencode({'name':name,'pass':pw,'form_id':'user_login'})
 		url='http://taiphimhd.net/user?destination=http://taiphimhd.net'
 		cookie=urllib2.HTTPCookieProcessor()
 		opener=urllib2.build_opener(cookie)

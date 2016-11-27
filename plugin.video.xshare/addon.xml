@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR] [COLOR green]XBMC[/COLOR] [COLOR blue]HDVideo[/B][/COLOR]" version="3.4.8.13" provider-name="thaitni">
+<addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR] [COLOR green]XBMC[/COLOR] [COLOR blue]HDVideo[/B][/COLOR]" version="3.4.9.0" provider-name="thaitni">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
-		<import addon="script.video.F4mProxy"  optional="true"/>
-		<import addon="script.module.youtube.dl"  optional="true"/>
+		<import addon="script.video.F4mProxy" optional="true"/>
+		<import addon="script.module.youtube.dl" optional="true"/>
+		<import addon="script.module.six"/>
+		<import addon="script.module.pil"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="xshare.py">
         <provides>video</provides>
