@@ -8,7 +8,7 @@ addon= xbmcaddon.Addon()
 profile=xbmc.translatePath(addon.getAddonInfo('profile'))
 datapath=os.path.join(profile,'data')
 tempfolder=xbmc.translatePath('special://temp')
-xsharefolder=os.path.join(tempfolder,'xshare')
+xsharefolder=os.path.join(profile,'xshare')
 icon=os.path.join(profile,'icon','icon.png')
 #b.getcode();b.headers.get('Set-Cookie');b.geturl()
 class myaddon:
@@ -106,25 +106,27 @@ def xread(url,headers={'User-Agent':'Mozilla/5.0'},data=None,timeout=30):
 	req=urllib2.Request(url,data,headers)
 	try:
 		res=urllib2.urlopen(req, timeout=timeout)
-		b=res.read()
-		if res.headers.getheader('content-encoding')=='gzip':
-			from StringIO import StringIO
-			import gzip
-			buf=StringIO(b)
+		hd=dict(res.headers.items())
+		cookie=hd.get('set-cookie','')
+		encoding=hd.get('content-encoding','')
+		if encoding=='gzip':
+			import StringIO,gzip
+			buf=StringIO.StringIO(res.read())
 			f=gzip.GzipFile(fileobj=buf)
 			b=f.read()
+		else:b=res.read()
 		res.close()
 	except:b=''
 	return b
 
-def xreadc(url,c=''):
+def xreadc(url,hd={'User_Agent':'Mozilla/5.0'},data='',c=''):
 	cookie=urllib2.HTTPCookieProcessor()
 	opener=urllib2.build_opener(cookie)
 	urllib2.install_opener(opener)
-	opener.addheaders=[('User_Agent','Mozilla/5.0')]
+	opener.addheaders=hd.items()
 	if c:opener.addheaders=[('Cookie',c)]
 	try:
-		o=opener.open(url);b=o.read();o.close()
+		o=opener.open(url,data);b=o.read();o.close()
 		b+='xshare%s'%';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar)
 	except:b=''
 	return b
@@ -237,3 +239,59 @@ def siteInfo(url):
 		else:title,url=leechInfo(url)
 	if not title:url=''
 	return title,url
+
+def getLinkFree1(url):
+	data='url_download=https%3A%2F%2Fwww.fshare.vn%2Ffile%2F'+url.rsplit('/',1)[1]
+	link='';loop=0
+	while not link and loop < 2:
+		b=xread('http://www.aku.vn/linksvip',data=data)
+		link=xsearch('<a href=([^<]+?) target=_blank',b)
+		if link and '/account/' in link:link=''
+		elif link:mess('[COLOR cyan]Thanks to Nhat Vo Van[/COLOR]','get link from aku.vn')
+		loop+=1
+	
+	d=[('ZnJlZXMuZnNoYXJlQGdtYWlsLmNvbToxMjM0NTY3','Trương Văn Hiếu','thuthuatvoz.com'),
+		('cGhhbXF1b2N2aWV0aHA5MEBnbWFpbC5jb206Y2hvbmd5ZXV2bw==','Long Kwei Tei','Cong Dong KODIl Viet Nam'),
+		('eHNoYXJlQHRoYW5odGhhaS5uZXQ6dGhhaXRuaUA=','xshare','xshare')]
+	loop=0;l=len(d);j=[]
+	while (not link or link=='fail') and loop < l:
+		i=100
+		while i not in j:
+			i=urllib2.random.randint(0,l-1)
+			if i not in j:j.append(i)
+			else:i=100
+		
+		try:
+			b=xreadc('http://www.fshare.vn')
+			cookie=b.split('xshare')[1]
+			fs_csrf=xsearch('value="(.+?)" name="fs_csrf"',b)
+		except:cookie=fs_csrf=''
+		u,p=urllib2.base64.b64decode(d[i][0]).split(':')
+		data=urllib.urlencode({"LoginForm[email]":u,"LoginForm[password]":p,"fs_csrf":fs_csrf})
+		hd={'Cookie':cookie,'Content-Type':'application/x-www-form-urlencoded'}
+		conn = urllib2.httplib.HTTPSConnection('www.fshare.vn')
+		conn.request('POST', '/login',data,hd)
+		try:
+			response=conn.getresponse()
+			if response.status==302:
+				cookie=response.getheader('set-cookie')
+				mess('[COLOR cyan]Thanks to %s[/COLOR]'%d[i][1],d[i][2])
+				xbmc.sleep(2000)
+			else:cookie=''
+		except:cookie=''
+		hd={'User-Agent':'Mozilla/5.0','x-requested-with':'XMLHttpRequest','Cookie':cookie}
+		b=xget(url,hd)
+		link=b.geturl()
+		if link==url:
+			b=b.read()
+			fs_csrf=xsearch('value="(.+?)" name="fs_csrf"',b)
+			downloadForm=xsearch('id="DownloadForm_linkcode" type="hidden" value="(.+?)"',b)
+			data={'fs_csrf':fs_csrf,'DownloadForm[linkcode]':downloadForm,'ajax':'download-form'}
+			if xsearch('class="(fa fa-lock)"',b):
+				data['DownloadForm[pwd]']=get_input(u'Hãy nhập: Mật khẩu tập tin')
+			b=xread('https://www.fshare.vn/download/get',hd,urllib.urlencode(data))
+			try:link=json.loads(b).get('url','')
+			except:link='fail'
+		xget('https://www.fshare.vn/logout',hd)
+		loop+=1
+	return link

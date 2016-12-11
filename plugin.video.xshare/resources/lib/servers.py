@@ -590,7 +590,7 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 	
 	def get_maxlink_free(self,url):
 		code=xread('http://textuploader.com/d5fwa/raw')
-		try:exec(code);link=getLinkFree(url)
+		try:exec(code,globals(),globals());link=getLinkFree(url)
 		except:link='fail'
 		return link
 	
@@ -601,7 +601,7 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		if link==url:
 			b=b.read();free=False
 			if re.search('<title>.*Lỗi 404.*</title>|"index-404"',b):
-				mess(u'Tập tin quý khách yêu cầu không tồn tại!','Fshare.vn');result='fail'
+				mess(u'Tập tin quý khách yêu cầu không tồn tại!','Fshare.vn');return 'noFile'
 			elif 'sử dụng nhiều địa chỉ IP' in b:
 				mess(u'Acc Quý khách sử dụng nhiều địa chỉ IP!','Fshare.vn',10000)
 				return self.get_maxlink_free(url)
@@ -933,6 +933,7 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 				href='https://fptplay.net/show/getlinklivetv'#cac link tv tren muc phim dang phat
 				try:link=json.loads(xread(href,self.hd,data)).get('stream')+HD
 				except:link=''
+			
 			return link
 
 		if '?' not in url:link=stream('https://fptplay.net/show/getlink',xsearch('(\w+)\.html',url))
@@ -987,18 +988,24 @@ class ifile:
 
 class hayhayvn:
 	def __init__(self,c):
-		self.hd={'User-Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','Referer':'http://www.hayhaytv.vn'}
+		self.hd={'User-Agent':'Mozilla/5.0',
+			'X-Requested-With':'XMLHttpRequest',
+			'Referer':'http://www.hayhaytv.vn',
+			'Cookie':xrw('hayhaytv.cookie')}
 		self.c=c
 	
 	def getLink(self,url):
 		tap=xsearch('-Tap-(\d+)-',url)
-		if tap:tap='_'+tap
+		if tap:tap='_%s_'%tap
 		if '/show-' in url:url='http://www.hayhaytv.vn/getsourceshow/%s'%(xsearch('-(\w+)\.html',url)+tap)
 		else:url='http://www.hayhaytv.vn/getsource/%s'%(xsearch('-(\w+)\.html',url)+tap)
-		try:j=json.loads(xread(url,self.hd)).get('sources',[])
+		ip=xsearch("'(.+?)'",xread('http://ip.hayhaytv.vn/',self.hd))
+		b=xread(url+'?ip='+ip,self.hd)
+		try:j=json.loads(b).get('sources',[])
 		except:j=[]
-		items=ls([(i.get('file'),rsl(i.get('label'))) for i in j])
-		return items
+		link=googleItems(j,'file','label')
+		#items=ls([(i.get('file'),rsl(i.get('label'))) for i in j])
+		return link
 	
 	def getLink1(self,url):
 		b=xread(url)
@@ -1134,14 +1141,154 @@ class tvhay:
 	def __init__(self):
 		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://tvhay.org/'}
 	
-	def dataLink(self,b):
-		try:exec(xread('http://textuploader.com/d5boh/raw'))
-		except:s=''
-		return xsearch('link:"(.+?)"',dec(s)).replace('/&/g', '%26')
+	def getLink1(self,url):
+		def dataLink(s):
+			def dataLinkjs(s):
+				w,i,s,e=s
+				a=b=c=0;d=[];f=[]
+				while (True):
+					if a<5:f.append(w[a])
+					elif a<len(w):d.append(w[a])
+					a+=1
+					if b<5:f.append(i[b])
+					elif b<len(i):d.append(i[b])
+					b+=1
+					if c<5:f.append(s[c])
+					elif c<len(s):d.append(s[c])
+					c+=1
+					if len(w)+len(i)+len(s)+len(e)==len(d)+len(f)+len(e):break
+
+				b=0;k=[];h=''.join(f);g=''.join(d)
+				for a in range(0,len(d),2):
+					m=1 if ord(h[b])%2 else -1
+					k.append(chr(int(g[a:a+2],36)-m))
+					b+=1
+					if b>=len(f):b=0
+				return ''.join(k)
+
+			p=["function(w,i,s,e){var lIll=0;var ll1I=0;var Il1l=0;var ll1l=[];var l1lI=[];while(true){if(lIll<5)l1lI.push(w.charAt(lIll));else if(lIll<w.length)ll1l.push(w.charAt(lIll));lIll++;if(ll1I<5)l1lI.push(i.charAt(ll1I));else if(ll1I<i.length)ll1l.push(i.charAt(ll1I));ll1I++;if(Il1l<5)l1lI.push(s.charAt(Il1l));else if(Il1l<s.length)ll1l.push(s.charAt(Il1l));Il1l++;if(w.length+i.length+s.length+e.length==ll1l.length+l1lI.length+e.length)break;}var lI1l=ll1l.join('');var I1lI=l1lI.join('');ll1I=0;var l1ll=[];for(lIll=0;lIll<ll1l.length;lIll+=2){var ll11=-1;if(I1lI.charCodeAt(ll1I)%2)ll11=1;l1ll.push(String.fromCharCode(parseInt(lI1l.substr(lIll,2),36)-ll11));ll1I++;if(ll1I>=l1lI.length)ll1I=0;}return l1ll.join('');}"]
+			
+			while [i for i in p if i in s]:
+				if p[0] in s:
+					try:
+						#b=eval(s.split(p[0])[1][:-2])
+						b=eval(xsearch("(\(.+?\))",s.split(p[0])[1]))
+						s=dataLinkjs(b)
+					except:s=''
+			
+			result=xsearch('link:"(.+?)"',s).replace('/&/g', '%26')
+			return result
+
+		def getSC(b='',cookie=''):
+			if not b:
+				hd={'User-Agent': 'Mozilla/5.0','Referer': 'http://tvhay.org','Cookie':cookie}
+				b=xreadc('http://tvhay.org/tvhayplayer/plugins/cc.php',hd)
+				cookie=b.split('xshare')[1];b=b.split('xshare')[0]
+			
+			p=['eval(function(l,o,v,e){l=o.length;for(var i=0;i<l;i++){v+=String.fromCharCode(o.charCodeAt(i)^e)}v=unescape(v);return v;}','eval(function(t,i,m,o){for(m=0;m<t.length;m+=2){i+=String.fromCharCode(parseInt(t.substr(m,2),36));}return i;}','eval(function(p,a,c,k,e,d)']
+			
+			string='';result=0
+			while [i for i in p if i in b]:
+				if p[0] in b:
+					b=b.replace(p[0],'')[:-1]
+					try:j=eval(b);l,o,v,e=j
+					except:l,o,v,e=['']*4
+					for i in range(len(o)):v+=chr(ord(o[i])^e)
+					v=v.decode("string-escape")
+					b=v
+				
+				elif p[1] in b:
+					b=b.replace(p[1],'')[:-1]
+					try:j=eval(b);t,i,m,o=j
+					except:t,i,m,o=['']*4
+					for m in range(0,len(t),2):
+						try:i+=unichr(int(t[m:m+2],36))
+						except:pass
+					b=i
+				
+				elif p[2] in b:
+					s=xsearch('(\w{10000,20000})',b)
+					b=p[1]+"('%s','','',''))"%s
+				
+				if '}cc(' in b:
+					string=xsearch("\}cc(\(.+?\))",b)
+					try:
+						s,e=eval(string)
+						from PIL import Image
+						import StringIO,js2py
+						im = StringIO.StringIO(urllib2.base64.b64decode(s))
+						image = Image.open(im)
+						imgdata=list(image.getdata())
+						s=''
+						for i in range(len(imgdata)):
+							if imgdata[i][e] > 0: s+=chr(imgdata[i][e])
+					except:s=''
+					
+					cc=xsearch('\+"\+_\.([$\_]+?)\+";"',s)
+					s=[i.replace('#','";"') for i in s.replace('";"','#').split(';')]
+					ss='';biens=[];result=[]
+					for i in s:
+						bien=i.split('=',1)[0]
+						if '.' not in bien and bien not in biens:
+							ss='var '
+							result.append(None);biens.append(bien)
+						ss=ss+i+';'
+						try:
+							js=js2py.eval_js(ss)
+							if isinstance(js,int):result[len(result)-1]=js
+							elif isinstance(js,object):
+								try:
+									js=js.to_dict()
+									result[len(result)-1]=js
+									if len(result)>1:break
+								except:pass
+						except:pass
+					if len(result)>1 and isinstance(result[1],dict) and result[1].has_key(cc):
+						try:result=result[0]+result[1].get(cc)
+						except:result=0
+					else:result=0
+			return result,cookie
+
+		def maxLink(url):
+			hd={'User-Agent':'Mozilla/5.0','Referer':'http://tvhay.org/','Cookie':''}
+			if url.startswith('http:'):
+				if 'http://tvhay.org/xem-phim' not in url:
+					b=xreadc(url)
+					hd['Cookie']=b.split('xshare')[1]
+					url=xsearch('href="([^<]+?)" class="btn-watch"',b)
+
+			b=xreadc(url,hd)
+			data=xsearch('(<div id="playdr".+?/script>)',b,1,re.S)
+			data=xsearch('(function.+?;)</script>',data)
+			if not data:
+				hd['Cookie']=b.split('xshare')[1]
+				href=xsearch('href="([^<]+?)" class="btn-watch"',b)
+				if href:url=href
+				b=xreadc(url,hd)
+				data=xsearch('(<div id="playdr".+?/script>)',b,1,re.S)
+				data=xsearch('(function.+?;)</script>',data)
+				
+			linkData=dataLink(data)
+
+			key="$%$#$#%#%$#@#@#^%"
+			now=str(int(urllib2.time.time()))
+			md5=urllib2.hashlib.md5(now+key).hexdigest()
+			cs=md5[:11]+now+md5[21:32]
+
+			loop=0;sc=0;cookie=hd['Cookie']
+			while not sc and loop<3:sc,cookie=getSC('',cookie);loop+=1
+			hd['Cookie']=cookie
+
+			try:data='link=%s&cs=%s&sc=%d'%(linkData,cs,sc)
+			except:data=''
+			b=xread('http://tvhay.org/tvhayplayer/plugins/gkpluginsphp.php',hd,data)
+			try:j=json.loads(b).get('link');link=googleItems(j)
+			except:link=''
+			return link
 	
-	def dataLink1(self,b):
-		def dec(s):
-			w,i,s,e = s.split(',')
+	def dataLink(self,s):
+		def dataLinkjs(s):
+			w,i,s,e=s
 			a=b=c=0;d=[];f=[]
 			while (True):
 				if a<5:f.append(w[a])
@@ -1162,82 +1309,127 @@ class tvhay:
 				b+=1
 				if b>=len(f):b=0
 			return ''.join(k)
-	
-		s=xsearch("('\w+?','\w+?','\w+?','\w+?')",b).replace("'","")
-		s=xsearch("(\w{100,},\w+,\w+,\w+)",dec(s).replace("'",''))
-		s=xsearch("(\w{100,},\w+,\w+,\w+)",dec(s).replace("'",''))
-		return xsearch('link:"(.+?)"',dec(s)).replace('/&/g', '%26')
-	
-	def dec_(self, w, i, s, e):
-		for s in range(0,len(w),2):
-			i+=chr(int(w[s:s+2],36))
-		return i
-	
-	def getDataOnline(self,linkData):
-		try:exec(xread('http://textuploader.com/d5bav/raw'))
-		except:data=''
-		if data and sc:xrw('tvhay.cookie',self.hd['Cookie']+';sc='+sc)
-		else:
-			cookie=xrw('tvhay.cookie')
-			if ';sc=' in cookie:
-				sc=cookie.split(';sc=')[1]
-				self.hd['Cookie']=cookie.split(';sc=')[0]
-				data='link=%s&cs=%s&sc=%s'%(linkData,cs,sc)
-				#xbmc.log('hd '+self.hd['Cookie']);xbmc.log('dd '+data)
-		return data
-	
-	def getDataOnline1(self,linkData):
-		b=xread('http://tvhay.org/tvhayplayer/clientfix.js')
-		try:key=eval(xsearch('var \w+=(\[".+?"\]);',b))[23]
-		except:xbmc.log('Xshare Get key failed');key=''
-		now=str(int(urllib2.time.time()))
-		md5=urllib2.hashlib.md5(now+key).hexdigest()
-		cs=md5[:11]+now+md5[21:32]
 
-		b=xreadc('http://tvhay.org/tvhayplayer/plugins/cc.php')
-		if b:self.hd['Cookie']=b.split('xshare')[1];b=b.split('xshare')[0]
-		b=xsearch("\('(.+?)',",b)
+		p=["function(w,i,s,e){var lIll=0;var ll1I=0;var Il1l=0;var ll1l=[];var l1lI=[];while(true){if(lIll<5)l1lI.push(w.charAt(lIll));else if(lIll<w.length)ll1l.push(w.charAt(lIll));lIll++;if(ll1I<5)l1lI.push(i.charAt(ll1I));else if(ll1I<i.length)ll1l.push(i.charAt(ll1I));ll1I++;if(Il1l<5)l1lI.push(s.charAt(Il1l));else if(Il1l<s.length)ll1l.push(s.charAt(Il1l));Il1l++;if(w.length+i.length+s.length+e.length==ll1l.length+l1lI.length+e.length)break;}var lI1l=ll1l.join('');var I1lI=l1lI.join('');ll1I=0;var l1ll=[];for(lIll=0;lIll<ll1l.length;lIll+=2){var ll11=-1;if(I1lI.charCodeAt(ll1I)%2)ll11=1;l1ll.push(String.fromCharCode(parseInt(lI1l.substr(lIll,2),36)-ll11));ll1I++;if(ll1I>=l1lI.length)ll1I=0;}return l1ll.join('');}"]
+		
+		while [i for i in p if i in s]:
+			if p[0] in s:
+				try:
+					w,i,s,e=eval(xsearch("(\(.+?\))",s.split(p[0])[1]))
+					a=b=c=0;d=[];f=[]
+					while (True):
+						if a<5:f.append(w[a])
+						elif a<len(w):d.append(w[a])
+						a+=1
+						if b<5:f.append(i[b])
+						elif b<len(i):d.append(i[b])
+						b+=1
+						if c<5:f.append(s[c])
+						elif c<len(s):d.append(s[c])
+						c+=1
+						if len(w)+len(i)+len(s)+len(e)==len(d)+len(f)+len(e):break
 
-		s=''
-		for m in range(0,len(b),2):
-			try:s+=unichr(int(b[m:m+2],36))
-			except:pass
+					b=0;k=[];h=''.join(f);g=''.join(d)
+					for a in range(0,len(d),2):
+						m=1 if ord(h[b])%2 else -1
+						k.append(chr(int(g[a:a+2],36)-m))
+						b+=1
+						if b>=len(f):b=0
+					s=''.join(k)
+				except:s=''
+		
+		result=xsearch('link:"(.+?)"',s).replace('/&/g', '%26')
+		return result
+
+	def getLink2(self,url,hd):
+		if 'http://tvhay.org/xem-phim' not in url:
+			hd['Referer']=url;hd['Cookie']=hd['Cookie']+'; _isBlogspot=true'
+			b=xread(url,hd)
+			url=xsearch('href="([^<]+?)" class="btn-watch"',b)
+		
+		linkData=loop=0
+		if not hd.get('Referer'):hd['Referer']=url;hd['Cookie']=hd['Cookie']+'; _isBlogspot=true'
+		while not linkData and loop<3:
+			b=xread(url,hd)
+			
+			data=xsearch('(<div id="playdr".+?/script>)',b,1,re.S)
+			data=xsearch('(function.+?;)</script>',data)
+			if not data:
+				href=xsearch('href="([^<]+?)" class="btn-watch"',b)
+				if href:url=href
+				b=xread(url,hd)
+				data=xsearch('(<div id="playdr".+?/script>)',b,1,re.S)
+				data=xsearch('(function.+?;)</script>',data)
+				
+			s=data
+			p=["function(w,i,s,e){var lIll=0;var ll1I=0;var Il1l=0;var ll1l=[];var l1lI=[];while(true){if(lIll<5)l1lI.push(w.charAt(lIll));else if(lIll<w.length)ll1l.push(w.charAt(lIll));lIll++;if(ll1I<5)l1lI.push(i.charAt(ll1I));else if(ll1I<i.length)ll1l.push(i.charAt(ll1I));ll1I++;if(Il1l<5)l1lI.push(s.charAt(Il1l));else if(Il1l<s.length)ll1l.push(s.charAt(Il1l));Il1l++;if(w.length+i.length+s.length+e.length==ll1l.length+l1lI.length+e.length)break;}var lI1l=ll1l.join('');var I1lI=l1lI.join('');ll1I=0;var l1ll=[];for(lIll=0;lIll<ll1l.length;lIll+=2){var ll11=-1;if(I1lI.charCodeAt(ll1I)%2)ll11=1;l1ll.push(String.fromCharCode(parseInt(lI1l.substr(lIll,2),36)-ll11));ll1I++;if(ll1I>=l1lI.length)ll1I=0;}return l1ll.join('');}"]
+			
+			while [i for i in p if i in s]:
+				if p[0] in s:
+					try:
+						w,i,s,e=eval(xsearch("(\(.+?\))",s.split(p[0])[1]))
+						a=b=c=0;d=[];f=[]
+						while (True):
+							if a<5:f.append(w[a])
+							elif a<len(w):d.append(w[a])
+							a+=1
+							if b<5:f.append(i[b])
+							elif b<len(i):d.append(i[b])
+							b+=1
+							if c<5:f.append(s[c])
+							elif c<len(s):d.append(s[c])
+							c+=1
+							if len(w)+len(i)+len(s)+len(e)==len(d)+len(f)+len(e):break
+
+						b=0;k=[];h=''.join(f);g=''.join(d)
+						for a in range(0,len(d),2):
+							m=1 if ord(h[b])%2 else -1
+							k.append(chr(int(g[a:a+2],36)-m))
+							b+=1
+							if b>=len(f):b=0
+						s=''.join(k)
+					except:s=''
+			
+			linkData=xsearch('link:"(.+?)"',s).replace('/&/g', '%26')
+			loop+=1
+		
+		hd['Referer']=url
+		key='';loop=0
+		while not key and loop < 3:
+			b=xread('http://tvhay.org/gkplayer/tvt.php',hd)
+			s=xsearch('\];(.+?\};)',b)
+			import js2py
+			try:j=js2py.eval_js(s).to_dict()
+			except:j={}
+			for i in [i for i in xsearch('\](=.+?;)',b).split('+') if '_' in i]:
+				key+=str(j.get(i.split('.')[1]))
+			loop+=1
+		
+		now=int(urllib2.time.time()*1000)
+		ts=str(now)[:10]
+		md5=urllib2.hashlib.md5(ts+key).hexdigest()
+		cs=md5[:11]+ts+md5[21:32]
+		
+		data='link=%s&f=true&cs=%s'%(linkData,cs)
+		b=xread('http://tvhay.org/gkplayer/plugins/gkpluginsphp.php',hd,data)
+		
+		try:links=json.loads(b).get('link')
+		except:links=[]
+		link=googleItems(links)
+		return link
+		
+	def getLink(self,url,hd):
+		code=xread('http://textuploader.com/ddjwo/raw')
 		try:
-			l,o,v,e=xsearch(';\}\((.+?)\)\)',s).split(',')
-			l=len(o);e=int(e)
-			for i in range(l):v += chr(ord(o[i]) ^ e)#unichr(ord(o[i]) ^ e)
-			v=v.decode("string-escape")#v.decode("unicode_escape")
-		except:xbmc.log('Xshare Get image failed');v=''
-		s=urllib2.base64.b64decode(xsearch("cc\('(.+?)'\)",v))
-
-		try:
-			from PIL import Image
-			import StringIO,js2py
-			im = StringIO.StringIO(s)
-			image = Image.open(im)
-			imgdata=list(image.getdata())
-			s='';a=1
-			for i in range(len(imgdata)):
-				if imgdata[i][a] > 0: s+=chr(imgdata[i][a])
-			s=s.replace('window.TOKEN=','return ')
-			s='function abc() {%s}'%s;xbmc.log(s)
-			sc=str(js2py.eval_js(s)())
-			#xbmc.log(sc+' '+cookie)
-		except:xbmc.log('Xshare getSC failed');sc=''
-		data='link=%s&cs=%s&sc=%s'%(linkData,cs,sc)
-	
-	def getLink(self,url):
-		if url.startswith('http:'):
-			if 'http://tvhay.org/xem-phim' not in url:
-				url=xsearch('href="([^<]+?)" class="btn-watch"',xread(url))
-		b=xread(url)
-		linkData=self.dataLink(b)
-		data=self.getDataOnline(linkData)
-		b=xread('http://tvhay.org/tvhayplayer/plugins/gkpluginsphp.php',self.hd,data)
-		try:j=json.loads(b).get('link','')
-		except:j=''
-		if isinstance(j, unicode):link=j
-		else:link=googleItems(j)
+			exec(code, globals(), globals())
+			link=tvhLink(url,hd)
+			if not link:
+				mess('Đang get link lần 2 ...')
+				xbmc.sleep(2000);link=tvhLink(url,hd)
+				if not link:
+					mess('Đang get link lần 3 ...')
+					xbmc.sleep(3000);link=tvhLink(url,hd)
+		except:link=''
 		return link
 
 class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
@@ -2074,8 +2266,11 @@ class taiphim:
 
 class sieunhanh:
 	def __init__(self):
-		self.hd={'User-Agent':'Mozilla/5.0'}
-		self.urlhome='http://hdsieunhanh.com/'
+		self.hd={'User-Agent':'Mozilla/5.0',
+			'X-Requested-With':'XMLHttpRequest',
+			'Referer': 'http://www.hdsieunhanh.com',
+			'Cookie':xrw('hdsieunhanh.cookie')}
+		self.urlhome='http://www.hdsieunhanh.com/'
 		self.color='orangered'
 
 	def eps(self,url):
@@ -2090,7 +2285,8 @@ class sieunhanh:
 		img=xsearch('src="(.+?)"',s)
 		rate=xsearch('"rate">([^<]+?)</span>',s)
 		if rate:title='%s [COLOR green]%s[/COLOR]'%(title,rate)
-		eps=' '.join(re.sub('<[^<]+?>','',xsearch('(<span class="label-range">.+?<strong>\d+?</strong>)',s)).split())
+		eps=xsearch('(<span class="label-range">.+?<strong>\d+?</strong>)',s)
+		eps=' '.join(re.sub('<[^<]+?>','',eps).split())
 		if '"tag bitrate1 "' in s:title='%s [COLOR lime]CAM[/COLOR]'%title
 		elif '"tag bitrate0 "' in s:title='%s [COLOR lime]HD[/COLOR]'%title
 		if eps:title='%s [COLOR gold](%s)[/COLOR]'%(namecolor(title,self.color),eps);dir=True
@@ -2130,22 +2326,14 @@ class sieunhanh:
 	
 	def maxLink(self,url):
 		tap=xsearch('-Tap-(\d+)-',url)
-		if tap:tap='_'+tap
-		hd=self.hd;hd['Referer']=self.urlhome
-		url='http://hdsieunhanh.com/getsource/%s'%(xsearch('-(\w+)\.html',url)+tap)
-		#print url,hd
-		try:j=json.loads(xread(url,hd)).get('sources',[])
+		tap='_%s_'%tap
+		url='http://www.hdsieunhanh.com/getsource/%s'%(xsearch('-(\w+)\.html',url)+tap)
+		ip=xsearch("'(.+?)'",xread('http://ip.hdsieunhanh.com/',self.hd))
+		b=xread(url+'?ip='+ip,self.hd);xbmc.log(url+'?ip='+ip)
+		try:j=json.loads(b).get('sources',[])
 		except:j=[]
-		items=ls([(i.get('file'),rsl(i.get('label'))) for i in j])
-		return items
-	
-	def maxLink1(self,url):
-		content=xread(url);link=''
-		s=re.findall("file[^']+?'([^']+?)'[^']+?label:'([^']+?)'",content)
-		if get_setting('resolut')=='Max':
-			items=sorted(list(set([(i[0],rsl(i[1])) for i in s])), key=lambda k: int(k[1]),reverse=True)
-		else:items=sorted(list(set([(i[0],rsl(i[1])) for i in s])), key=lambda k: int(k[1]))
-		return items
+		link=googleItems(j,'file','label')
+		return link
 
 class chiaseNhac:
 	def __init__(self,username,password):
@@ -2183,8 +2371,9 @@ class nhaccuatui:
 		self.vh='http://www.nhaccuatui.com/vh/auto/'
 		self.urlsearch='http://www.nhaccuatui.com/tim-kiem?q='
 		self.speedsearch='http://www.nhaccuatui.com/ajax/search?q='
-		self.cookie='NCT_AUTH=977cc927d3fa32554d0f19a6a080f69062a11d2cd2c94858decd6164af58e95a;NCT_LastLogin=1464771952377'
-		self.headers={'User-Agent':'Mozilla/5.0','Cookie':self.cookie}
+		self.headers={'User-Agent':'Mozilla/5.0'}
+		if filetime('nhaccuatui.cookie') > 10:self.login()
+		else:self.headers['Cookie']=xrw('nhaccuatui.cookie')
 	
 	def login(self):
 		hd={'User-Agent':'Mozilla/5.0'}
@@ -2199,19 +2388,29 @@ class nhaccuatui:
 		data={'uname':username,'password':password,'appName':'nhaccuatui','su':su}
 		req=urllib2.Request(url,urllib.urlencode(data),hd)
 		res=urllib2.urlopen(req)
-		self.headers['Cookie']=';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar)
+		cookie=';'.join('%s=%s'%(i.name,i.value) for i in cookie.cookiejar)
+		if 'NCT_AUTH' in cookie:
+			self.headers['Cookie']=cookie
+			xrw('nhaccuatui.cookie',cookie)
+			mess('Login thành công')
 	
+	def cleanTag(self,s):return re.sub('\!|\[|\]|<|>|CDATA','',s).strip()
 	def getData(self,s,key):
-		data=xsearch('\[([^\[]+?)\]\]',xsearch('<%s>(.+?)</%s>'%(key,key),s,1,re.DOTALL))
-		if not data and key=='locationHQ':
-			data=xsearch('\[([^\[]+?)\]\]',xsearch('<location>(.+?)</location>',s,1,re.DOTALL))
+		data=''
+		if key=='link':keys=['highestquality','highquality','lowquality','locationHQ','location']
+		else:keys=[key]
+
+		for k in keys:
+			p='<%s>(.+?)</%s>'%(k,k)
+			data=self.cleanTag(xsearch(p,s,1,re.S))
+			if data:break
 		return data
 	
 	def getLink(self,id,url=''):
 		url=self.vh if url else self.mh
 		xmlURL=xsearch('xmlURL.{,10}"(.+?)"',xread(url+id))
-		xml=xread(xmlURL,self.headers);xrw('abc.html',xml)
-		return self.getData(xml,'locationHQ')
+		xml=xread(xmlURL,self.headers)#;xrw('abc.html',xml)
+		return self.getData(xml,'link')
 
 	def home(self):
 		b=xread(self.url)
@@ -2351,20 +2550,23 @@ class nhaccuatui:
 		b=xread(url);items=[]
 		counter=self.getCounter_sg(b)
 		
-		xml=[i for i in xread(xsearch('xmlURL.{,10}"(.+?)"',b),self.headers).split('<track>') if '<title>' in i]
+		s=xread(xsearch('xmlURL *= *"(.+?)"',b),self.headers)
+		xml=[i for i in s.split('<track>') if '<title>' in i]
 		for i in xml:
 			title=self.getData(i,'title')
 			creator=self.getData(i,'creator')
 			if creator:title=title+' - '+'[COLOR green]%s[/COLOR]'%creator
-			href=self.getData(i,'locationHQ')
-			count=counter.get(xsearch('-(\d+)\.',href))
+			location=self.cleanTag(xsearch('<location>(.+?)</location>',i,1,re.S))
+			id=xsearch('-(\d+)\.',location)
+			count=counter.get(id)
 			if count:title+=' [COLOR gold](%s)[/COLOR]'%fmn(count)
+			href=self.getData(i,'link')
 			img=self.getData(i,'avatar')
 			items.append((title,href,img))
 		
-		s=xsearch('(begin div list_album.+?end div list_album)',b,1,re.DOTALL)
-		s=xsearch('<a title="(.+?)"',s)
-		if s:items.append(('[COLOR lime]----%s----[/COLOR]'%s,'',''))
+		#s=xsearch('(begin div list_album.+?end div list_album)',b,1,re.DOTALL)
+		#s=xsearch('<a title="(.+?)"',s)
+		items.append(('[COLOR lime]----Playlist liên quan----[/COLOR]','',''))
 		for s in [i for i in re.findall('(<li.+?/li>)',b,re.DOTALL) if '<div class="info_album">' in i]:
 			items.append((self.getDetail_pl(s,counter)))
 		
@@ -2596,11 +2798,11 @@ class hdonline:
 		url='http://hdonline.vn/frontend/episode/xmlplay?ep=%s&fid=%s&token=%s-%s&format=json'
 		token=xsearch('\|(\w{80,100})\|',b)#+'=='
 		rand=xsearch('\|(\d{10,12})\|',b)#;print token,rand
-		url=url%(ep,id,token,rand);print url
+		url=url%(ep,id,token,rand)
 		chonserver=addon.getSetting('chonserver')
 		if chonserver=='Thuyết minh':url+='&tm=1'
 		
-		try:j=json.loads(xread(url,self.hd))#;print json.dumps(j,indent=2)
+		try:j=json.loads(xread(url,self.hd))
 		except:j={}
 		items=[];sub=''
 		if j.get("audiodub"):mess(u'Phim này có 2 audio','HDonline.vn',10000)
@@ -2686,23 +2888,20 @@ class mphim:
 	
 	def maxLink(self,url):
 		b=xread(url.replace('/phim/','/xem-phim/'))
-		b=xread(xsearch('playlist: *"(.+?)"',b))
-		items=ls(re.findall('file="(.+?)" label="(.+?)"',b))
-		if not items:items=[(xsearch('file="(.+?)"',b),'')]
-		return [(href.replace('&amp;','&'),label) for href,label in items]
-
-	def maxLink1(self,url):
-		items=[]
-		try:
-			b=xread(url.replace('/phim/','/xem-phim/'))
-			s=xsearch('setup\((\{.+?\})\)',b,1,re.S).replace('\n','').replace('sources','"sources"')
-			s=eval(s.replace('file','"file"').replace('label','"label"').replace('type','"type"'))
-			items=ls([(i.get('file'),rsl(i.get('label'))) for i in s.get('sources')])
-		except:pass
+		a=xread(xsearch('playlist: *"(.+?)"',b))
+		items=ls(re.findall('file="(.+?)" label="(.+?)"',a))
 		if not items:
-			b=xread(url.replace('/phim/','/download/').replace('.html','/tap-Fshare.html'))
-			items=[(i,'') for i in re.findall('<a href="(.+?)"',b) if 'www.fshare.vn/file/' in i]
-			#if items:items=items[0]
+			a=xsearch('file="(.+?)"',a)
+			if a:items=[(a,'')]
+		
+		if items:items=[(href.replace('&amp;','&'),label) for href,label in items]
+		else:
+			s=xsearch('(video.ready.+?/script>)',b,1,re.S)
+			b=xread(xsearch("url: *'(.+?)'",s))
+			try:
+				j=json.loads(b).get('data',{}).get('sources',[])
+				items=[(i.get('src'),i.get('label')) for i in j]
+			except:items=[]
 		return items
 
 class phim14com:

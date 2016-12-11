@@ -12,7 +12,7 @@
 <a server="F4T" category="fcine.net" mode="25" color="orangered" icon="fcine.png">Kho phim trên Fcine.net</a>
 <a server="F4T" category="Home" mode="06" color="blue" icon="ifiletv.png">Kho phim trên Ifile.tv</a>
 <a server="MMN" category="FRE" mode="88" color="orange" icon="serverphimkhac.png">Kho phim trên các server khác</a>
-<a server="MMN" category="CDE" mode="10" color="crimson" icon="hdvietnam.png">Thông tin từ các trang chuyên đề điện ảnh</a>
+<a server="MMN" category="CDE" mode="10" color="cyan" icon="hdvietnam.png">Các trang chuyên đề [COLOR crimson]HDVietnam.com[/COLOR]/[COLOR blue]taiphimhd.com[/COLOR]/[COLOR lime]i-max.vn</a>
 <a server="CDE" category="hdvietnam.com" mode="02" color="lime" icon="gsearch.png">Google Search [COLOR crimson]hdvietnam.com[/COLOR] / [COLOR blue]taiphimhd.com[/COLOR] / [COLOR chartreuse]i-max.vn[/COLOR]</a>
 <a server="CDE" category="HDV" mode="08" color="crimson" icon="hdvietnam.png">Thông tin từ HDVietnam.com</a>
 <a server="CDE" category="taiphimhd.com" mode="53" color="blue" icon="taiphimhd.png">Thông tin từ taiphimhd.com</a>
