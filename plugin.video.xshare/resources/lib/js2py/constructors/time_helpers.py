@@ -2,11 +2,12 @@
 import time
 import datetime
 import warnings
+
 try:
     from tzlocal import get_localzone
     LOCAL_ZONE = get_localzone()
 except: # except all problems...
-    warnings.warn('Please install or fix tzlocal library (pip install tzlocal) in order to make Date object work better. Otherwise I will assume DST is in effect all the time', Warning)
+    warnings.warn('Please install or fix tzlocal library (pip install tzlocal) in order to make Date object work better. Otherwise I will assume DST is in effect all the time')
     class LOCAL_ZONE:
         @staticmethod
         def dst(*args):
@@ -170,7 +171,7 @@ def MakeDay(year, month, date):
     d = DayFromYear(y) + CUM[mn] + dt - 1 + (1 if DaysInYear(y)==366 and mn>=2 else 0)
     return  d # ms per day
 
-def MakeDate (day, time):
+def MakeDate(day, time):
     return 86400000*day + time
 
 

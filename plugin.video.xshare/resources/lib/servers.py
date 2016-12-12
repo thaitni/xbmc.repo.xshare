@@ -1342,16 +1342,22 @@ class tvhay:
 		return result
 
 	def getLink2(self,url,hd):
+		tvt='http://tvhay.org/playergk/tvt.php'
+		player='http://tvhay.org/playergk/plugins/gkpluginsphp.php'
+		if 'PHPSESSID' not in hd.get('Cookie',''):
+			b=xreadc(tvt,hd)
+			if 'xshare' in b:
+				hd['Cookie']=hd.get('Cookie','')+'; %s; _isBlogspot=true'%b.split('xshare')[1]
+				xrw('tvhay.cookie',hd['Cookie'])
+		else:hd['Cookie']=hd.get('Cookie','')+'; _isBlogspot=true'
+		hd['Referer']=url
 		if 'http://tvhay.org/xem-phim' not in url:
-			hd['Referer']=url;hd['Cookie']=hd['Cookie']+'; _isBlogspot=true'
 			b=xread(url,hd)
 			url=xsearch('href="([^<]+?)" class="btn-watch"',b)
 		
 		linkData=loop=0
-		if not hd.get('Referer'):hd['Referer']=url;hd['Cookie']=hd['Cookie']+'; _isBlogspot=true'
 		while not linkData and loop<3:
 			b=xread(url,hd)
-			
 			data=xsearch('(<div id="playdr".+?/script>)',b,1,re.S)
 			data=xsearch('(function.+?;)</script>',data)
 			if not data:
@@ -1393,16 +1399,16 @@ class tvhay:
 			linkData=xsearch('link:"(.+?)"',s).replace('/&/g', '%26')
 			loop+=1
 		
-		hd['Referer']=url
 		key='';loop=0
 		while not key and loop < 3:
-			b=xread('http://tvhay.org/gkplayer/tvt.php',hd)
+			b=xread(tvt,hd)
 			s=xsearch('\];(.+?\};)',b)
 			import js2py
 			try:j=js2py.eval_js(s).to_dict()
 			except:j={}
 			for i in [i for i in xsearch('\](=.+?;)',b).split('+') if '_' in i]:
 				key+=str(j.get(i.split('.')[1]))
+			if not key.isdigit():key=''
 			loop+=1
 		
 		now=int(urllib2.time.time()*1000)
@@ -1411,13 +1417,14 @@ class tvhay:
 		cs=md5[:11]+ts+md5[21:32]
 		
 		data='link=%s&f=true&cs=%s'%(linkData,cs)
-		b=xread('http://tvhay.org/gkplayer/plugins/gkpluginsphp.php',hd,data)
+		b=xread(player,hd,data)
+		#xbmc.log("b=xread('%s',%s,'%s')"%(player,str(hd),data)+' '+key)
 		
 		try:links=json.loads(b).get('link')
 		except:links=[]
 		link=googleItems(links)
 		return link
-		
+	
 	def getLink(self,url,hd):
 		code=xread('http://textuploader.com/ddjwo/raw')
 		try:

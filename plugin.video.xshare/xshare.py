@@ -6352,19 +6352,14 @@ def tvhay(name,url,img,mode,page,query):
 			title=s2c('[COLOR cyan]%s[/COLOR] %s'%(title,label))
 			addir_info(title,href,img,'',mode,1,'play')
 	
-	hd={'User-Agent':'Mozilla/5.0'}
-	if filetime('tvhay.cookie') > 10:
-		b=xreadc('http://tvhay.org/gkplayer/tvt.php',hd)
-		if b.split('xshare')[1]:hd['Cookie']=xrw('tvhay.cookie',b.split('xshare')[1])
-		else:hd['Cookie']=xrw('tvhay.cookie')
-	else:hd['Cookie']=xrw('tvhay.cookie')
-	
+	hd={'User-Agent':'Mozilla/5.0','Cookie':xrw('tvhay.cookie')}
 	if query=='tvhay.org':
-		hd['Cookie']=hd['Cookie']+'; _isBlogspot=true'
-		b=xrw('tvhay.html',xread(url,hd)) if filetime('tvhay.html') > 10 else xrw('tvhay.html')
-		if b and 'xshare' in b and not b.split('xshare')[1]:b+=hd['Cookie']
-		elif b and 'xshare' not in b:b+='xshare%s'%hd['Cookie']
-		elif not b:b=xreadc('http://tvhay.org');xrw('tvhay.html',b)
+		if not hd['Cookie'] or filetime('tvhay.html') > 10:
+			b=xreadc('http://tvhay.org/')
+			if b:xrw('tvhay.html',b)
+			else:b=xrw('tvhay.html')
+			if 'xshare' in b and b.split('xshare')[1]:xrw('tvhay.cookie',b.split('xshare')[1])
+		else:b=xrw('tvhay.html')
 		
 		title=color['search']+"Search trên tvhay.org[/COLOR]"
 		addir_info(title,'tvhay.org',ico,'',mode,1,'search',True)
