@@ -51,7 +51,7 @@
 		<setting id="my_nas_url" type="text" label="[COLOR blue]My NAS url[/COLOR]" default="http://buffalonas.com/"/>
 		<setting id="my_nas_up"  type="text" label="[COLOR blue]My NAS user/pass[/COLOR] - có dấu [COLOR red]/[/COLOR] nhé" default="/"/>
 		<setting id="cookie" type="text" label="cookiestring" default="" visible="false"/>
-		<setting id="listIPTV" type="text" label='[COLOR cyan]List IPTV trên [COLOR orange]textuploader.com[/COLOR] của người dùng[/COLOR] (dấu "," giữa các list)' default="d5kt7,5euky,d5od8"/>
+		<setting id="listIPTV" type="text" label='[COLOR cyan]List IPTV trên [COLOR orange]textuploader.com[/COLOR] của người dùng[/COLOR] (dấu "," giữa các list)' default="http://pastebin.com/raw/fBQTPU2v,https://friendpaste.com/2ze8Z4V9aDywcVqs9NKkUx/raw"/>
 	</category>
 	<category label="Các tùy chọn riêng">
 		<setting id="resolut" type="labelenum" label="[COLOR gold]Chọn độ phân giải cho các server free (max/min)[/COLOR]" values="Max|Min" default="Max"/>

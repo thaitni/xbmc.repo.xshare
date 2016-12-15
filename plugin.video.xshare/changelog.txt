@@ -1,3 +1,6 @@
+[B]Version 3.4.9.3[/B] <12/12/2016>:
+Fix tvhay, text hosts.
+
 [B]Version 3.4.9.2[/B] <12/12/2016>:
 Fix tvhay.
 

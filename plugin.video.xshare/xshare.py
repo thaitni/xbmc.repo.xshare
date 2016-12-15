@@ -84,8 +84,6 @@ def xhref(s,p=''):return xsearch('href="(.+?)"',s,result=xsearch(p,s))
 def xtitle(s,p=''):return ' '.join(xsearch('title="(.+?)"',s,result=xsearch(p,s)).split())
 def ximg(s,p=''):return xsearch('src="(.+?)"',s,result=xsearch(p,s))
 def getHome(fn,url):return xrw(fn,xread(url)) if filetime(fn) > 1 else xrw(fn)
-def getcHome(fn,url,hd={'User_Agent':'Mozilla/5.0'},data='',c=''):
-	return xrw(fn,xreadc(url,hd,data,c)) if filetime(fn) > 1 else xrw(fn)
 def preTitle(s,title):
 	if re.search('.huyết .inh',s):title='[COLOR cyan]TM[/COLOR] '+title
 	elif re.search('.ồng .iếng',s):title='[COLOR cyan]LT[/COLOR] '+title
@@ -353,32 +351,34 @@ def addir(name,link,img='',fanart='',mode=0,page=0,query='',isFolder=False,root=
 	if '18+' in name and phim18=="false":return
 	name=unescape(re.sub(',|\|.*\||\||\<.*\>','',u2s(name)))
 	item=xbmcgui.ListItem(name,iconImage=img,thumbnailImage=img)
+	li='plugin://plugin.video.xshare?'
 
 	if not root:
 		label='[COLOR lime]Add to My Favourites[/COLOR]'
 		q='Add-'+(query.split('?')[1] if '?' in query else query)+'-'+('F' if isFolder else '')
-		cmd='RunPlugin(plugin://%s/?'%myaddon.getAddonInfo('id')#;items=list()
-		cmd=cmd+'name=%s&url=%s&img=%s&fanart=%s&mode=%d&page=%d&query=%s)'
-		cmd=cmd%(xquote(name),xquote(link),xquote(img),xquote(fanart),100+mode,page,xquote(q))
+		cmd='RunPlugin('+li
+		q={'name':name,'url':link,'img':img,'fanart':fanart,'mode':mode+100,'page':page,'query':q}
+		cmd+=urllib.urlencode(q)
 		command=[(label,cmd)]
 	elif 'My Favourites' not in name:
 		label='[COLOR lime]Hide this item[/COLOR]'
-		cmd='RunPlugin(plugin://%s/?'%myaddon.getAddonInfo('id')
+		cmd='RunPlugin('+li
 		cmd=cmd+'name=HideXshareMainMenuItem&page=%d)'%mode
 		command=[(label,cmd)]
 		label='[COLOR lime]Show all Xshare Main Menu items[/COLOR]'
-		cmd='RunPlugin(plugin://%s/?'%myaddon.getAddonInfo('id')
+		cmd='RunPlugin('+li
 		cmd=cmd+'name=HideXshareMainMenuItem&page=0)'
 		command.append((label,cmd))
 	else:command=[]
 	
 	query=menuContext(name,link,img,fanart,mode,query,item,command)
-	item.setInfo(type="Video", infoLabels={"title":name})
 	if not fanart:fanart=joinpath(home,'fanart.jpg')
 	item.setProperty('Fanart_Image',fanart)
-	li='%s?name=%s&url=%s&img=%s&fanart=%s&mode=%d&page=%d&query=%s'
-	li=li%(sys.argv[0],xquote(name),xquote(link),xquote(img),xquote(fanart),mode,page,xquote(query))
-	if not isFolder:item.setProperty('IsPlayable', 'true')
+	q={'name':name,'url':link,'img':img,'fanart':fanart,'mode':mode,'page':page,'query':query}
+	li+=urllib.urlencode(q)
+	if not isFolder:
+		item.setInfo(type="Video", infoLabels={})
+		item.setProperty('IsPlayable', 'true')
 	xbmcplugin.addDirectoryItem(int(sys.argv[1]),li,item,isFolder)
 
 def addirs(name,href,img='',fanart='',query=''):
@@ -6438,10 +6438,10 @@ def tvhay(name,url,img,mode,page,query):
 		else:[eps_server(s) for s in s]
 	
 	elif query=='play':
-		from resources.lib.servers import tvhay;tvh=tvhay()
-		link=tvh.getLink(url,hd)
-		if link:xbmcsetResolvedUrl(link)
-		else:mess('Sorry. Chưa get được link. Hãy thử lại nhé ...','tvhay.org') 
+		if filetime('tvhplay.py') > 1:
+			xrw('tvhplay.py',xread('http://pastebin.com/raw/wcVVB7Qb'))
+		try:execfile(os.path.join(xsharefolder,'tvhplay.py'))
+		except:pass
 
 def television(name,url,img,fanart,mode,page,query,text):
 	fptlive_ico=icon['fptplay'];c='orange'
@@ -6462,13 +6462,14 @@ def television(name,url,img,fanart,mode,page,query,text):
 			addir_info(namecolor(title,c),'',fptlive_ico,'',mode,1,'fptiptv',True)
 			addir_info(namecolor(title+' BlogCongDong.Com',c),'',fptlive_ico,'',mode,1,'fptiptv0',True)
 		
-		addir_info(namecolor('List IPTV của Thanh Dương - Cộng Đồng KODI Việt Nam','hotpink'),'http://textuploader.com/5bls5/raw',fptlive_ico,'',mode,1,'thanhduong',True)
-		addir_info(namecolor('List IPTV của Văn Hiếu BMT - Cộng Đồng KODI Việt Nam','chartreuse'),'http://textuploader.com/d53tf/raw',fptlive_ico,'',mode,1,'thanhduong',True)
+		addir_info(namecolor('List IPTV của Thanh Dương - Cộng Đồng KODI Việt Nam','hotpink'),'http://pastebin.com/raw/BcpU9W9T',fptlive_ico,'',mode,1,'thanhduong',True)
+		addir_info(namecolor('List IPTV của Văn Hiếu BMT - Cộng Đồng KODI Việt Nam','chartreuse'),'http://pastebin.com/raw/UbTCq8k7',fptlive_ico,'',mode,1,'thanhduong',True)
+		addir_info(namecolor('List IPTV của tduc.tk - Cộng Đồng KODI Việt Nam','lightgray'),'http://tduc.tk/tv/',fptlive_ico,'',mode,1,'thanhduong',True)
 		art=os.path.join(iconpath,'iptv.png')
 		if not os.path.isfile(art):
 			makerequest(art,xread('http://www.m3uliste.pw/files/iptv.png'),'wb')
 		if myaddon.getSetting('listIPTV').split(',')[0]:
-			title='List Truyền hình IPTV trên [COLOR orange]textuploader.com[/COLOR] của người dùng'
+			title='List IPTV của người dùng trên TEXT hosts (pastebin.com, friendpaste.com, ...)'
 			addir_info(namecolor(title,'cyan'),'',icon['icon'],art,mode,1,'userList',True)
 		
 		title=namecolor('[B]IPTV M3U Stream Hunters[/B]','cyan')
@@ -6495,9 +6496,10 @@ def television(name,url,img,fanart,mode,page,query,text):
 			addir_info(namecolor(fixs(title.strip()),c),href,img,'',mode,1,'hplus_play',text=cookie)
 	
 	elif query=='thanhduong':
-		py=getHome('thanhduong.py','http://textuploader.com/5bls5/raw')
+		py=getHome('iptvlist.py','http://pastebin.com/raw/gpTWvyh7')
 		try:execfile(os.path.join(xsharefolder,'iptvlist.py'))
 		except:pass
+	
 	elif query=='hunters':
 		def makeList(s):
 			for href in [i for i in re.findall('>(http:.+?)<',s) if 'get.php' in i]:
@@ -6526,18 +6528,18 @@ def television(name,url,img,fanart,mode,page,query,text):
 			makeList(items[0])
 		
 	elif query=='userList':
-		py=getHome('iptvlist.py','http://textuploader.com/d56fz/raw')
+		py=getHome('iptvlist.py','http://pastebin.com/raw/gpTWvyh7')
 		try:execfile(os.path.join(xsharefolder,'iptvlist.py'))
 		except:pass
 	
 	elif query=='listGroup':
-		py=getHome('iptvlistgroup.py','http://textuploader.com/d56p2/raw')
+		py=getHome('iptvlistgroup.py','http://pastebin.com/raw/XtNnfwmR')
 		try:execfile(os.path.join(xsharefolder,'iptvlistgroup.py'))
 		except:pass
 	
-	elif query=='F4mProxy':#http://textuploader.com/5euky/raw
+	elif query=='F4mProxy':# http://textuploader.com/5euky/raw
 		if not url:
-			b=xread('http://textuploader.com/d5oqv/raw')
+			b=xread('http://pastebin.com/raw/vpQQ4mGQ')
 			for s in re.findall('(<item.+?/item>)',b,re.S):
 				title=xsearch('<title>(.+?)</title>',s)
 				href=xsearch('<link>(.+?)</link>',s)
@@ -6613,7 +6615,7 @@ def television(name,url,img,fanart,mode,page,query,text):
 			addir_info(namecolor(fixs(title.strip()),c),href,img,'',mode,1,'hplus_play',text=cookie)
 	
 	elif query=='fptiptv0':
-		href='http://textuploader.com/d5oi3/raw'
+		href='http://pastebin.com/raw/iRJWKyNC'
 		for title,href in re.findall('#EXTINF:0, (.+).\s(.+).',xread(href)):
 			addir_info(namecolor(title,'orange'),href,img,'',mode,1,'fptiptvPlay')
 	
@@ -6630,11 +6632,11 @@ def television(name,url,img,fanart,mode,page,query,text):
 	elif query=='fptiptv':
 		from resources.lib.servers import fptPlay;fpt=fptPlay()
 		#if not url:url='https://jobdecor.vn/IPTV/FPT/MenuFPT.xml'
-		if not url:url='http://textuploader.com/d5oes/raw'
+		if not url:url='http://pastebin.com/raw/LHDuVjWA'
 		for i in fpt.fptNodes(url):
 			title,href,img=namecolor(i.get('title',''),c),i.get('link','').replace('amp;',''),i.get('thumbnail','')
 			try:
-				if 'textuploader.com' in href:addir_info(u2s(title),href,img,'',mode,1,query,True)
+				if 'pastebin.com' in href:addir_info(u2s(title),href,img,'',mode,1,query,True)
 				elif 'rtmp' in href or 'udp:' in href:addir_info(u2s(title),href,img,'',mode,1,'fptiptvPlay')
 			except:pass
 		
@@ -8391,7 +8393,7 @@ def biphim(name,url,img,fanart,mode,page,query):
 def banhtvItems(url):
 	from resources.lib.servers import gibberishAES
 	link=''
-	try:exec(xread('http://textuploader.com/d5bjl/raw'))
+	try:exec(xread('http://pastebin.com/raw/8dYmUvB3'))
 	except:pass
 	return link
 		
@@ -8469,8 +8471,9 @@ def banhtv(name,url,img,fanart,mode,page,query):
 		title=namecolor("Search trên banhtv.com","lime")
 		addir_info(title,'banhtv.com',ico,'',mode,1,'search',True)
 		
-		s=xsearch('(<ul id="main-menu".+?class="login dropdown">)',b,1,re.S)
-		for s in [i for i in s.split('<li class="">') if '"Trang chủ"' not in i]:
+		#s=xsearch('(<ul id="main-menu".+?class="login dropdown">)',b,1,re.S)
+		s=xsearch('<li class="parent-menu"(.+?<script>)',b,1,re.S)
+		for s in [i for i in s.split('<li class="parent-menu">') if '"Trang chủ"' not in i]:
 			title=xtitle(s)
 			href=xhref(s)
 			if '<ul' in s:addir_info(namecolor(title,c),s,ico,'',mode,1,'menu',True)
