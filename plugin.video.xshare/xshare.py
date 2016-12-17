@@ -6,14 +6,14 @@ home=xbmc.translatePath(myaddon.getAddonInfo('path'))
 addonDataPath=xbmc.translatePath(myaddon.getAddonInfo('profile'))
 iconpath=os.path.join(addonDataPath,'icon')
 datapath=os.path.join(addonDataPath,'data')
-libPath=os.path.join(home,'resources','lib')
-sys.path.append(libPath);from urlfetch import get,post
+sys.path.append(os.path.join(home,'resources','lib'))
+from urlfetch import get,post
 search_file=os.path.join(datapath,"search.xml");data_path=os.path.join(home,'resources','data')
 try:rows=int(myaddon.getSetting('sodonghienthi'))
 except:rows=30
 tempfolder=xbmc.translatePath('special://temp');phim18=myaddon.getSetting('phim18')
 xbmcplugin.setContent(int(sys.argv[1]), 'movies');homnay=datetime.date.today().strftime("%d/%m/%Y")
-from resources.lib.utils import mess,xsearch,xreadc,xrw,s2c,vnu,filetime,ls,rsl,googleItems,xcheck,xselect,siteName,xget
+from resources.lib.utils import mess,xsearch,xreadc,xrw,s2c,vnu,filetime,ls,rsl,googleItems,xcheck,xselect,siteName,xget,libsChecker
 
 media_ext=['aif','iff','m3u','m3u8','m4a','mid','mp3','mpa','ra','wav','wma','3g2','3gp','asf','asx','avi','flv','mov','mp4','mpg','mkv','m4v','rm','swf','vob','wmv','bin','cue','dmg','iso','mdf','toast','vcd','ts','flac','m2ts','dtshd','nrg'];icon={}
 color={'fshare':'[COLOR gold]','vaphim':'[COLOR gold]','phimfshare':'[COLOR khaki]','4share':'[COLOR blue]','tenlua':'[COLOR fuchsia]','fptplay':'[COLOR orange]','trangtiep':'[COLOR lime]','search':'[COLOR lime]','ifile':'[COLOR blue]','hdvietnam':'[COLOR red]','hdviet':'[COLOR darkorange]','xshare':'[COLOR blue]','subscene':'[COLOR green]','chiasenhac':'[COLOR orange]','phimmoi':'[COLOR ghostwhite]','megabox':'[COLOR orangered]','dangcaphd':'[COLOR yellow]','hayhaytv':'[COLOR tomato]','kenh88':'[COLOR cyan]','phimdata':'[COLOR FFDB4BDA]','phim47':'[COLOR springgreen]','phimsot':'[COLOR orangered]','hdonline':'[COLOR turquoise]','phim3s':'[COLOR lightgray]','kphim':'[COLOR lightgreen]','phimnhanh':'[COLOR chartreuse]','bilutv':'[COLOR hotpink]','pubvn':'[COLOR deepskyblue]','anime47':'[COLOR deepskyblue]','phim14':'[COLOR chartreuse]','taifile':'[COLOR cyan]','phim':'[COLOR orange]','tvhay':'[COLOR gold]','nhacdj':'[COLOR fuchsia]','phimbathu':'[COLOR lightgray]','taiphimhd':'[COLOR blue]','hdsieunhanh':'[COLOR orangered]','vuahd':'[COLOR tomato]','nhaccuatui':'[COLOR turquoise]','imovies':'[COLOR orange]','vietsubhd':'[COLOR cyan]','imax':'[COLOR chartreuse]','mphim':'[COLOR deepskyblue]','vtvgo':'[COLOR green]','youtube':'[COLOR red]','fcine':'[COLOR gold]','taiphimhdnet':'[COLOR teal]','vungtv':'[COLOR FF228B22]','biphim':'[COLOR FFBA55D3]','banhtv':'[COLOR FFF08080]'}
@@ -334,8 +334,8 @@ def xbmcsetResolvedUrl(url,name='',img='',sub=''):
 			urltitle='.'+'.'.join(s for s in re.sub('_|\W+',' ',re.split('\d\d\d\d',urltitle)[0]).split())+'.'
 			subfile='';items=[]
 			for file in os.listdir(subsfolder):
-				filefullpath=joinpath(subsfolder,file).encode('utf-8')
-				filename=re.sub('vie\.|eng\.','',os.path.splitext(file)[0].lower().encode('utf-8'))
+				filefullpath=u2s(joinpath(subsfolder,file))
+				filename=re.sub('vie\.|eng\.','',u2s(os.path.splitext(file)[0].lower()))
 				filename=re.split('|'.join(str(i) for i in range(1930,2020)),filename)[0];count=0
 				for word in re.sub('_|\W+',' ',filename).split():
 					if '.%s.'%word in urltitle:count+=1
@@ -6315,8 +6315,8 @@ def tvhay(name,url,img,mode,page,query):
 	ico=os.path.join(iconpath,'tvhay.png');urlhome='http://tvhay.org/';c='gold'
 	if not os.path.isfile(ico):
 		href='https://docs.google.com/uc?id=0B5y3DO2sHt1LcmxSUm8yZ0dram8&export=download'
-		response=make_request(href,resp='o',maxr=3)
-		if  response.status==200:makerequest(ico,response.body,'wb')
+		#response=make_request(href,resp='o',maxr=3)
+		makerequest(ico,xread(href),'wb')
 	
 	def tvh_page(url):
 		b=xread('%spage/%d'%(url,page)) if url.startswith('http') else url
@@ -6438,6 +6438,13 @@ def tvhay(name,url,img,mode,page,query):
 		else:[eps_server(s) for s in s]
 	
 	elif query=='play':
+		libsChecker('tvhplay.py','http://pastebin.com/raw/XAiw2E7e')
+		from tvhplay import getLink
+		link=getLink(url,hd)
+		if link:xbmcsetResolvedUrl(link)
+		else:mess(u'Sorry. Chưa get được link. Hãy thử lại nhé ...','tvhay.org')
+	
+	elif query=='play1':
 		if filetime('tvhplay.py') > 1:
 			xrw('tvhplay.py',xread('http://pastebin.com/raw/wcVVB7Qb'))
 		try:execfile(os.path.join(xsharefolder,'tvhplay.py'))
@@ -8398,7 +8405,7 @@ def banhtvItems(url):
 	return link
 		
 def banhtv(name,url,img,fanart,mode,page,query):
-	ico=os.path.join(iconpath,'banhtv.png');c='FFBA55D3'
+	ico=os.path.join(iconpath,'banhtv.png');c='FFF08080'
 	if not os.path.isfile(ico):
 		b=xread('http://banhtv.com/images/logo.png')
 		if b:makerequest(ico,b,'wb')
@@ -8566,6 +8573,8 @@ thumucrieng='https://www.fshare.vn/folder/'+thumucrieng
 subsfolder=myaddon.getSetting('subsfolder')
 if not subsfolder:subsfolder=joinpath(addonDataPath,'subs')
 xsharefolder=os.path.join(addonDataPath,'xshare')
+sys.path.append(os.path.join(addonDataPath,'xsharelib'))
+
 params=get_params();mode=page=0;temp=[];url=name=fanart=img=date=query=action=end=text=''
 #print sys.argv[2],sys.argv[0]
 try:url=urllib.unquote_plus(params["url"])
@@ -8607,7 +8616,8 @@ if myList:
 		addir_info(u2s(name),url,img,fanart,mode,page,query,dir,menu=menu)
 elif name=='HideXshareMainMenuItem':hideMenuItem(page)
 elif not mode:#xbmc.executebuiltin("Dialog.Close(all, true)")
-	folders=(addonDataPath,datapath,iconpath,myfolder,tempfolder,subsfolder,xsharefolder)
+	xsharelib=os.path.join(addonDataPath,'xsharelib')
+	folders=(addonDataPath,datapath,iconpath,myfolder,tempfolder,subsfolder,xsharefolder,xsharelib)
 	for folder in folders:
 		if not os.path.exists(folder):os.mkdir(folder)
 	xmlheader='<?xml version="1.0" encoding="utf-8">\n'

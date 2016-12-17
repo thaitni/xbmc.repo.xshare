@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import xbmc, xbmcaddon, xbmcgui, urllib2
+import xbmc, xbmcaddon, xbmcgui, urllib2, json
 re=urllib2.re
 os=urllib2.os
 #addon=addon()
@@ -11,6 +11,7 @@ tempfolder=xbmc.translatePath('special://temp')
 xsharefolder=os.path.join(profile,'xshare')
 icon=os.path.join(profile,'icon','icon.png')
 #b.getcode();b.headers.get('Set-Cookie');b.geturl()
+
 class myaddon:
     def __init__(self):
 		self.addon			= xbmcaddon.Addon()
@@ -28,8 +29,25 @@ class myaddon:
 		self.icon_folder	= os.path.join(self.data_path,'icon')
 		self.icon			= os.path.join(self.icon_folder,'icon.png')
 
+def libsChecker(fn,url):
+	filename=os.path.join(profile,'xsharelib',fn)
+	if filetime('myinfo.json') < 1 and os.path.isfile(filename):return
+	sHost=xread('http://pastebin.com/raw/hBmwqjXU')
+	sLocal=xrw('myinfo.json')
+	try:old=json.loads(sLocal).get('versions',{}).get(fn,'')
+	except:old=''
+	try:new=json.loads(sHost).get('versions',{}).get(fn,'')
+	except:new=''
+	if new > old or not os.path.isfile(os.path.join(profile,'xsharelib',fn)):
+		b=xread(url)
+		if b:
+			xrw(filename,b)
+			xrw('myinfo.json',sHost)
+			mess('New vesion of %s Updated'%fn)
+	else:xrw('myinfo.json',sLocal)
+	
 def filetime(fn):#return hour
-	fn=os.path.join(xsharefolder,fn)
+	if len(fn) < 20:fn=os.path.join(xsharefolder,fn)
 	t=os.path.getmtime(fn) if os.path.isfile(fn) else 0
 	return int((urllib2.time.time()-t)/3600)
 
@@ -89,7 +107,7 @@ def ls(l):
 	return L
 
 def xrw(fn,s=''):
-	fn=os.path.join(xsharefolder,fn)
+	if len(fn) < 20:fn=os.path.join(xsharefolder,fn)
 	try:
 		if s:s=s.replace('\r\n','\n');f=open(fn,'w');f.write(s)
 		else:f=open(fn);s=f.read().replace('\r\n','\n')

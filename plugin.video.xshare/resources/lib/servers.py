@@ -589,9 +589,70 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		return cookie
 	
 	def get_maxlink_free(self,url):
-		code=xread('http://pastebin.com/raw/CB4HVfCP')
-		try:exec(code,globals(),globals());link=getLinkFree(url)
-		except:link='fail'
+		if self.logged:self.fetch('https://www.fshare.vn/logout');self.logged=None
+		try:d=eval(xread('http://pastebin.com/raw/JkrunuTH'))
+		except:d=[]
+		link='';loop=0;l=len(d);j=[];linkfree=''
+		while (not link or link=='fail') and loop < l:
+			i=100
+			while i not in j:
+				i=urllib2.random.randint(0,l-1)
+				if i not in j:j.append(i)
+				else:i=100
+			loop+=1
+			
+			self.hd['Cookie']=''
+			u,p=urllib2.base64.b64decode(d[i][0]).split(':')
+			response = self.fetch('https://www.fshare.vn/login')
+			if not response or response.status!=200:continue
+			else:
+				fs_csrf=xsearch('value="(.+?)" name="fs_csrf"',response.body)
+				data={"LoginForm[email]":u,"LoginForm[password]":p,"fs_csrf":fs_csrf}
+				self.hd['Cookie']=response.cookiestring
+				response = self.fetch('https://www.fshare.vn/login',data)
+				if response and response.status==302:
+					self.hd['Cookie']=response.cookiestring;self.logged='success'
+					mess('[COLOR cyan]Thanks to %s[/COLOR]'%d[i][1],d[i][2])
+				else:continue
+			
+			b=xget(url,self.hd)
+			if not b:continue
+			link=b.geturl()
+			if link==url:
+				b=b.read()
+				free=True if re.search('<i class="fa fa-star">',b) else False
+				fs_csrf=xsearch('value="(.+?)" name="fs_csrf"',b)
+				downloadForm=xsearch('id="DownloadForm_linkcode" type="hidden" value="(.+?)"',b)
+				data={'fs_csrf':fs_csrf,'DownloadForm[linkcode]':downloadForm,'ajax':'download-form'}
+				if re.search('class="fa fa-lock"',b):
+					data['DownloadForm[pwd]']=get_input(u'Hãy nhập: Mật khẩu tập tin')
+				b=xread('https://www.fshare.vn/download/get',self.hd,urllib.urlencode(data))
+				try:
+					link=json.loads(b).get('url','')
+					if free:linkfree=link;link=''
+				except:link='fail'
+			if self.logged:self.fetch('https://www.fshare.vn/logout');self.logged=None
+		
+		if not link or link=='fail':
+			data='url_download=https%3A%2F%2Fwww.fshare.vn%2Ffile%2F'+url.rsplit('/',1)[1]
+			link='';loop=0;i='get link from aku.vn'
+			while not link and loop < 2:
+				b=xread('http://www.aku.vn/linksvip',data=data)
+				link=xsearch('<a href=([^<]+?) target=_blank',b)
+				if not link:continue
+				elif '/account/' in link:link=''
+				else:mess('[COLOR cyan]Thanks to Nhat Vo Van[/COLOR]',i)
+				loop+=1
+		
+		if (not link or link=='fail') and linkfree:
+			mess(u'Sorry. Xshare chỉ get được link có băng thông giới hạn')
+			link=linkfree
+		return link
+	
+	def get_maxlink_free1(self,url):
+		libsChecker('fsharefree.py','http://pastebin.com/raw/CB4HVfCP')
+		from fsharefree import getLinkFree
+		link=getLinkFree(url)
 		return link
 	
 	def get_maxlink(self,url):
@@ -917,8 +978,8 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 		id=urllib2.os.path.basename(url)
 		if not id:id='vtv3-hd'
 		data='mobile=web&quality=3&type=newchannel&id=%s'%id;print data
-		b=xread('https://fptplay.net/show/getlinklivetv',self.hd,data)
-		try:link=json.loads(b).get('stream')+'|User-Agent=Mozilla/5.0&Referer=https://fptplay.net/'
+		b=xread('https://fptplay.net/show/getlinklivetv',self.hd,data);xbmc.log(str(self.hd))
+		try:link=json.loads(b).get('stream')+'|User-Agent=Mozilla/5.0 AppleWebKit/537.36'
 		except:link=''
 		return link
 	
@@ -935,9 +996,10 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 				except:link=''
 			
 			return link
-
-		if '?' not in url:link=stream('https://fptplay.net/show/getlink',xsearch('(\w+)\.html',url))
-		else :link=stream('https://fptplay.net/show/getlink',url.split('?')[0],url.split('?')[1])
+		
+		href='https://fptplay.net/show/getlink'
+		if '?' not in url:link=stream(href,xsearch('(\w+)\.html',url))
+		else :link=stream(href,url.split('?')[0],url.split('?')[1])
 		return link
 	
 	def fptNodes(self,url):
