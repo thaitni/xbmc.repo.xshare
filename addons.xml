@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR] [COLOR green]XBMC[/COLOR] [COLOR blue]HDVideo[/B][/COLOR]" version="3.4.9.7" provider-name="thaitni">
+<addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR] [COLOR green]XBMC[/COLOR] [COLOR blue]HDVideo[/B][/COLOR]" version="3.4.9.8" provider-name="thaitni">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.video.F4mProxy" optional="true"/>
@@ -38,7 +38,7 @@
     </extension>
 </addon>
 
-<addon id="service.subtitles.xshare" name="[COLOR red][B]xshare[/COLOR] [COLOR blue]subtitles[/B][/COLOR]" version="1.2.3" provider-name="thaitni">
+<addon id="service.subtitles.xshare" name="[COLOR red][B]xshare[/COLOR] [COLOR blue]subtitles[/B][/COLOR]" version="1.2.4" provider-name="thaitni">
     <requires><import addon="xbmc.python" version="2.1.0"/></requires>
     <extension point="xbmc.subtitle.module" library="xsharesub.py"/>
     <extension point="xbmc.addon.metadata">
