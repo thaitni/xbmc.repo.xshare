@@ -1,3 +1,16 @@
+[B]Version 3.4.9.9[/B] <03/01/2017>:
+Fix 4share, ...
+Add fsharefilm, MyFavourites sub Folder, Multi Fshare acc
+
+[B]Version 3.4.9.8[/B] <22/12/2016>:
+Fix tvhay
+
+[B]Version 3.4.9.7[/B] <20/12/2016>:
+Fix tvhay
+
+[B]Version 3.4.9.6[/B] <19/12/2016>:
+Fix tvhay
+
 [B]Version 3.4.9.5[/B] <18/12/2016>:
 Fix phimbathu
 
