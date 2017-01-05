@@ -1,3 +1,9 @@
+[B]Version 3.4.9.9.2[/B] <05/01/2017>:
+Fix Multi Fshare acc
+
+[B]Version 3.4.9.9.1[/B] <04/01/2017>:
+Fix Multi Fshare acc, Banhtv
+
 [B]Version 3.4.9.9[/B] <03/01/2017>:
 Fix 4share, ...
 Add fsharefilm, MyFavourites sub Folder, Multi Fshare acc
