@@ -1,3 +1,6 @@
+[B]Version 3.4.9.9.5[/B] <11/01/2017>:
+Fix Multi Fshare acc
+
 [B]Version 3.4.9.9.4[/B] <06/01/2017>:
 Fix Multi Fshare acc
 
