@@ -1,3 +1,7 @@
+[B]Version 3.4.9.9.6[/B] <14/01/2017>:
+Thêm Fshare download.
+Fix Multi Fshare acc
+
 [B]Version 3.4.9.9.5[/B] <11/01/2017>:
 Fix Multi Fshare acc
 
