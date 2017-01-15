@@ -1,3 +1,6 @@
+[B]Version 3.4.9.10[/B] <15/01/2017>:
+Fix Anime47, phimmoi.net , Imovies.vn , Kphim.tv , VungTV.com , bịphim.com
+
 [B]Version 3.4.9.9.6[/B] <14/01/2017>:
 Thêm Fshare download.
 Fix Multi Fshare acc
