@@ -1,3 +1,9 @@
+[B]Version 3.5.1[/B] <16/01/2017>:
+Thêm module login http://tv24.vn/
+
+[B]Version 3.5.0[/B] <16/01/2017>:
+Thêm module sctv trong mục "Xem truyền hình"
+
 [B]Version 3.4.9.10[/B] <15/01/2017>:
 Fix Anime47, phimmoi.net , Imovies.vn , Kphim.tv , VungTV.com , bịphim.com
 
