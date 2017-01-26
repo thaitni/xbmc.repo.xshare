@@ -112,7 +112,7 @@
     </extension>
 </addon>
 
-<addon id="script.module.xshare" name="xshare" version="1.0" provider-name="thaitni">
+<addon id="script.module.xshare" name="xshare" version="1.1" provider-name="thaitni">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.requests"/>
