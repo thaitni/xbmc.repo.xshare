@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.module.xshare" name="xshare" version="1.2" provider-name="thaitni">
+<addon 
+	id            = "script.module.xshare"
+	name          = "xshare"
+	version       = "1.3"
+	provider-name = "thaitni">
 	<requires>
-		<import addon="xbmc.python" version="2.1.0"/>
-		<import addon="script.module.requests"/>
+		<import addon = "xbmc.python" version = "2.1.0"/>
 	</requires>
 	<extension point="xbmc.python.module" library="lib" />
 	<extension point="xbmc.addon.metadata">
 		<summary>Xshare utilities.</summary>
-		<description>Xshare utilities library provides utility functions for xbmc xshare add-ons.</description>
+		<description>Xshare utilities library provides utility functions for xbmc xshare add-on</description>
 		<platform>all</platform>
 		<license>GNU General Public License - v2</license>
 		<source>https://github.com/thaitni/xbmc.repo.xshare</source>
