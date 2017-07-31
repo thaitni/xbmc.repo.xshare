@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+__author__ = 'thaitni'
 
 import urllib,urllib2,urlfetch, re, os, json
 from utils import *
@@ -404,25 +405,34 @@ def gibberishAES(string, key=''):
 
 class serversList:
 	def __init__(self):
-		self.servers=[
+		self.servers = [
 			('anime47.com','37','deepskyblue'), ('tvhay.org','41','gold'), 
-			('hdviet.com','22','darkorange'),('fcine.net','25','gold'), 
-			('fptplay.net','07','orangered'), 
+			('hdviet.com','22','darkorange'), ('fcine.net','25','gold'), 
+			('fptplay.net','07','orangered'), ('fsharefilm.com','60','FFF08080'),
 			('hayhaytv.vn','23','tomato'), ('bilutv.com','36','hotpink'), 
 			('phimmoi.net','24','ghostwhite'), ('hdonline.vn','30','turquoise'), 
-			('phim3s.net','32','lightgray'), ('phim14.net','39','chartreuse'), 
-			('kenh88.com','26','cyan'), ('phimdata.com','27','FFDB4BDA'), 
-			('phimsot.com','29','orangered'), ('phim47.com','28','springgreen'), 
+			('phim14.net','39','chartreuse'), ('kenh88.com','26','cyan'), 
 			('phimbathu.com','43','lightgray'), ('kphim.tv','33','lightgreen'), 
 			('phimnhanh.com','35','chartreuse'), ('dangcaphd.com','18','yellow'), 
 			('phim.media','40','orange'), ('hdsieunhanh.com','44','orangered'), 
 			('vungtv.com','57','FF00FA9A'), ('imovies.vn','48','orange'), 
 			('vuahd.tv','21','tomato'), ('pubvn.tv','19','deepskyblue'), 
-			('vietsubhd.com','54','cyan'), ('mphim.net','55','deepskyblue'), 
-			('biphim.com','58','FFBA55D3'), ('banhtv.com','59','FFF08080')]
-			#, ('megabox.vn','17','orangered')
-		try:self.ordinal=[int(i) for i in xrw('free_servers.dat').split(',')]
-		except:self.ordinal=[]
+			('vietsubhd.com','54','cyan'), ('banhtv.com','59','FFF08080'),
+			('kenhphimbo.net','61','yellow'), ('anivn.com','62','FF8FAE22'),
+			('animetvn.com','63','FFD0C101')]
+		
+		'''
+		('biphim.com','58','FFBA55D3'), ('phimsot.com','29','orangered')
+		('megabox.vn','17','orangered') ('phim47.com','28','springgreen'), 
+		('phim3s.net','32','lightgray'), ('phimdata.com','27','FFDB4BDA')
+		, ('mphim.net','55','deepskyblue')
+		'''
+		
+		try:
+			self.ordinal=[int(i) for i in xrw('free_servers.dat').split(',')]
+		except:
+			self.ordinal=[]
+		
 		l=len(self.servers);update=False
 		for i in range(l):
 			if i not in self.ordinal:self.ordinal.append(i);update=True
@@ -456,7 +466,7 @@ class serversList:
 
 	def search(self,string):
 		href='https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&rsz=filtered_cse&num=20&hl=vi&prettyPrint=false&source=gcsc&gss=.com&cx=009789051051551375973:rgvcpqg3uqw&googlehost=www.google.com&callback=google.search.Search.apiary19044&q='+string
-		try:j=json.loads(xsearch('\((\{.+?\})\)',xread(href)))
+		try:j=json.loads(xsearch('(\{.+\})',xread(href)))
 		except:j={}
 		if not j.get('results',{}):
 			mess(u'Tìm gần đúng')
@@ -493,9 +503,10 @@ class serversList:
 
 class googlesearch:
 	def __init__(self):
-		self.url='https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&'
-		self.url+='rsz=filtered_cse&num=20&hl=vi&prettyPrint=false&source=gcsc&gss=.com&googlehost=www.google.com&'
-		self.url+='callback=google.search.Search.apiary19044&alt=json&cx=%s&start=%s&q=%s'
+		self.url = 'https://www.googleapis.com/customsearch/v1element?rsz=filtered_cse&'+\
+					'key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&num=20&hl=vi&'+\
+					'prettyPrint=false&source=gcsc&gss=.com&googlehost=www.google.com&'+\
+					'callback=google.search.Search.apiary19044&alt=json&cx=%s&start=%s&q=%s'
 	
 	def detail(self,i):
 		title=i.get('titleNoFormatting','').encode('utf-8')
@@ -531,45 +542,49 @@ class googlesearch:
 		return items
 
 class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageIndex=1
-    
 	def __init__(self, username='', password='', id=''):
 		self.url_id=id
-		self.myFavourite_id=''
-		self.token=''
-		self.logged=None
 		self.hd={'User-Agent':'Mozilla/5.0','x-requested-with':'XMLHttpRequest'}
-		self.myAcc=username and password
-		if self.myAcc:
-			self.login(username,password)
-			if self.logged=='success':
-				myfolder=self.get_myFolder()
-				self.myFavourite_id=''.join(xsearch('(\w{10,})',s[1]) for s in myfolder if s[0]=='xshare_favourite')
-				if not self.myFavourite_id:
-					self.myFavourite_id=self.add_folder(folder_name='xshare_favourite',in_dir_id='0')
-
+		self.logged=self.token=''
+		if username and password:self.user,self.passwd=username,password
+		else:self.user,self.passwd=addon.getSetting('usernamef'),addon.getSetting('passwordf')
+		
+		if username and password:self.login(username,password)
+	
 	def fetch(self,url,data=None):
 		try:response=urlfetch.fetch(url,headers=self.hd,data=data)
 		except:response= None
 		return response
 	
-	def login(self,username,password):
+	def login(self,user,passwd):
+		if not user or not passwd:
+			mess(u'Bạn set thông tin acc Fshare chưa đủ','Fshare.vn')
+			return None
+		self.user,self.passwd=user,passwd
 		response = self.fetch('https://www.fshare.vn/login')
-		if not response or response.status!=200:mess('Connect to fshare.vn fails','Fshare.vn')
-		else:
-			fs_csrf=xsearch('value="(.+?)" name="fs_csrf"',response.body)
-			data={"LoginForm[email]":username,"LoginForm[password]":password,"fs_csrf":fs_csrf}
-			self.hd['Cookie']=response.cookiestring
-			response = self.fetch('https://www.fshare.vn/login',data)
-			if response and response.status==302:
-				self.hd['Cookie']=response.cookiestring;self.logged='success'
-				mess(u'Login thành công','Fshare.vn')
-			else:mess(u'Login không thành công!','Fshare.vn')
+		if not response or response.status!=200:
+			mess('Connect to fshare.vn fails','Fshare.vn')
+			return self.logged
+		
+		fs_csrf=xsearch('value="(.+?)" name="fs_csrf"',response.body)
+		data={"LoginForm[email]":user,"LoginForm[password]":passwd,"fs_csrf":fs_csrf}
+		self.hd['Cookie']=response.cookiestring
+		response = self.fetch('https://www.fshare.vn/login',data)
+		if not response or response.status!=302:
+			mess(u'Login không thành công!','Fshare.vn')
+			return self.logged
+		
+		self.hd['Cookie']=response.cookiestring
+		self.logged='success'#;mess(u'Login thành công','Fshare.vn')
+		return self.logged
 	
 	def logout(self):
 		if self.logged:
 			response = self.fetch('https://www.fshare.vn/logout')
-			if response and response.status==302:self.logged=None;mess(u'Logout thành công','Fshare.vn')
-			else:mess(u'Logout không thành công!','Fshare.vn')
+			if response and response.status==302:
+				self.logged=''
+				#mess(u'Logout thành công','Fshare.vn')
+			#else:mess(u'Logout không thành công!','Fshare.vn')
 	
 	def loginOK(self,u,p):
 		try:
@@ -588,71 +603,136 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		except:cookie=''
 		return cookie
 	
+	def getFshareAccs(self):
+		try:fshareAccs=json.loads(xrw('fshare.json'))
+		except:fshareAccs={}
+		if self.user and not fshareAccs.has_key(self.user) and self.login(self.user,self.passwd):
+			b=xread('https://www.fshare.vn/home',self.hd)
+			id=xsearch('data-id="([^"]+?)">xshare_favourite</a>',b)
+			if not id:id=self.add_folder('xshare_favourite')
+			if id:
+				fshareAccs["default"]=self.user
+				fshareAccs[self.user]={"passwd":self.passwd, "id":id, "name":"root", "folders":[]}
+				xrw('fshare.json',json.dumps(fshareAccs))
+			self.logout()
+		return fshareAccs
+	
 	def get_maxlink_free(self,url):
-		if self.logged:self.fetch('https://www.fshare.vn/logout');self.logged=None
-		try:d=eval(xread('http://pastebin.com/raw/JkrunuTH'))
-		except:d=[]
-		link='';loop=0;l=len(d);j=[];linkfree=''
+		self.logout()
+		d        = getXshareData().get('fshare',[])
+		link     = ''
+		loop     = -2
+		l        = len(d)
+		j        = []
+		linkfree = ''
 		while (not link or link=='fail') and loop < l:
-			i=100
-			while i not in j:
-				i=urllib2.random.randint(0,l-1)
-				if i not in j:j.append(i)
-				else:i=100
-			loop+=1
-			
-			self.hd['Cookie']=''
-			u,p=urllib2.base64.b64decode(d[i][0]).split(':')
-			response = self.fetch('https://www.fshare.vn/login')
-			if not response or response.status!=200:continue
+			if loop < 0:
+				loop += 1
+				n = 'https://www.facebook.com/xshare.vn'
+				s = 'Xshare'
+				if loop == -1:
+					self.hd['Cookie'] = 'session_id=' + xrw('fshare.cookie')
+				else:
+					i = xread('https://www.fshare.vn/folder/YZPA4C7MABDP')
+					i = xsearch('<title>Fshare - (.+?)</title>', i)
+					self.hd['Cookie'] = 'session_id=' + i
+					
+					if self.hd['Cookie'] == 'session_id=' + xrw('fshare.cookie'):
+						continue
+					else:
+						xrw('fshare.cookie', i)
 			else:
-				fs_csrf=xsearch('value="(.+?)" name="fs_csrf"',response.body)
-				data={"LoginForm[email]":u,"LoginForm[password]":p,"fs_csrf":fs_csrf}
-				self.hd['Cookie']=response.cookiestring
-				response = self.fetch('https://www.fshare.vn/login',data)
-				if response and response.status==302:
-					self.hd['Cookie']=response.cookiestring;self.logged='success'
-					mess('[COLOR cyan]Thanks to %s[/COLOR]'%d[i][1],d[i][2])
-				else:continue
+				i = 100
+				while i not in j:
+					i = urllib2.random.randint(0,l-1)
+					if i not in j:
+						j.append(i)
+					else:
+						i = 100
+				loop += 1
+				
+				self.hd['Cookie'] = ''
+				u,p,n,s  = d[i]
+				response = self.fetch('https://www.fshare.vn/login')
+				if not response or response.status != 200:
+					continue
+				else:
+					self.hd['Cookie'] = response.cookiestring
+					fs_csrf  = xsearch('value="(.+?)" name="fs_csrf"',response.body)
+					data     = {"LoginForm[email]":u,"LoginForm[password]":p,"fs_csrf":fs_csrf}
+
+					response = self.fetch('https://www.fshare.vn/login', data)
+					if response and response.status == 302:
+						self.hd['Cookie'] = response.cookiestring
+						self.logged       = 'success'
+					else:
+						continue
 			
-			b=xget(url,self.hd)
-			if not b:continue
-			link=b.geturl()
-			if link==url:
-				b=b.read()
-				free=True if re.search('<i class="fa fa-star">',b) else False
-				fs_csrf=xsearch('value="(.+?)" name="fs_csrf"',b)
-				downloadForm=xsearch('id="DownloadForm_linkcode" type="hidden" value="(.+?)"',b)
-				data={'fs_csrf':fs_csrf,'DownloadForm[linkcode]':downloadForm,'ajax':'download-form'}
-				if re.search('class="fa fa-lock"',b):
-					data['DownloadForm[pwd]']=get_input(u'Hãy nhập: Mật khẩu tập tin')
-				b=xread('https://www.fshare.vn/download/get',self.hd,urllib.urlencode(data))
+			b = xget(url,self.hd);
+			if not b:
+				self.logout()
+				continue
+			
+			link = b.geturl()
+			if link == url and loop > 0:
+				b            = b.read()
+				free         = True if re.search('<i class="fa fa-star">',b) else False
+				fs_csrf      = xsearch('value="(.+?)" name="fs_csrf"',b)
+				downloadForm = xsearch('id="DownloadForm_linkcode" type="hidden" value="(.+?)"',b)
+				data = {
+					'fs_csrf'                : fs_csrf,
+					'DownloadForm[linkcode]' : downloadForm,
+					'ajax'                   : 'download-form'
+				}
+				
+				if re.search('class="fa fa-lock"', b):
+					data['DownloadForm[pwd]'] = get_input(u'Hãy nhập: Mật khẩu tập tin')
+				
+				b = xread('https://www.fshare.vn/download/get', self.hd, urllib.urlencode(data))
 				try:
-					link=json.loads(b).get('url','')
-					if free:linkfree=link;link=''
-				except:link='fail'
-			if self.logged:self.fetch('https://www.fshare.vn/logout');self.logged=None
+					link = json.loads(b).get('url','')
+					if free:
+						linkfree = link
+						link     = ''
+				except:
+					link = 'fail'
+				
+			elif link == url:
+				link = ''
+				
+			#self.logout()
+			if link and link != 'fail':
+				if self.user != 'xshare@thanhthai.net':
+					u = self.hd['Cookie'].split('=')[1]
+					xrw('fshare.cookie',u)
+					self.hd['Cookie'] = ''
+					self.login('xshare@thanhthai.net','thaitni@')
+					data     = '{"token":"%s","new_name":"%s","file":"%s"}'
+					data     = data % (self.get_token(),u,'YZPA4C7MABDP')
+					response = self.fetch('https://www.fshare.vn/api/fileops/rename', data)
+					self.logout()
+				mess('[COLOR cyan]Thanks to %s[/COLOR]'%n, s)
 		
-		if not link or link=='fail':
-			data='url_download=https%3A%2F%2Fwww.fshare.vn%2Ffile%2F'+url.rsplit('/',1)[1]
-			link='';loop=0;i='get link from aku.vn'
+		if not link or link == 'fail':
+			data = 'url_download=https%3A%2F%2Fwww.fshare.vn%2Ffile%2F'+url.rsplit('/',1)[1]
+			link = ''
+			loop = 0
+			i    = 'get link from aku.vn'
+			
 			while not link and loop < 2:
-				b=xread('http://www.aku.vn/linksvip',data=data)
-				link=xsearch('<a href=([^<]+?) target=_blank',b)
-				if not link:continue
-				elif '/account/' in link:link=''
-				else:mess('[COLOR cyan]Thanks to Nhat Vo Van[/COLOR]',i)
+				b    = xread('http://www.aku.vn/linksvip', data=data)
+				link = xsearch('<a href=([^<]+?) target=_blank', b)
+				if not link:
+					continue
+				elif '/account/' in link:
+					link = ''
+				else:
+					mess('[COLOR cyan]Thanks to Nhat Vo Van[/COLOR]', i)
 				loop+=1
 		
 		if (not link or link=='fail') and linkfree:
 			mess(u'Sorry. Xshare chỉ get được link có băng thông giới hạn')
-			link=linkfree
-		return link
-	
-	def get_maxlink_free1(self,url):
-		libsChecker('fsharefree.py','http://pastebin.com/raw/CB4HVfCP')
-		from fsharefree import getLinkFree
-		link=getLinkFree(url)
+			link = linkfree
 		return link
 	
 	def get_maxlink(self,url):
@@ -671,7 +751,6 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 				link=self.get_maxlink_free(url)
 				if link and link!='fail':return link
 			elif not re.search('<a href="/logout">',b):
-				mess(u'Thông tin Fshare acc chưa đủ hoặc sai','fshare.vn')
 				return self.get_maxlink_free(url)
 			
 			fs_csrf=xsearch('value="(.+?)" name="fs_csrf"',b)
@@ -729,30 +808,47 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		return {'pagename':pagename,'items':items}
 	
 	def myFshare_add(self,url,name):
-		if not self.url_id:mess(u'Hãy set "Thư mục chia sẻ của tôi trên Fshare!"','myFshare');return
+		if not self.url_id:
+			mess(u'Hãy set "Thư mục chia sẻ của tôi trên Fshare!"','myFshare')
+			return
 		id=url.split('/')[4]
-		if [s for s in self.get_folder('https://www.fshare.vn/folder/'+self.url_id)['items'] if id in s[0]]:
-			mess(u'This item already in MyFshare!','Fshare.vn');return
-		token=self.get_token();name=id+('FOLDER ' if 'folder' in url else 'FILE ')+name
+		data=self.get_folder('https://www.fshare.vn/folder/'+self.url_id)['items']
+		if [s for s in data if id in s[0]]:
+			mess(u'This item already in MyFshare!','Fshare.vn')
+			return
+		token=self.get_token()
+		name=id+('FOLDER ' if 'folder' in url else 'FILE ')+name
 		data='{"token":"%s","name":"%s","in_dir":"%s"}'%(token,name,self.url_id)
 		response=self.fetch('https://www.fshare.vn/api/fileops/createFolder',data)
 		if response and response.status==200:mess(u'Add a item to MyFshare success','Fshare.vn')
 		else:mess(u'Add a item to MyFshare fail!','Fshare.vn')
 	
 	def myFshare_remove(self,url):
-		id=[s[2] for s in self.get_folder('https://www.fshare.vn/folder/'+self.url_id)['items'] if url==s[1]]
-		id=id[0] if id else '';data='{"token":"%s","items":["%s"]}'%(self.get_token(),id.strip())
+		id=self.get_folder('https://www.fshare.vn/folder/'+self.url_id)['items']
+		id=[s[2] for s in id if url==s[1]]
+		id=id[0] if id else ''
+		data='{"token":"%s","items":["%s"]}'%(self.get_token(),id.strip())
 		response=self.fetch('https://www.fshare.vn/api/fileops/delete',data)
-		if response and response.status==200:result=True;mess(u'Remove a item from MyFshare success','Fshare.vn')
-		else:result=False;mess(u'Remove a item from MyFshare fail!','Fshare.vn')
+		if response and response.status==200:
+			mess(u'Remove a item from MyFshare success','Fshare.vn')
+			result=True
+		else:
+			mess(u'Remove a item from MyFshare fail!','Fshare.vn')
+			result=False
 		return result
 	
 	def myFshare_rename(self,url,new_name):
-		id=[s[2] for s in self.get_folder('https://www.fshare.vn/folder/'+self.url_id)['items'] if url==s[1]]
-		id=id[0] if id else '';data='{"token":"%s","new_name":"%s","file":"%s"}'%(self.get_token(),new_name,id)
+		id=self.get_folder('https://www.fshare.vn/folder/'+self.url_id)['items']
+		id=[s[2] for s in id if url==s[1]]
+		id=id[0] if id else ''
+		data='{"token":"%s","new_name":"%s","file":"%s"}'%(self.get_token(),new_name,id)
 		response=self.fetch('https://www.fshare.vn/api/fileops/rename',data)
-		if response and response.status==200:result=True;mess(u'Rename a item in MyFshare success','Fshare.vn')
-		else:result=False;mess(u'Rename a item in MyFshare fail!','Fshare.vn')
+		if response and response.status==200:
+			mess(u'Rename a item in MyFshare success','Fshare.vn')
+			result=True
+		else:
+			mess(u'Rename a item in MyFshare fail!','Fshare.vn')
+			result=False
 		return result
 	
 	def myFshare_upload(self,name,size,content):
@@ -801,7 +897,8 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		else:mess(u'Add folder fail !','Fshare.vn');result=''
 		return result #folder ID created, empty if fail
 	
-	def remove_folder(self,parent_folder,folder_id):
+	#def remove_folder(self,parent_folder,folder_id):
+	def remove_folder(self,folder_id):
 		data='{"token":"%s","items":["%s"]}'%(self.get_token(),folder_id)
 		self.hd['Referer']='https://www.fshare.vn/home/xshare_favourite'
 		response=self.fetch('https://www.fshare.vn/api/fileops/delete',data)
@@ -818,7 +915,8 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		else:url='https://www.fshare.vn/home/'+folder_name+'?_pjax=%23pjax_content'#;print url,self.hd
 		response=self.fetch(url)
 		if response and response.status==200:
-			items=re.findall('dl="(.+?)".+?f-name= "(.+?)"',response.body)
+			b=response.body
+			items=re.findall('dl="(.+?)".+?f-name= "(.+?)"',b)
 			items=[(s[1],'https://www.fshare.vn'+s[0]) for s in items]
 		else:items=[]
 		return items #(folder name,public url)
@@ -840,27 +938,27 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		data='{"token": "%s", "items":["%s"]}'%(self.get_token(),id)
 		response=self.fetch('https://www.fshare.vn/api/fileops/delete',data)
 		
-	def myFavourites_add(self,s):
+	def myFavourites_add(self,s,id,prefix):
 		result=[]
-		if not self.myFavourite_id:mess('Your Fshare Favourite ID not found!')
-		else:
-			import time
-			loop=True;prefix=int(time.time());count=0;s=urllib2.base64.urlsafe_b64encode(s)
-			while loop:
-				folder_name='%d.%d.'%(prefix,count)+s[:230]
-				if len(s)>230:s=s[230:];count+=1
-				else:loop=False
-				i=self.add_folder(folder_name,self.myFavourite_id)
-				if i:result.append(i)
-				else:loop=False#Chua xu ly delete neu that bai
+		s=urllib2.base64.urlsafe_b64encode(s)
+		count=0
+		while s:
+			folder_name='%d.%d.'%(prefix,count)+s[:230]
+			s=s[230:]
+			count+=1
+			i=self.add_folder(folder_name,id)
+			if i:result.append(i)
+			else:result=[];s=''#Chua xu ly delete neu that bai
 		return result # list of folders ID created
 	
 	def myFavourites_loads(self,page):
 		#(folder name,public url)
 		myFolder=self.get_myFolder('xshare_favourite',page)
+		k=[i[0]+','+i[1] for i in myFolder if 'xshareFavourite ' in i[0]]
 		f=[i[0] for i in myFolder if re.search('\d{10,}',i[0])]
-		s=sorted([i.split('.') for i in f], key=lambda m:(m[0],m[1]))
-		k=[]
+		f=[i.split('.') for i in f if re.search('\d{10,}\.\d+',i)]
+		s=sorted(f, key=lambda m:(m[0],m[1]))
+		#k=[]
 		for i in sorted(list(set([i[0] for i in s])),reverse=True):
 			try:m=urllib2.base64.urlsafe_b64decode(''.join(j[2] for j in s if j[0]==i))
 			except:m=''
@@ -869,9 +967,10 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 		return k
 		
 	def myFavourites_remove(self,ids):
-		result=True
-		for i in ids.split('-'):
-			if not self.remove_folder('xshare_favourite',i):result=False
+		result=True#;xbmc.log(ids)
+		for id in ids.split('-'):
+			#if not self.remove_folder('xshare_favourite',i):result=False
+			if not self.remove_folder(id):result=False
 		return result
 	
 	def searchFollow(self,q):
@@ -898,27 +997,36 @@ class fshare:#https://www.fshare.vn/home/Mục chia sẻ của thaitni/abc?pageI
 
 class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 	def __init__(self):
-		self.hd={'User_Agent':'Mozilla/5.0','X-Requested-With':'XMLHttpRequest','X-KEY':'play1game'}
-		self.hd['referer']='https://fptplay.net/'
-		self.hd['Cookie']=xrw('fptplay.cookie') if filetime('fptplay.cookie')<30 else self.login()
+		self.hd = {
+			'User_Agent' : 'Mozilla/5.0',
+			'X-Requested-With' : 'XMLHttpRequest',
+			'X-KEY' : 'play1game'
+		}
+		self.hd['referer'] = 'https://fptplay.net/'
+		
+		self.hd['Cookie'] = xrw('fptplay.cookie')
+		if filetime('fptplay.cookie') > 30:
+			cookie = self.login()
+			if cookie:
+				self.hd['Cookie'] = cookie
+			
 		
 	def login(self):
-		phone_fptplay=get_setting('phone_fptplay');password=get_setting('pass_fptplay')
-		conutry=re.sub('\(.+?\)','',get_setting('country_fptplay')).strip()
-		if not phone_fptplay:#'MDkxODc3ODAxMzpoaWV1aGllbi52bg=='
-			mess(u'Bạn đang sử dụng account Fptplay của xshare')
-			phone_fptplay,password=urllib2.base64.b64decode('MDkxMzc2MTQ0NDphZGRvbnhzaGFyZQ==').split(':')
-		data=urllib.urlencode({'phone':phone_fptplay,'password':password,'country_code':conutry})
-		cookie=urllib2.HTTPCookieProcessor();opener=urllib2.build_opener(cookie);urllib2.install_opener(opener)
-		#try:b=opener.open(self.hd['referer'])
-		#except:pass
-		opener.addheaders=self.hd.items();url='https://fptplay.net/user/login'
-		req=urllib2.Request('https://fptplay.net/user/login',data)
-		try:b=urllib2.urlopen(req,timeout=30)
-		except:pass
-		cookie=xcookie(cookie)
-		if 'laravel_id' in cookie:mess(u'Login thành công','fptplay.net');xrw('fptplay.cookie',cookie)
-		else:mess(u'Login không thành công!','fptplay.net')
+		phone   = get_setting('phone_fptplay')
+		passwd  = get_setting('pass_fptplay')
+		country = re.sub('\(.+?\)', '', get_setting('country_fptplay')) . strip()
+		data    = urllib.urlencode({'phone':phone,'password':passwd,'country_code':country})
+		b       = xreadc('https://fptplay.net/user/login', self.hd, data)
+		
+		if 'xshare' in b and 'laravel_id' in b:
+			cookie = b.split('xshare')[1]
+			mess('Login thành công','fptplay.net')
+			xrw('fptplay.cookie',cookie)
+			
+		else:
+			cookie = 'laravel_id=da39a3ee5e6b4b0d3255bfef95601890afd80709;laravel_session=eyJpdiI6Ijh5WHlDYzk5aVNNZUs0Q2VpZlR3NkE9PSIsInZhbHVlIjoiRkJCWGZ6RE5US204YXFIM2NaZnYraHpSRTh1VHR0ZzlPQU03azNSXC9rYTFUeG9CdlRFaTFvRmR0MHY0Nkk3cGJLQ011UWRhYnBkbHNEckxqdUloa0FBPT0iLCJtYWMiOiJmMTA4ZDY3YmM3ZjQ3ZWZiMmZmM2I3NmQxN2I3YTI4NDc5NjU1NGVjMWI2ZmM2OTI5OGJiN2IwMmQzZmMxODNlIn0%3D;token=eyJpdiI6ImdcLytzNEtkbmQ5VFRndmFEcCttZTV3PT0iLCJ2YWx1ZSI6IkdcL2tDdVFmNTN1QkdBbXIzVVR2M2I4d3I0K2lkQUlzWDZRVmVzTXpwaWlRSFdZckVvblRjakxLbzB0U1BhM1h5Y2JIQ05iNnhSZGNiaEdXVWJlY3VkQT09IiwibWFjIjoiZjA4MWY0MWE2MmYwYjkzY2VjMjViODYwOGEwNjYwZGEzYzdlMjM5MWUyNGNjMmUwZTQ2M2MwNzU5MWQzYWFjZiJ9'
+			mess(u'Login không thành công!','fptplay.net')
+		
 		return cookie
 	
 	def detail(self,s):
@@ -955,63 +1063,92 @@ class fptPlay:#from resources.lib.servers import fptPlay;fpt=fptPlay(c)
 	def schedule(self):
 		#b=xread('https://fptplay.net/show/schedule?channel=vtv6-hd&date=06-10-2016&channel_now=')
 		if filetime('fptschedule.txt')>10:
-			b=xread('https://fptplay.net/livetv')
-			b='\n'.join(re.findall('(<ul class="mar-p menu-list-event".+?/ul>)',b,re.S))
+			b = xread('https://fptplay.net/livetv')
+			b = '\n'.join(re.findall('(<ul class="mar-p menu-list-event".+?/ul>)',b,re.S))
 			xrw('fptschedule.txt',b)
-		b=xrw('fptschedule.txt')
-		items=[('day',i) for i in re.findall('<li rel="(\d.+?)"',b)]
+		
+		else : b = xrw('fptschedule.txt')
+		items = [('day',i) for i in re.findall('<li rel="(\d.+?)"',b)]
 		return items+[i for i in re.findall('<li rel="(\D.+?)".+?>([^<]+?)</span>',b)]
 	
+	def channels(self,s):
+		channels = [self.detail(i) for i in re.findall('(<a class="tv_channel.+?/a>)',s,re.S)]
+		return [(title,href,img) for title,href,img,dir in channels]
+		
 	def liveChannels(self):
-		b=xread('https://fptplay.net/livetv')
-		xrw('fptschedule.txt','\n'.join(re.findall('(<ul class="mar-p menu-list-event".+?/ul>)',b,re.S)))
-		items=[('Lịch Phát Sóng','','')]
-		b=b.split('<div id="box_')
+		b      = xread('https://fptplay.net/livetv')
+		img    = xsearch('src="(.+?)" alt="FPT Play"',b)
+		events = re.findall('(<ul class="mar-p menu-list-event".+?/ul>)',b,re.S)
+		xrw('fptschedule.txt','\n'.join(events))
+		items=[('Lịch Phát Sóng - [COLOR cyan]FPT TV xem lại[/COLOR]','','')]
+		b = b.split('<div id="box_')
 		for s in [i for i in b if ' class="livetv_header' in i]:
 			i=xsearch('<span class="livetv_header Regular pull-left"[^>]*>(.+?)</span>',s)
+			if 'Live Premium' in i:
+				items.append((vnu(i),s.encode('base64'),img))
+				continue
 			items.append((vnu(i),'sep',''))
-			for title,href,img,dir in [self.detail(i) for i in re.findall('(<a class="tv_channel.+?/a>)',s,re.S)]:
-				items.append((title,href,img))
+			items += self.channels(s)
 		return items
 		
 	def liveLink(self,url):
-		id=urllib2.os.path.basename(url)
-		if not id:id='vtv3-hd'
-		data='mobile=web&quality=3&type=newchannel&id=%s'%id;print data
-		b=xread('https://fptplay.net/show/getlinklivetv',self.hd,data);xbmc.log(str(self.hd))
-		try:link=json.loads(b).get('stream')+'|User-Agent=Mozilla/5.0 AppleWebKit/537.36'
-		except:link=''
+		id = urllib2.os.path.basename(url)
+		if not id : id = 'vtv3-hd'
+		data = 'mobile=web&quality=3&type=newchannel&id=%s'%id;print data
+		b    = xread('https://fptplay.net/show/getlinklivetv',self.hd,data)#;xbmc.log(str(self.hd))
+		
+		try   : link = json.loads(b).get('stream')+'|User-Agent=Mozilla/5.0 AppleWebKit/537.36'
+		except: link = ''
 		return link
 	
 	def playLink(self,url):
 		def stream(href,id,epi='1'):
-			ec=urllib.urlencode;HD='|User-Agent=Mozilla/5.0'
-			data=ec({'id':id,'type':'newchannel','quality':'3','episode':epi,'mobile':'web'})
-			try:link=json.loads(xread(href,self.hd,data)).get('stream')+HD
+			data = {"id":id,"type":"newchannel","quality":"3","episode":epi,"mobile":"web"}
+			data = urllib.urlencode( data )
+			hd   = "|" + urllib.urlencode( {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0"} )
+			#log ('b = xread("%s",%s,"%s")' % (href,self.hd,data))
+			try :
+				HD = {'referer': 'https://fptplay.net/', 'X-Requested-With':'XMLHttpRequest'}
+				b = xread(href, HD, data)
+				link = json.loads(b).get('stream') + hd
 			except:
-				b=xread(url);id=xsearch("var id = '(.+?)'",b)
-				data=ec({'id':id,'type':'newchannel','quality':'3','episode':epi,'mobile':'web'})
-				href='https://fptplay.net/show/getlinklivetv'#cac link tv tren muc phim dang phat
-				try:link=json.loads(xread(href,self.hd,data)).get('stream')+HD
-				except:link=''
+				b    = xread(url)
+				id   = xsearch("var id = '(.+?)'",b)
+				data = {"id":id,"type":"newchannel","quality":"3","episode":epi,"mobile":"web"}
+				data = urllib.urlencode( data )
+				href = 'https://fptplay.net/show/getlinklivetv'
+				#cac link tv tren muc phim dang phat
+				try    : link = json.loads(xread(href,self.hd,data)).get('stream') + hd
+				except : link=''
 			
 			return link
 		
-		href='https://fptplay.net/show/getlink'
-		if '?' not in url:link=stream(href,xsearch('(\w+)\.html',url))
-		else :link=stream(href,url.split('?')[0],url.split('?')[1])
+		href = 'https://fptplay.net/show/getlink'
+		if '?' not in url:
+			link = stream(href,xsearch('(\w+)\.html',url))
+		
+		else:
+			link = stream(href,url.split('?')[0],url.split('?')[1])
+		
 		return link
 	
 	def fptNodes(self,url):
-		b=xread(url)
-		string=xsearch('(<items.+?/items>)',b,1,re.S)
+		b      = xread(url)
+		string = xsearch('(<items.+?/items>)',b,1,re.S)
+		
 		if not string:
-			s=re.findall('<item>(.+?)</item>',b,re.S)
-			string='<items>\n'+'\n'.join(['<item>'+i+'</item>' for i in s if '<item>' not in i])+'\n</items>'
+			s      = re.findall('<item>(.+?)</item>',b,re.S)
+			string = ['<item>' + i + '</item>' for i in s if '<item>' not in i]
+			string = '<items>\n' + '\n' . join(string) + '\n</items>'
+		
 		from xml.etree.ElementTree import fromstring as xmlnodes
-		try:nodes=[i for i in xmlnodes(string.replace('&','&amp;')) if i.tag=='item']
-		except:nodes=[]
-		mylist=[m for m in [dict([(i.tag,i.text) for i in j if i.text]) for j in nodes] if len(m)>=3]
+		try:
+			nodes = [i for i in xmlnodes(string.replace('&','&amp;')) if i.tag=='item']
+		except:
+			nodes = []
+		
+		mylist = [dict([(i.tag,i.text) for i in j if i.text]) for j in nodes]
+		mylist = [m for m in mylist if len(m)>=3]
 		return mylist
 
 class ifile:
@@ -1052,31 +1189,30 @@ class hayhayvn:
 		self.c=c
 	
 	def getLink(self,url):
+		def getlink(url,hd):
+			b = xread(url,hd)
+			
+			try:
+				j = json.loads(b).get('sources')
+				j = [(i.get('file', ''), i.get('label','')) for i in j]
+			except:
+				j = []
+				
+			#log(j)
+			return googleLinks(j)
+		
 		tap=xsearch('-Tap-(\d+)-',url)
-		if tap:tap='_%s_'%tap
-		if '/show-' in url:url='http://www.hayhaytv.vn/getsourceshow/%s'%(xsearch('-(\w+)\.html',url)+tap)
-		else:url='http://www.hayhaytv.vn/getsource/%s'%(xsearch('-(\w+)\.html',url)+tap)
-		ip=xsearch("'(.+?)'",xread('http://ip.hayhaytv.vn/',self.hd))
-		b=xread(url+'?ip='+ip,self.hd)
-		try:j=json.loads(b).get('sources',[])
-		except:j=[]
-		link=googleItems(j,'file','label')
-		#items=ls([(i.get('file'),rsl(i.get('label'))) for i in j])
+		if tap:
+			tap = '_%s_'%tap
+		
+		url = 'http://www.hayhaytv.vn/getsource/%s'%(xsearch('-(\w+)\.html',url)+tap)
+		if '/show-' in url:
+			url = url.replace('getsource','getsourceshow')
+		
+		ip = xrw('myip.txt')
+		link = getlink(url+'__?ip='+ip,self.hd)
+		if not link:link=getlink(url+'__tm?ip='+ip,self.hd)
 		return link
-	
-	def getLink1(self,url):
-		b=xread(url)
-		link=xsearch('file.{,5}"(.+?)"',b);sub=''
-		if link:sub=xsearch("var track.{,5}'(.+?)'",b)
-		else:
-			url='http://www.hayhaytv.vn/getsource/%s'%xsearch("FILM_KEY = '(.+?)'",b)
-			b=xread(url,self.hd)
-			try:links=[(i.get('file').replace('\\',''),i.get('label')) for i in eval(b)]
-			except:links=[]
-			for href,r in ls([(i[0],rsl(i[1])) for i in links]):
-				g=xget(href)
-				if g:link=g.geturl();break
-		return link,sub
 
 class phim3s_net:
 	def __init__(self, username, password):
@@ -1118,23 +1254,44 @@ class phimoinet:
 		self.hd={'User-Agent':'Mozilla/5.0','Referer':'http://www.phimmoi.net'}
 	
 	def getLink(self,url):
-		b=xread(url,self.hd)
-		if not b:b=xread(url,self.hd)
-		alert=xsearch('<div class="alert-heading">(.+?)</div>',b)
-		href=xsearch('src="([^<]*?episodeinfo.+?)"',b).replace('javascript','json')
-		b=xread(href,self.hd)
-		if not b:b=xread(href,self.hd)
-		try:j=json.loads(b)
-		except:j={}
-		links=j.get('medias',[]);error=j.get('error','')
-		if error:mess(error)
-		elif alert:mess(alert)
+		b = xread(url,self.hd)
+		if not b:
+			b = xread(url,self.hd)
+		
+		alert = xsearch('<div class="alert-heading">(.+?)</div>',b)
+		href = xsearch('src="([^<]*?episodeinfo.+?)"',b).replace('javascript','json')
+		
+		b = xread(href,self.hd)
+		if not b:
+			b = xread(href,self.hd)
+		
+		try:
+			j = json.loads(b)
+		except:
+			j = {}
+		
+		links = j.get('medias',[])
+		error = j.get('error','')
+
+		if error:
+			mess(error)
+		elif alert:
+			mess(alert)
+		
 		link=''
 		if links:
 			items=ls([(i.get('url'),rsl(i.get('resolution'))) for i in links])
-			for href,label in items:
-				link=xcheck(gibberishAES(href,'PhimMoi.Net://%s'%j.get('requestId')))
-				if link:break
+			
+			link = googleLinks(items)
+			if not link:
+				for href,label in items:
+					#link=xcheck(gibberishAES(href,'PhimMoi.Net://%s'%j.get('requestId')))
+					try:
+						link = xcheck(gibberishAES(href,'PhimMoi.Net@%s'%j.get('requestId')))
+					except:
+						link = ""
+						
+					if link:break
 		return link
 
 class kPhim:
@@ -1154,44 +1311,90 @@ class kPhim:
 			items.append((title,href,img))
 		return items
 	
-	def genre(self,url):
+	def page(self,url):
 		items=[]
-		for s in re.findall('(<li style.+?/li>)',xread(url),re.S):
-			href=xsearch('href="(.+?)"',s)
-			img=xsearch('src="(.+?)"',s)
-			t=xsearch('>(.+?)-\d+?</span>',s)
-			title=t+' - ' if t else ''
-			title+=xsearch('"movie-name-1">(.+?)</h3>',s)+' - '+xsearch('"movie-name-2">(.+?)</h4>',s)
-			t=xsearch('<strong> (.+?)</strong></p>',s)
-			if t:title+= ' (%s)'%t
+		for s in re.findall('(<div class="item">.+?/div>\s</div>)',xread(url),re.S):
+			title = xsearch('title="(.+?)"',s)
+			href  = xsearch('href="(.+?)"',s)
+			
+			if not title or not href:
+				continue
+			
+			img   = xsearch('src="(.+?)"',s)
+			label = ' '.join(re.sub("<.+?>","",i) for i in re.findall('(<span.+?/span>)',s))
+			label = ' '.join(label.split())
+			title = title + ' - ' + label
 			items.append((title,href,img))
 		return items
 	
 	def eps(self,url):
-		b=xread(url)
-		items=re.findall('<a class="btn btn-default" href="(.+?)"> (.+?) </a>',b)
-		if not items:items=re.findall('<a class="label[^"]+?" href="(.+?)"> (.+?) </a>',b)
-		return items
+		b     = xread(url)
+		img   = xsearch('property="og:image" content="(.+?)"',b)
+		items = re.findall('data-id=".*?" href="(.+?)" title="(.+?)"',b)
+		if not items:
+			items = re.findall('<a class="btn btn-default" href="(.+?)"> (.+?) </a>',b)
+			if not items:
+				items=re.findall('<a class="label[^"]+?" href="(.+?)"> (.+?) </a>',b)
+		return [(i[0],i[1],img) for i in items]
 	
 	def getLink(self,url):
-		b=xread(url)
-		s=re.findall('vid="(.+?)" sid="(.+?)".+?>(.+?)<',b)
-		if len(s)==1:server_id,video_id,server=s[0]
+		b = xread(url)
+		s = []
+		#for i in re.findall('(<li class="kphim-server-item".+?/li>)',b,re.S):
+		for i in re.findall('(<div class="list-servers kphim-servers".+?/div>)',b,re.S):
+			j=xsearch('<strong>(.+?)</strong>',i).strip()
+			m  = re.findall('vid="(.+?)" sid="(.+?)".+?>(.+?)<',i)
+			s += ((k[0],k[1],j+' '+k[2].strip()) for k in m)
+		#s = re.findall('vid="(.+?)" sid="(.+?)".+?>(.+?)<',b)
+		if len(s) == 1:
+			server_id,video_id,server = s[0]
 		elif len(s)>1:
-			label='Chọn Server play phim này trên kphim.tv'
-			choices=[i[2] for i in s]
-			choice=xselect(label,choices)
-			if choice < 0:choice=0
-			server_id,video_id,a=s[choice]
-		else:return ''
-		tk=urllib2.hashlib.md5('%sfunc%s'%(server_id,video_id)).hexdigest()[1:]
-		b=xread('http://kphim.tv/embed/%s/%s/%s'%(server_id,video_id,tk),self.hd)
-		a=xsearch('sources[^\[]+(\[.+?\]),',b,1,re.S)
-		j=re.findall("file[^']+'(.+?)'.+?label[^']+'(.+?)'",a,re.S)
-		link=''
-		for href,label in ls([(i[0],rsl(i[1])) for i in j]):
-			try:link=urllib2.urlopen(href).geturl();break
-			except:pass
+			label   = 'Chọn Server play phim này trên kphim.tv'
+			choices = [i[2] for i in s]
+			choice  = xselect(label,choices)
+			
+			if choice < 0:
+				choice=0
+			
+			server_id,video_id,a = s[choice]
+		else:
+			return ''
+		
+		ver  = xsearch("ver\W*'(.+?)'",b)
+		from resources.lib.fshare import kphim
+		b=kphim(b, url, server_id, video_id)
+		href = xsearch('src="(.+?)"', b)
+		
+		if not href and "googlevideo.com" not in b:
+			data = urllib.urlencode({'url':url,'server_id':server_id,'video_id':video_id,'ver':ver})
+			b=xread('http://xshare.eu5.org/kphim.php', data=data)
+			href = xsearch('src="(.+?)"', b)
+		
+		link = ""
+		if href and 'nhaccuatui.com' in href:
+			id = xsearch('\.(\w+)\.html',href,result = href.rsplit('/',1)[-1])
+			if id:
+				nct  = nhaccuatui()
+				link = nct.getLink(id,'video')
+		
+		elif href and 'google.com' in href:
+			id  = xsearch('docid=(.+?)&',href)
+			url = 'https://drive.google.com/'
+			res = xget('%suc?id=%s'%(url,id), data = 'X-Json-Requested=true')
+			if res:
+				try:
+					j    = json.loads(xsearch('(\{.+?\})',res.read()))
+					link = j.get('downloadUrl')
+				except:
+					pass
+		elif 'zing.vn' in b:
+			href = xsearch('(http[^<]+zing.vn[^<]+)',b)
+			if href:
+				href = xget(href)
+				if href:
+					link = href.geturl()
+		else:
+			link = googleLinks(b.replace('\n',''))
 		return link
 
 class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
@@ -1269,7 +1472,8 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 		return items
 		
 	def threads(self,url,refresh=''):
-		def cleans(s):return ' '.join(re.sub('<[^<]+?>|\{[^\{]+\}|\[[^\[]+?\]|&#\w+;|amp;|<','',s).split())
+		def cleans(s):
+			return ' '.join(re.sub('<[^<]+?>|\{[^\{]+\}|\[[^\[]+?\]|&#\w+;|amp;|<','',s).split())
 		def srv(link):return [i for i in srvs if i in link]
 		srvs=['fshare.vn','4share.vn','tenlua.vn','subscene.com','phudeviet.org','youtube.com']
 		items=[];morethread=[]
@@ -1279,7 +1483,8 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 			if [i for i in srvs if i in title] or not title:
 				title=xsearch('<b>Ðề: (.+?)</b>',s)
 				if not title:
-					title=' '.join(xsearch('<div style="text-align: center".+?>(\w[^<]+?)<',s).split())
+					i='<div style="text-align: center".+?>(\w[^<]+?)<'
+					title=' '.join(xsearch(i,s).split())
 			elif 'download' in title.strip().lower():
 				title=xsearch('class="internalLink">([^<]+?)<',s[s.find(href)-500:])
 				if not title:title=xsearch('<title>(.+?)</title>',content)
@@ -1296,18 +1501,19 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 				img=xsearch('<img src="(.+?jpg)"',i)
 			
 			i=re.findall('<a href="([^"]+?)" target="_blank"[^<]+?>(.+?)/a>',s)
-			i= [(getTitle(title,href,s),href,img) for href,title in i if srv(href)]
+			i=[(getTitle(title,href,s),href,img) for href,title in i if srv(href)]
 			if i:items+=i
 			else:
 				m=re.findall('(http[\w|:|/|\.|\?|=|&|-]+)',s.replace('amp;',''))
 				items+=[('',i,img) for i in m if srv(i)]
 
-			j=re.findall('<a href="(http://www.hdvietnam.com/[^"]+?)" class="internalLink">(.+>)',s)
-			j= [(cleans(title),href,img) for href,title in j if 'chuyenlink' not in href and 'tags' not in href]
+			i='<a href="(http://www.hdvietnam.com/[^"]+?)" class="internalLink">(.+>)'
+			j=[(cleans(title),href,img) for href,title in re.findall(i,s)]
+			j=[i for i in j if 'chuyenlink' not in i[1] and 'tags' not in i[1]]
 			if j:morethread+=j
 		temp=[];list=[]
 		for i in items+morethread:
-			if i[1] not in temp:temp.append(i[1]);list.append(i)
+			if i[1] and i[1] not in temp:temp.append(i[1]);list.append(i)
 		
 		#if len([i for i in items if 'fshare.vn' in i[1]])<5:
 		if refresh:
@@ -1317,9 +1523,6 @@ class hdVietnamn:#from resources.lib.servers import hdvn;hdvn=hdvn()
 					title=siteInfo(href)[0]
 				return title
 			items=[(ftitle(i[0],i[1]),i[1],i[2]) for i in list]
-		
-		list=[i for i in items if i[0] and i[1]]
-		
 		return list
 		
 	def getThanks(self,data):
@@ -1662,14 +1865,27 @@ class imovies:
 		self.c=c
 	
 	def maxLink(self,url):
-		id=xsearch('im(\d+)',url);epi=xsearch('-(\d+)\.html',url)
-		b=xreadc(url)
-		self.hd['Cookie']=b.split('xshare')[-1]
-		sessionId=xsearch('crsftk="(.+?)"',b)
-		data='movieId=%s&partId=%s&tk=%s'%(id,epi,sessionId)
-		href='http://imovies.vn/Movie/Play'
-		try:j=json.loads(xread(href,self.hd,data)).get('Sources','')
-		except:j=[]
+		id = xsearch('im(\d+)',url)
+		epi = xsearch('-(\d+)\.html',url)
+		b = xreadc(url)
+		self.hd['Cookie'] = b.split('xshare')[-1]
+		sessionId = xsearch('crsftk="(.+?)"',b)
+		data = 'movieId=%s&partId=%s&tk=%s'%(id,epi,sessionId)
+		href = 'http://imovies.vn/Movie/Play'
+		#log('b=xread("%s", %s, "%s")' % (href,self.hd,data))
+		try:
+			j = json.loads(xread(href,self.hd,data)).get('Sources','')
+		except:
+			j = []
+		
+		if not j:
+			try:
+				s = urlfetch.post("%s?%s" %(href,data)).body
+				#log('urlfetch.post("%s?%s")' %(href,data))
+				j = json.loads(s).get('Sources','')
+			except:
+				j = []
+		
 		link=googleItems(j,'file','label')
 		sub=''
 		for i in [k for k in j if k.get('tracks')]:
@@ -2028,73 +2244,75 @@ class taiphim:
 
 class sieunhanh:
 	def __init__(self):
-		self.hd={'User-Agent':'Mozilla/5.0',
-			'X-Requested-With':'XMLHttpRequest',
-			'Referer': 'http://www.hdsieunhanh.com',
-			'Cookie':xrw('hdsieunhanh.cookie')}
-		self.urlhome='http://www.hdsieunhanh.com/'
-		self.color='orangered'
+		self.hd={
+			'User-Agent'       : 'Mozilla/5.0',
+			'X-Requested-With' : 'XMLHttpRequest',
+			'Referer'          : 'http://www.hdsieunhanh.com',
+			'Cookie'           : xrw('hdsieunhanh.cookie')
+		}
+		self.urlhome = 'http://www.hdsieunhanh.com/'
+		self.color   = 'orangered'
 
 	def eps(self,url):
-		content=xread(url);items=[]
-		s=xsearch('(<ul class="list_episode".+?/ul>)',content,1,re.DOTALL)
+		items=[]
+		content = xread(url)
+		s       = xsearch('(<ul class="list_episode".+?/ul>)',content,1,re.DOTALL)
 		return re.findall('href="(.+?)">(.+?)</a>',s)
 	
 	def item(self,s):
-		title=xsearch('alt="(.+?)"',s)
-		href=xsearch('href="(.+?)"',s)
-		if 'html' not in href:href=self.urlhome+href
-		img=xsearch('src="(.+?)"',s)
-		rate=xsearch('"rate">([^<]+?)</span>',s)
-		if rate:title='%s [COLOR green]%s[/COLOR]'%(title,rate)
-		eps=xsearch('(<span class="label-range">.+?<strong>\d+?</strong>)',s)
-		eps=' '.join(re.sub('<[^<]+?>','',eps).split())
-		if '"tag bitrate1 "' in s:title='%s [COLOR lime]CAM[/COLOR]'%title
-		elif '"tag bitrate0 "' in s:title='%s [COLOR lime]HD[/COLOR]'%title
-		if eps:title='%s [COLOR gold](%s)[/COLOR]'%(namecolor(title,self.color),eps);dir=True
-		else:dir=False
+		title = xsearch('alt="(.+?)"',s)
+		href  = xsearch('href="(.+?)"',s)
+		
+		if 'html' not in href:
+			href = self.urlhome+href
+		
+		img   = xsearch('src="(.+?)"',s)
+		rate  = xsearch('"rate">([^<]+?)</span>',s)
+		if rate:
+			title = '%s [COLOR green]%s[/COLOR]'%(title,rate)
+		
+		eps   = xsearch('(<span class="label-range">.+?<strong>\d+?</strong>)',s,1,re.S)
+		eps   = ' '.join(re.sub('<[^<]+?>','',eps).split())
+		if '"tag bitrate1 "' in s:
+			title = '%s [COLOR lime]CAM[/COLOR]'%title
+		elif '"tag bitrate0 "' in s:
+			title = '%s [COLOR lime]HD[/COLOR]'%title
+		
+		if eps:
+			title = '%s [COLOR gold](%s)[/COLOR]'%(namecolor(title,self.color),eps)
+			dir   = True
+		else:
+			dir   = False
+		
 		return (title,href,img,dir)
 		
 	def page(self,url):
-		content=xread(url);items=[]
-		for s in [i for i in content.split('<div class="block-base movie">') if 'data-id' in i]:items.append(self.item(s))
+		items   = []
+		content = xread(url)
+		for s in [i for i in content.split('<div class="block-base movie">') if '"rating"' in i]:
+			items.append(self.item(s))
+		
+		if not items:
+			s     = re.findall('(<div class="block-base movie".+?/div>)',content,re.S)
+			items = [self.item(i) for i in s]
 			
-		pn=xsearch('<a href="([^"]+?)">Sau</a>',content)
+		pn = xsearch('<a href="([^"]+?)">Sau</a>',content)
 		if pn:
-			pn=self.urlhome+pn.replace('amp;','')
-			pages=xsearch('=(\d+)">Cuối</a></li></ul>',content)
-			title='[COLOR lime]Page next: page/%s[/COLOR]'%pages
+			pn    = self.urlhome+pn.replace('amp;','')
+			pages = xsearch('=(\d+)">Cuối</a></li></ul>',content)
+			title = '[COLOR lime]Page next: page/%s[/COLOR]'%pages
 			items.append((title,pn,'image',True))
+		
 		return items#title,href,img
 
-	def search(self,s):
-		url='http://hdsieunhanh.com/tim-kiem.html?term='+urllib.quote_plus(s)
-		self.hd['X-Requested-With']='XMLHttpRequest';items=[];b=xread(url,self.hd)
-		if not b:mess('Get search fail','hdsieunhanh.com');return items
-		try:j=json.loads(b)
-		except:j={}
-		for s in ('director','phim','actor','show'):
-			for i in j.get(s,[]):
-				title=i.get('name').encode('utf-8')+' - '+i.get('extension').encode('utf-8')
-				href=i.get('link')
-				img=i.get('image')
-				eps=(i.get('last_episode')+'/'+i.get('total_episode')) if i.get('total_episode')>'1' else ''
-				eps=eps.encode('utf-8')
-				if not eps:dir=False
-				else:title='%s [COLOR blue]%s[/COLOR]'%(namecolor(title,self.color),eps);dir=True
-				items.append((title,href,img,dir))
-		if not items:mess(u'Không tìm thấy dữ liệu vui lòng thử lại!','hdsieunhanh.com')
-		return items
-	
 	def maxLink(self,url):
-		tap=xsearch('-Tap-(\d+)-',url)
-		tap='_%s_'%tap
-		url='http://www.hdsieunhanh.com/getsource/%s'%(xsearch('-(\w+)\.html',url)+tap)
-		ip=xsearch("'(.+?)'",xread('http://ip.hdsieunhanh.com/',self.hd))
-		b=xread(url+'?ip='+ip,self.hd);xbmc.log(url+'?ip='+ip)
-		try:j=json.loads(b).get('sources',[])
-		except:j=[]
-		link=googleItems(j,'file','label')
+		ip   = xrw('myip.txt')
+		tap  = '_%s_'%xsearch('-Tap-(\d+)-',url)
+		href = 'http://www.hdsieunhanh.com/getsource/%s'%(xsearch('-(\w+)\.html',url)+tap)
+		if '/show-' in url:
+			href = href.replace('getsource','getsourceshow')
+		
+		link = googleLinks(xsearch('sources\W+\[([^\]]+?)\]',xread(href+'?ip='+ip,self.hd)))
 		return link
 
 class chiaseNhac:
@@ -2112,6 +2330,7 @@ class chiaseNhac:
 		data={'username':username,'password':password,'login':'Dang Nhap'}
 		response=self.fetch('http://chiasenhac.vn/login.php', data=data)
 		if not response or response.status!=302:mess(u'Login Không thành công!','chiasenhac.com')
+		#xbmc.log(response.cookiestring)
 
 	def logout(self):
 		self.fetch('http://chiasenhac.vn/login.php?logout=true')
@@ -2134,17 +2353,54 @@ class nhaccuatui:
 		self.urlsearch='http://www.nhaccuatui.com/tim-kiem?q='
 		self.speedsearch='http://www.nhaccuatui.com/ajax/search?q='
 		self.headers={'User-Agent':'Mozilla/5.0'}
-		if filetime('nhaccuatui.cookie') > 10:self.login()
-		else:self.headers['Cookie']=xrw('nhaccuatui.cookie')
+		self.headers['Cookie']=xrw('nhaccuatui.cookie')
+		self.login()
+	
+	def checkVIP(self,cookie='',boss=''):
+		if cookie:self.headers['Cookie']=cookie
+		b=xread('http://www.nhaccuatui.com/so_do.html',self.headers)
+		if '"puicon"' in b:
+			if cookie:
+				xrw('nhaccuatui.cookie',cookie)
+				if boss:mess('Thanks to '+boss)
+			return True
+		return False
 	
 	def login(self):
+		def postData(username,password):
+			su='http://www.nhaccuatui.com/ajax/user?type=login'
+			url='https://sso.nct.vn/auth/login?method=xlogin'
+			data={'uname':username,'password':password,'appName':'nhaccuatui','su':su}
+			b=urlfetch.post(url,data=data)
+			cookie=b.cookiestring
+			return cookie
+		
+		def getAccShare():
+			j=getXshareData()
+			try:username,password,boss=j.get('nhaccuatui')[0]
+			except:username=password=boss=''
+			return username,password,boss
+		
+		if self.checkVIP():return
+		
+		username=get_setting('nct_u');password=get_setting('nct_p');boss='';free=False
+		if not username or not password:
+			free=True
+			username,password,boss=getAccShare()
+		cookie=postData(username,password)
+		if cookie and self.checkVIP(cookie,boss):return
+		
+		if not free:
+			username,password,boss=getAccShare()
+			cookie=postData(username,password)
+			if cookie:self.checkVIP(cookie,boss)
+		
+	def login1(self):
 		hd={'User-Agent':'Mozilla/5.0'}
 		cookie=urllib2.HTTPCookieProcessor()
 		opener=urllib2.build_opener(cookie)
 		urllib2.install_opener(opener)
 		username=get_setting('nct_u');password=get_setting('nct_p')
-		if not username and not password:
-			username,password=urllib2.base64.b64decode('eHNoYXJlLHRoYWl0bmk=').split(',')
 		su='http://www.nhaccuatui.com/ajax/user?type=login'
 		url='https://sso.nct.vn/auth/login?method=xlogin'
 		data={'uname':username,'password':password,'appName':'nhaccuatui','su':su}
@@ -2530,7 +2786,7 @@ class hdonline:
 	def eps(self,id,page):
 		b=xread('http://hdonline.vn/episode/ajax?film=%s&episode=&page=%d&search='%(id,page))
 		items=[('http://hdonline.vn'+j[0],j[1]) for j in re.findall('href="(.+?)"[^>]+>(\d+)</a>',b)]
-		
+		log((id,page))
 		pn=xsearch('<a class="active"[^<]+>\d+</a><[^<]+>(\d+)</a>',b)
 		if pn:items.append(('[COLOR lime]Các tập tiếp theo...[/COLOR]',pn))
 		return items
@@ -2540,47 +2796,202 @@ class hdonline:
 		try:m=json.loads(b).get('msg');mess(u'%s'%m[:m.find('.')])
 		except:pass
 	
-	def maxLink(self,url):
-		items=[];sub=''
-		try:
-			j=json.loads(xread(url,self.hd))#;print json.dumps(j,indent=2),j.get('subtitle')
-			if j.get("audiodub"):mess(u'Phim này có 2 audio','HDonline.vn',10000)
-			if j.get('level'):items=ls([(i.get('file'),rsl(i.get('label'))) for i in j.get('level')])
-			elif j.get('file'):items=j.get('file')
-			
-			if j.get('subtitle'):
-				for i in j.get('subtitle'):
-					if i.get('code').encode('utf-8')=='vi':sub=i.get('file');break
-		except:pass
-		return items,sub
-	
 	def getLink(self,url,ep='1'):
-		b=xread(url,self.hd)#;xrw('xoa.html',b)
-		id=xsearch('-(\d+)\.',url)
-		url='http://hdonline.vn/frontend/episode/xmlplay?ep=%s&fid=%s&token=%s-%s&format=json'
-		token=xsearch('\|(\w{80,100})\|',b)#+'=='
-		rand=xsearch('\|(\d{10,12})\|',b)#;print token,rand
-		url=url%(ep,id,token,rand)
-		chonserver=addon.getSetting('chonserver')
-		if chonserver=='Thuyết minh':url+='&tm=1'
+		b     = xread(url,self.hd)
 		
-		try:j=json.loads(xread(url,self.hd))
-		except:j={}
-		items=[];sub=''
-		if j.get("audiodub"):mess(u'Phim này có 2 audio','HDonline.vn',10000)
-		if j.get('level'):items=ls([(i.get('file'),rsl(i.get('label'))) for i in j.get('level')])
-		elif j.get('file'):items=j.get('file')
+		if not xsearch('"file":"(.+?)"',b).replace('\\',''):
+			code = xsearch('(eval.+?\}\)\))', b)
+			if code:
+				from resources.lib.utils import packer#;log('packer')
+				b = packer(code.decode('unicode_escape'))
+		else:log('No packer')
 		
-		if j.get('subtitle'):
-			for i in j.get('subtitle'):
-				if i.get('code').encode('utf-8')=='vi':sub=i.get('file');break
-		return items,sub,j.get('image','')
+		if xsearch('"file":"(.+?)"',b).replace('\\',''):
+			epi = xsearch('Tập-(\d+)', url)
+			j = re.findall('(\{"file":".+?\})', b)
+			j = [ xsearch('"file":"(.+?)"',i).replace('\\','') for i in j if 'ep='+epi+'&' in i]
+			if j:
+				href = 'http://hdonline.vn' + j[0]
+			else:
+				href = 'http://hdonline.vn' + xsearch('"file":"(.+?)"',b).replace('\\','')
+			#log("xread('%s',%s)"%(href,self.hd))
+			try    : j = json.loads(xread(href+'&&reloadbk=1&format=json',self.hd))
+			except : j = {}
+		else:
+			j = {}
+		
+		#xbmc.log(str(j))
+		tm = False
+		#if j.get("audiodub") and addon.getSetting('chonserver') == 'Thuyết minh':
+		#	href += '&tm=1'
+		#	try:
+		#		j = json.loads(xread(href,self.hd))
+		#		mess("Bạn đang chọn TM")
+		#		tm = True
+		#	except:
+		#		j = {}
+		
+		#xbmc.log(str(j))
+		link = ""
+		sub  = []
+		
+		#log(str(j))
+		if j.get('level'):
+			try    : 
+				link = [(i.get("file"),i.get("label")) for i in j.get('level')]
+				#log(link)
+				link = googleLinks(link)
+			except : pass
+		
+		if not link:
+			try    : link = xget(j.get("image").rsplit('/',2)[0]+'/playlist.m3u8').geturl()
+			except :
+				try    : link = xget(j.get('file')).geturl()
+				except : link = j.get('file')
+		 
+		#xbmc.log(str(link))
+		if not tm:
+			mes = ""
+			for i in j.get('subtitle',[]):
+				s = i.get("file","")
+				if not s.startswith('http'):
+					s = 'http://data.hdonline.vn/api/vsub.php?url='+s
+				s = xget(s)
+				if s:
+					mes += u2s(i.get("label","")) + " & "
+					s    = s.geturl()
+					sub.append(s)
+		
+			if link and mes:
+				mess('subtitles %s của HDO' % mes[:-3])
+		
+			
+		return link,sub
+
+	def getLink1(self,url,ep='1'):
+		#xbmc.log(str(self.hd))
+		id    = xsearch('-(\d+)\.',url)
+		b     = xread(url,self.hd)
+		token = xsearch('\|(\w{80,100})\|',b)
+		rand  = xsearch('\|(\d{10,12})\|',b)
+		
+		href  = 'http://hdonline.vn/frontend/episode/xmlplay?ep=%s&fid=%s&token=%s-%s&format=json'
+		href  = href%(ep,id,token,rand)
+		try    : j = json.loads(xread(href+'&format=json',self.hd))
+		except : j = {}
+		
+		tm = False
+		if j.get("audiodub") and addon.getSetting('chonserver') == 'Thuyết minh':
+			href += '&tm=1'
+			try:
+				j = json.loads(xread(href,self.hd))
+				mess("Bạn đang chọn TM")
+				tm = True
+			except:
+				j = {}
+		
+		#xbmc.log(str(j))
+		link = ""
+		sub  = []
+		
+		if j.get('level'):
+			try    : 
+				link = [(i.get("file"),i.get("label")) for i in j.get('level')]
+				link = googleLinks(link)
+			except : pass
+		
+		if not link:
+			try    : link = xget(j.get("image").rsplit('/',2)[0]+'/playlist.m3u8').geturl()
+			except :
+				try    : link = xget(j.get('file')).geturl()
+				except : link = j.get('file')
+		 
+		#xbmc.log(str(link))
+		if not tm:
+			mes = ""
+			for i in j.get('subtitle',[]):
+				s = i.get("file","")
+				if not s.startswith('http'):
+					s = 'http://data.hdonline.vn/api/vsub.php?url='+s
+				s = xget(s)
+				if s:
+					mes += u2s(i.get("label","")) + " & "
+					s    = s.geturl()
+					sub.append(s)
+		
+			if link and mes:
+				mess('subtitles %s của HDO' % mes[:-3])
+		
+		return link,sub
 
 class phimBatHu:
 	def __init__(self):
 		self.home='http://phimbathu.com'
 	
 	def getDirectLink(self,url):
+		b = xread(url)
+		key = "phimbathu.com4590481877"+xsearch("'film_id':'(.+?)'",b)
+		link = ""
+
+		href = xsearch('linkPlay\W+"(.+?)"', b)
+		if not href:
+			mess('Link not found!','phimbathu.com')
+			return ""
+		
+		
+		href = "http://phimbathu.com" + href
+		servers = re.findall('data-server="(.+?)" data-type="(.+?)">(.+?)</span>', b)
+		
+		if len(servers) > 1:
+			choice=xselect('Chọn Server',[i[0]+" "+i[2] for i in servers])
+			
+			if choice < 0:
+				choice = 0
+			
+			href = href + "/server/"+servers[choice][0] + "/type/" + servers[choice][1]
+		
+		try:
+			j = json.loads(xread(href))
+		except:
+			j = []
+			
+		#log(j)
+			
+		hrefs = []
+		checks = []
+		for i in j:
+			for m in i:
+				href = gibberishAES(m.get('file', ""), key)
+				#log(href)
+				if 'akamaized.net' in href:
+					href = href.replace('*/','%2A%2F')
+					link = xcheck(href)
+				
+				elif 'drive.google.com/videoplayback' in href:
+					link = xcheck(href)
+				
+				elif 'drive.google.com' in href and href not in checks:
+					checks.append(href)
+					link = getGDLink(href)
+					if not link:
+						link = googleDriveLink(xsearch('([\w|-]{28,})', href))
+				
+				if link:
+					break
+
+			if link:
+				break
+			#log(hrefs)
+			
+
+			
+		if not link:
+			mess('File invalid or deleted!','phimbathu.com')
+		
+		return link
+		
+	
+	def getDirectLink1(self,url):
 		def getLink(s,key):#chonserver values="Thuyết minh|VietSub|Không"
 			try:j=json.loads(xsearch('"sources":(\[[^\]]+?\])',s))
 			except:j={}
@@ -2594,7 +3005,6 @@ class phimBatHu:
 		key="phimbathu.com4590481877"+xsearch("'film_id':'(.+?)'",b)
 		chonserver=addon.getSetting('chonserver')
 		servers=re.findall('(<a.+?/a>)',xsearch('<ul class="choose-server">(.+?)</ul>',b,1,re.S))
-		
 		
 		playOn=''
 		if not servers or chonserver=='Không':
@@ -2633,7 +3043,7 @@ class phimBatHu:
 				try:link=googleItems(json.loads(b),'file','label')
 				except:pass
 				if link:break
-				
+			
 		if link:
 			try:mess(u'Play on: '+playOn.decode('utf-8'))
 			except:pass
@@ -2650,21 +3060,12 @@ class mphim:
 	
 	def maxLink(self,url):
 		b=xread(url.replace('/phim/','/xem-phim/'))
-		a=xread(xsearch('playlist: *"(.+?)"',b))
-		items=ls(re.findall('file="(.+?)" label="(.+?)"',a))
-		if not items:
-			a=xsearch('file="(.+?)"',a)
-			if a:items=[(a,'')]
-		
-		if items:items=[(href.replace('&amp;','&'),label) for href,label in items]
-		else:
-			s=xsearch('(video.ready.+?/script>)',b,1,re.S)
-			b=xread(xsearch("url: *'(.+?)'",s))
-			try:
-				j=json.loads(b).get('data',{}).get('sources',[])
-				items=[(i.get('src'),i.get('label')) for i in j]
-			except:items=[]
-		return items
+		s=xsearch('link_url.+?(http.+?)"',b).replace("\\","")+xsearch('"key\W+"(.+?)"',b)
+		try:
+			j=json.loads(xread(s))
+			link=googleItems(j.get('data',{}).get('sources',[]),'src','label')
+		except:link=''
+		return link
 
 class phim14com:
 	def __init__(self,c):
@@ -2673,21 +3074,40 @@ class phim14com:
 		self.c=c
 
 	def getLink(self,url):
-		id=xsearch('\.(\d+)\.html',url)
-		if id:b=xread('http://phim14.net/ajax/episode.html',data='do=load_episode&episodeid=%s'%id)
-		else:b=xread(url)
-		href=xsearch('link:"(.+?)"',b)
-		url=xsearch('urlphp = "(.+?)"',xread(xsearch('src="(http://player.+?)"',b)))
-		b=xread(url,data='link='+href.replace('&','%26'))
-		try:j=json.loads(b)
-		except:j={}
-		link=''
-		if j.get('link'):link=googleItems(j.get('link'),'link','label')
+		id = xsearch('\.(\d+)\.html',url)
+		if id:
+			href = 'http://phim14.net/ajax/episode.html'
+			b = xread(href, data='do=load_episode&episodeid=%s'%id)
+		else:
+			b = xread(url)
+		
+		href = xsearch('link:"(.+?)"',b)
+		url = xsearch('urlphp = "(.+?)"',xread(xsearch('src="(http://player.+?)"',b)))
+		b = xread(url, data='link='+href.replace('&','%26'))
+		
+		try:
+			j = json.loads(b)
+		except:
+			j = {}
+		
+		link = ''
+		
+		if j.get('link') and isinstance(j.get('link'), basestring):
+			link = j.get('link')
+			
+		elif j.get('link'):
+			link = googleItems(j.get('link'),'link','label')
+		
 		elif j.get('list'):
-			j=j.get('list')
-			if isinstance(j, unicode):link=j
-			elif isinstance(j, list):link=googleItems(j,'link','label')
-		if not link:mess('File invalid or deleted!','phim14.net')
+			j = j.get('list')
+			if isinstance(j, unicode):
+				link = j
+			elif isinstance(j, list):
+				link = googleItems(j,'link','label')
+		
+		if not link:
+			mess('File invalid or deleted!','phim14.net')
+		
 		return link
 	
 	def getYoutube(self,url):
@@ -2843,8 +3263,8 @@ class vtvgovn:
 		url='http://vtvgo.vn/get-program-channel?epg_id=%s&type=1'%id
 		try:link=json.loads(xread(url,self.hd)).get('data','')
 		except:link=''
-		print link
-		return link
+		#xbmc.log('11111111111'+ link)
+		return link+'|'+urllib.utlencode({'Referer':'http://vtvgo.vn','User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','Cookie':xrw('vtvgo.cookie')})
 
 	def detail(self,s):
 		title=xsearch('title="(.+?)"',s)
@@ -2978,12 +3398,23 @@ class vtvgovn:
 
 class phimMedia:
 	def maxLink(self,url):
-		body=xread(url)
-		s=xsearch('sources: (\[[^\[]+?\])',body)
-		for i in re.findall('(\w+):.?"',s):s=s.replace("%s:"%i,'"%s":'%i)
-		try:items=ls([(i.get('file',''),rsl(i.get('label',''))) for i in eval(s)])
-		except:items=[]
-		return items
+		b = xread(url)
+		items = re.findall('file: *"(.+?)",\s*label: *"(.+?)"',b)#;xbmc.log(str(items))
+		try:
+			items = [(href,rsl(label)) for href,label in items]
+		except:
+			items = []
+		link = googleItems(items)
+		if link:
+			link = xcheck(link)
+		
+		if not link:
+			href = xsearch('src="(https://drive.google.com.+?)"', b)
+			link = getGDLink(href)
+			if not link:
+				link = googleDriveLink(xsearch('([\w|-]{28,})', href))
+			
+		return link
 
 class InputWindow(xbmcgui.WindowDialog):
     def __init__(self, *args, **kwargs):
@@ -3053,6 +3484,7 @@ class k88com:
 			items.append((pages,self.urlhome+pn.replace('/page/','?page='),'pageNext',''))
 		return items
 
+		
 	def openload(self,url):
 		def getCaptcha(captcha_url):
 			if captcha_url:
@@ -3087,41 +3519,103 @@ class k88com:
 		return link
 		
 	def getLink(self,url):
-		response=xread(url);link=''
-		href=xsearch('\{link:.*"(.+?)"\}',response)
-		if len(href)>20:
-			data=urllib.urlencode({'link':href});label=0#;mess('link')
-			jp=xread('http://www.kenh88.com/gkphp/plugins/gkpluginsphp.php',data=data)
-			try:
-				j=json.loads(jp).get('link')
-				if isinstance(j,unicode):items=[(j,'')]
-				else:items=ls([(i.get('link',''),rsl(i.get('label',''))) for i in j])
-				for href,r in items:
-					link=xcheck(href.replace('amp;',''))
-					if link:break
-			except:j={}
+		def getlink(b):
+			link=''
+			href=xsearch('\{link:.*"(.+?)"\}',b)
+			if len(href)>20:
+				data=urllib.urlencode({'link':href});label=0#;mess('link')
+				jp=xread('http://www.kenh88.com/gkphp/plugins/gkpluginsphp.php',data=data)
+				try:
+					j=json.loads(jp).get('link')
+					if isinstance(j,unicode):items=[(j,'')]
+					else:items=ls([(i.get('link',''),rsl(i.get('label',''))) for i in j])
+					for href,r in items:
+						link=xcheck(href.replace('amp;',''))
+						if link:break
+				except:j={}
+			
+			elif xsearch('src="(.+?docid=.+?)"',b):
+				#http://www.kenh88.com/xem-phim-online/nhat-ky-saimdang
+				docid=xsearch('docid=(.+?)&',b).replace('amp;','')
+				if docid:
+					link='https://docs.google.com/get_video_info?authuser=&eurl=%s&docid=%s'
+					link=link%(urllib.quote_plus(url),docid)
+					b=xget(link)#;xbmc.log(link+' '+b.cookiestring)
+					cookie=b.headers.get('Set-Cookie')
+					res={'36': 240, '38': 3072, '17': 144, '22': 720, '46': 1080, '18': 360, '44': 480, '45': 720, '37': 1080, '43': 360, '35': 480, '34': 360, '5': 240, '6': 270}
+					try:
+						s=dict(urllib2.urlparse.parse_qsl(b.read())).get('fmt_stream_map')
+						items=[(i.split('|')[1],i.split('|')[0]) for i in s.split(',')]
+						items=[(i[0],res.get(i[1],0)) for i in items]
+						reverse=True if get_setting('resolut')=='Max' else False
+						items=sorted(items, key=lambda k: int(k[1]) if k[1] else 0,reverse=reverse)
+					except:items=[]
+					hd_={'User-Agent':'Mozilla/5.0','Cookie':cookie}
+					for href,label in items:
+						resp=xget(href,hd_)#;xbmc.log(str(label)+' '+href)
+						if resp:link=href;break
+					if link:link+='|User-Agent=Mozilla/5.0&Cookie='+urllib.quote(cookie)
+			
+			elif xsearch('iframe src="(.+?)"',b):
+				href=xsearch('iframe src="(.+?)"',b).replace('amp;','')
+				if href in hrefs:return ''
+				hrefs.append(href)
+				if 'openload.co' in href:link=self.openload(href)#;mess('openload')
+				elif 'drive.google.com' in href:
+					b=xread(href);mess('drive.google')
+					try:s=eval(xsearch('(\["url_encoded_fmt.+?\])',b))[1]
+					except:s=''
+					if s:
+						try:
+							qsl=urllib2.urlparse.parse_qsl
+							l=[dict(qsl(i.decode('unicode_escape'))) for i in s.split(',')]
+						except:pass
+						link=googleItems(l,'url','quality')
+					#xbmc.log(str(l));xbmc.log(link)
+				
+				elif 'xtubeid.com' in href:
+					#http://www.kenh88.com/xem-phim-online/anh-hung-chinh-nghia?link=737242
+					def x(c):
+						i='' if c<a else x(c/a)
+						c=c%a
+						j=chr(c+29) if c>35 else toBase36(c)
+						return i+j
+					
+					self.hd['Referer']=url
+					b=xread(href,self.hd)
+					try:
+						p,a,c,k,e,d=eval(xsearch('\}(\(.+?\))\)',b))
+						while c:c-=1;d[x(c)] = k[c] or x(c)
+						a=''
+						for c,k in re.findall('(\W*(\w+)\W*)',p):
+							a+=c.replace(k,d[k])
+						d=json.loads('{"sources":'+xsearch('sources:(.+?)\],',a)).get('sources')
+					except:d=[]
+					link=googleItems(d,'file','label')
+					#xbmc.log(str(d));xbmc.log('aaa '+link)
+					return link
+
+				elif 'dailymotion.com' in href:
+					b = xread(href)
+					b = xsearch('"stream_chromecast_url":"(.+?)"',b).replace('\\','')
+					b = re.findall('(http.+)', xread(b))
+					if b:
+						link = b[len(b)-1]
+				else:
+					b=xread(href)
+					l=re.findall('file: "([^"]+?)"[^"]+label: "([^"]+?)"',b,re.S)
+					for href,r in ls([(i[0],rsl(i[1])) for i in l]):
+						link=xcheck(href.replace('amp;',''))
+						if link:break
+			return link
 		
-		elif xsearch('src="(.+?docid=.+?)"',response):
-			docid=xsearch('docid=(.+?)&',response)#;mess('docid')
-			if docid:
-				link='https://docs.google.com/get_video_info?authuser=&eurl=%s&docid=%s'
-				link=link%(urllib.quote_plus(url),docid)
-				response=xread(link)
-				link=xsearch('url_encoded_fmt_stream_map(.+?)\Z',response)
-				link=xsearch('url=(.+?)&type=',urllib.unquote(urllib.unquote(link)))
-		
-		elif xsearch('iframe src="(.+?)"',response):
-			href=xsearch('iframe src="(.+?)"',response)
-			if 'openload.co' in href:link=self.openload(href)#;mess('openload')
-			elif 'xtubeid.com' in url:
-				#http://www.kenh88.com/xem-phim-online/anh-hung-chinh-nghia?link=737242
-				mess('Chưa xử lý link trên xtubeid.com')
-			else:
-				b=xread(href)
-				l=re.findall('file: "([^"]+?)"[^"]+label: "([^"]+?)"',b,re.S)
-				for href,r in ls([(i[0],rsl(i[1])) for i in l]):
-					link=xcheck(href.replace('amp;',''))
-					if link:break
+		response=xsearch('(<div class="play".+?class="button">)',xread(url),1,re.S)
+		hrefs=[]
+		link=getlink(response)
+		if not link:
+			try:response=re.sub('<!--.+?-->','',response,flags=re.S)
+			except:pass
+			link=getlink(response)
 		return link
 
 class fcinenet:
@@ -3393,3 +3887,109 @@ class vnZoom:
 			blockrow=xsearch('(<div class="blockrow restore".+?/form>)',b)
 			if blockrow:b=xread(url,self.hd)
 		return b
+
+class cInputWindow(xbmcgui.WindowDialog):
+
+	def __init__(self, *args, **kwargs):
+		bg_image = os.path.join(iconpath, 'DialogBack2.png')
+		check_image = os.path.join(iconpath, 'checked.png')
+		button_fo = os.path.join(iconpath, 'button-fo.png')
+		button_nofo = os.path.join(iconpath, 'button-nofo.png')
+		self.cancelled = False
+		self.chk = [0] * 16
+		self.chkbutton = [0] * 16
+		self.chkstate = [False] * 16
+
+		imgX, imgY, imgw, imgh = 400, 100, 500, 400
+		ph, pw = imgh / 4, imgw / 4
+		x_gap = 70
+		y_gap = 70
+		button_gap = 40
+		button_h = 40
+		button_y = imgY + imgh + button_gap
+		middle = imgX + (imgw / 2)
+		win_x = imgX - x_gap
+		win_y = imgY - y_gap
+		win_h = imgh + 2 * y_gap + button_h + button_gap
+		win_w = imgw + 2 * x_gap
+
+		ctrlBackgound = xbmcgui.ControlImage(win_x, win_y, win_w, win_h, bg_image)
+		self.addControl(ctrlBackgound)
+		self.msg = '[COLOR red]%s[/COLOR]' % (kwargs.get('msg'))
+		self.strActionInfo = xbmcgui.ControlLabel(imgX, imgY - 30, imgw, 20, self.msg, 'font13')
+		self.addControl(self.strActionInfo)
+		img = xbmcgui.ControlImage(imgX, imgY, imgw, imgh, kwargs.get('captcha'))
+		self.addControl(img)
+		self.iteration = kwargs.get('iteration')
+		self.strActionInfo = xbmcgui.ControlLabel(imgX, imgY + imgh, imgw, 20, 'abc', 'font40')
+		self.addControl(self.strActionInfo)
+		#self.cancelbutton = xbmcgui.ControlButton(middle - 110, button_y, 100, button_h, common.i18n('cancel'), focusTexture=button_fo, noFocusTexture=button_nofo, alignment=2)
+		self.cancelbutton = xbmcgui.ControlButton(middle - 110, button_y, 100, button_h, 'cancel', focusTexture=button_fo, noFocusTexture=button_nofo, alignment=2)
+		#self.okbutton = xbmcgui.ControlButton(middle + 10, button_y, 100, button_h, common.i18n('ok'), focusTexture=button_fo, noFocusTexture=button_nofo, alignment=2)
+		self.okbutton = xbmcgui.ControlButton(middle + 10, button_y, 100, button_h, 'ok', focusTexture=button_fo, noFocusTexture=button_nofo, alignment=2)
+		self.addControl(self.okbutton)
+		self.addControl(self.cancelbutton)
+
+		for i in xrange(16):
+			row = i / 4
+			col = i % 4
+			x_pos = imgX + (pw * col)
+			y_pos = imgY + (ph * row)
+			self.chk[i] = xbmcgui.ControlImage(x_pos, y_pos, pw, ph, check_image)
+			self.addControl(self.chk[i])
+			self.chk[i].setVisible(False)
+			self.chkbutton[i] = xbmcgui.ControlButton(x_pos, y_pos, pw, ph, str(i + 1), font='font1', focusTexture=button_fo, noFocusTexture=button_nofo)
+			self.addControl(self.chkbutton[i])
+
+		for i in xrange(16):
+			row_start = (i / 4) * 4
+			right = row_start + (i + 1) % 4
+			left = row_start + (i - 1) % 4
+			up = (i - 16) % 16
+			down = (i + 16) % 16
+			self.chkbutton[i].controlRight(self.chkbutton[right])
+			self.chkbutton[i].controlLeft(self.chkbutton[left])
+			if i <= 2:
+				self.chkbutton[i].controlUp(self.okbutton)
+			else:
+				self.chkbutton[i].controlUp(self.chkbutton[up])
+
+			if i >= 6:
+				self.chkbutton[i].controlDown(self.okbutton)
+			else:
+				self.chkbutton[i].controlDown(self.chkbutton[down])
+
+		self.okbutton.controlLeft(self.cancelbutton)
+		self.okbutton.controlRight(self.cancelbutton)
+		self.cancelbutton.controlLeft(self.okbutton)
+		self.cancelbutton.controlRight(self.okbutton)
+		self.okbutton.controlDown(self.chkbutton[2])
+		self.okbutton.controlUp(self.chkbutton[8])
+		self.cancelbutton.controlDown(self.chkbutton[0])
+		self.cancelbutton.controlUp(self.chkbutton[6])
+		self.setFocus(self.okbutton)
+
+	def get(self):
+		self.doModal()
+		self.close()
+		if not self.cancelled:
+			return [i for i in xrange(16) if self.chkstate[i]]
+
+	def onControl(self, control):
+		if control == self.okbutton and any(self.chkstate):
+			self.close()
+
+		elif control == self.cancelbutton:
+			self.cancelled = True
+			self.close()
+		else:
+			label = control.getLabel()
+			if label.isnumeric():
+				index = int(label) - 1
+				self.chkstate[index] = not self.chkstate[index]
+				self.chk[index].setVisible(self.chkstate[index])
+
+	def onAction(self, action):
+		if action == 10:
+			self.cancelled = True
+			self.close()
