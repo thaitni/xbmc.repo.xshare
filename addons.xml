@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR] [COLOR green]XBMC[/COLOR] [COLOR blue]HDVideo[/B][/COLOR]" version="3.5.8.20" provider-name="thaitni">
+<addon id="plugin.video.xshare" name="[COLOR red][B]Xshare[/COLOR] [COLOR green]XBMC[/COLOR] [COLOR blue]HDVideo[/B][/COLOR]" version="3.5.8.21" provider-name="thaitni">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.video.F4mProxy" optional="true"/>
@@ -39,6 +39,25 @@
     </extension>
 </addon>
 
+<addon
+	id            = "script.module.xshare"
+	name          = "xshare"
+	version       = "1.3"
+	provider-name = "thaitni">
+	<requires>
+		<import addon = "xbmc.python" version = "2.1.0"/>
+	</requires>
+	<extension point="xbmc.python.module" library="lib" />
+	<extension point="xbmc.addon.metadata">
+		<summary>Xshare utilities.</summary>
+		<description>Xshare utilities library provides utility functions for xbmc xshare add-on</description>
+		<platform>all</platform>
+		<license>GNU General Public License - v2</license>
+		<source>https://github.com/thaitni/xbmc.repo.xshare</source>
+		<email>thai@thanhthai.net</email>
+	</extension>
+</addon>
+
 <addon id="service.subtitles.xshare" name="[COLOR red][B]xshare[/COLOR] [COLOR blue]subtitles[/B][/COLOR]" version="1.2.4" provider-name="thaitni">
     <requires><import addon="xbmc.python" version="2.1.0"/></requires>
     <extension point="xbmc.subtitle.module" library="xsharesub.py"/>
@@ -65,25 +84,6 @@
 		<summary>Play Video with find subs on XBMC from many host</summary>
 		<description>Download and install addons from Xshare Repository: Watch movies from fshare.vn, 4share.vn, tenlua.vn, ...</description>
 		<language>en</language>
-		<platform>all</platform>
-		<license>GNU General Public License - v2</license>
-		<source>https://github.com/thaitni/xbmc.repo.xshare</source>
-		<email>thai@thanhthai.net</email>
-	</extension>
-</addon>
-
-<addon
-	id            = "script.module.xshare"
-	name          = "xshare"
-	version       = "1.3"
-	provider-name = "thaitni">
-	<requires>
-		<import addon = "xbmc.python" version = "2.1.0"/>
-	</requires>
-	<extension point="xbmc.python.module" library="lib" />
-	<extension point="xbmc.addon.metadata">
-		<summary>Xshare utilities.</summary>
-		<description>Xshare utilities library provides utility functions for xbmc xshare add-on</description>
 		<platform>all</platform>
 		<license>GNU General Public License - v2</license>
 		<source>https://github.com/thaitni/xbmc.repo.xshare</source>
